@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+coverage/
+*.log
+*.tsbuildinfo
+.pnpm-store/
+.vite/
+.eslintcache
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

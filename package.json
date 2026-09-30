@@ -1,0 +1,21 @@
+{
+  "name": "system-design-lab",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.15.1",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @system-design/api --filter @system-design/web dev",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose stop postgres",
+    "db:migrate": "pnpm --filter @system-design/api db:migrate",
+    "observability:up": "docker compose up -d --wait postgres prometheus grafana",
+    "observability:down": "docker compose stop prometheus grafana",
+    "load:baseline": "docker compose --profile tools run --rm k6 run --summary-export=/results/baseline.json /scripts/baseline.js",
+    "load:ramp": "docker compose --profile tools run --rm k6 run --summary-export=/results/ramp.json /scripts/ramp.js",
+    "load:spike": "docker compose --profile tools run --rm k6 run --summary-export=/results/spike.json /scripts/spike.js",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  }
+}

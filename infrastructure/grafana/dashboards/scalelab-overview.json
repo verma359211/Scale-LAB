@@ -1,0 +1,101 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "type": "timeseries", "title": "Requests / second", "id": 1,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(rate(scalelab_http_requests_total[1m]))", "legendFormat": "RPS" }],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "timeseries", "title": "Response time", "id": 2,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_http_request_duration_seconds_sum[1m])) / clamp_min(sum(rate(scalelab_http_request_duration_seconds_count[1m])), 0.000000001)", "legendFormat": "average" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket[1m])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket[1m])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }, "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "HTTP error rate", "id": 3,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "(100 * sum(rate(scalelab_http_requests_total{status_code=~\"4..|5..\"}[1m])) / clamp_min(sum(rate(scalelab_http_requests_total[1m])), 0.000000001)) or vector(0)", "legendFormat": "errors" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "stat", "title": "Active requests", "id": 4,
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(scalelab_http_requests_active) or vector(0)", "legendFormat": "active" }],
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 }, "overrides": [] }, "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "value", "graphMode": "area" }
+    },
+    {
+      "type": "timeseries", "title": "API CPU", "id": 5,
+      "gridPos": { "h": 7, "w": 9, "x": 6, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "100 * (sum(rate(scalelab_node_process_cpu_user_seconds_total[1m])) + sum(rate(scalelab_node_process_cpu_system_seconds_total[1m])))", "legendFormat": "CPU" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "timeseries", "title": "API resident memory", "id": 6,
+      "gridPos": { "h": 7, "w": 9, "x": 15, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(scalelab_node_process_resident_memory_bytes)", "legendFormat": "resident memory" }],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "stat", "title": "Pool connections", "id": 7,
+      "gridPos": { "h": 5, "w": 8, "x": 0, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(scalelab_pg_pool_connections_total)", "legendFormat": "total" }],
+      "fieldConfig": { "defaults": { "decimals": 0 }, "overrides": [] }, "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "value", "graphMode": "area" }
+    },
+    {
+      "type": "stat", "title": "Pool idle", "id": 8,
+      "gridPos": { "h": 5, "w": 8, "x": 8, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(scalelab_pg_pool_connections_idle)", "legendFormat": "idle" }],
+      "fieldConfig": { "defaults": { "decimals": 0 }, "overrides": [] }, "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "value", "graphMode": "area" }
+    },
+    {
+      "type": "stat", "title": "Pool waiters", "id": 9,
+      "gridPos": { "h": 5, "w": 8, "x": 16, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(scalelab_pg_pool_waiting_requests)", "legendFormat": "waiting" }],
+      "fieldConfig": { "defaults": { "decimals": 0 }, "overrides": [] }, "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "value", "graphMode": "area" }
+    },
+    {
+      "type": "timeseries", "title": "Event-loop lag", "id": 10,
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "scalelab_node_nodejs_eventloop_lag_seconds", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Pool state", "id": 11,
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(scalelab_pg_pool_connections_total)", "legendFormat": "total" },
+        { "refId": "B", "expr": "sum(scalelab_pg_pool_connections_idle)", "legendFormat": "idle" },
+        { "refId": "C", "expr": "sum(scalelab_pg_pool_waiting_requests)", "legendFormat": "waiting" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] }, "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": ["scalelab", "milestone-2"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "ScaleLab Milestone 2 Baseline",
+  "uid": "scalelab-m2-baseline",
+  "version": 1
+}

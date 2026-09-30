@@ -1,0 +1,11 @@
+apiVersion: 1
+prune: true
+
+datasources:
+  - name: ScaleLab Prometheus
+    uid: scalelab-prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
