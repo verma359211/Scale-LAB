@@ -1,0 +1,3660 @@
+{
+  "format": "scalelab-capacity-summary-v1",
+  "generatedAt": "2026-10-01T13:35:51.327Z",
+  "notes": [
+    "Prometheus rate and histogram panels use 30-second rolling windows.",
+    "Prometheus summaries exclude the first 30 seconds of each run so every rolling window is fully inside that run.",
+    "Histogram maxima are not exact request maxima; the summary preserves rolling p95/p99 series statistics instead.",
+    "k6 summary-export provides observed VU min/max/final values, not time-weighted average VUs."
+  ],
+  "runs": [
+    {
+      "id": "capacity-700rps-pool10-node-dist-20261001-174218",
+      "targetRps": 700,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:12:18.9069991Z",
+      "endUtc": "2026-10-01T12:14:21.119747Z",
+      "durationSeconds": 119.99316275,
+      "k6": {
+        "achievedRps": 700.0398862309345,
+        "requests": 84000,
+        "iterations": 84000,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "avg": 6.1921756154642456,
+          "min": 1.705526,
+          "med": 3.8409135,
+          "max": 255.883039,
+          "p(90)": 5.589412200000001,
+          "p(95)": 7.682219950000005,
+          "p(99)": 101.25442747999922
+        },
+        "iterationDurationMs": {
+          "p(95)": 8.070288849999999,
+          "p(99)": 102.72208338999744,
+          "avg": 6.500593463285731,
+          "min": 2.376581,
+          "med": 4.1162505,
+          "max": 262.220887,
+          "p(90)": 5.9225795000000065
+        },
+        "vus": {
+          "value": 3,
+          "min": 2,
+          "max": 133
+        },
+        "allocatedVus": {
+          "value": 300,
+          "min": 300,
+          "max": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 699.5899174955888,
+          "median": 700.0518556930142,
+          "p95": 700.1148275734341,
+          "p99": 700.1329813880473,
+          "maximum": 700.1407615943101,
+          "minimum": 685.6317368596511,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 68.11858638120275,
+          "median": 66.85064453993186,
+          "p95": 71.30104857853472,
+          "p99": 71.6238841352743,
+          "maximum": 71.71167166722229,
+          "minimum": 64.75425015741325,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 136698450.58064517,
+          "median": 136675328,
+          "p95": 137142272,
+          "p99": 137276620.8,
+          "maximum": 137330688,
+          "minimum": 136159232,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.0026578580645161285,
+          "median": 0.0023445,
+          "p95": 0.0049594,
+          "p99": 0.005626269999999999,
+          "maximum": 0.005869,
+          "minimum": 0.0018956,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 1.5483870967741935,
+          "median": 1,
+          "p95": 3,
+          "p99": 3,
+          "maximum": 3,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 9.516129032258064,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 7,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 7.967741935483871,
+          "median": 8,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 5,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.00030552678322000196,
+          "median": 0.00007155727513226267,
+          "p95": 0.00015943843424945999,
+          "p99": 0.004872105022508001,
+          "maximum": 0.006891756301663841,
+          "minimum": 0.00005063021373391683,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.0023978732478173274,
+          "median": 0.0009523683233437648,
+          "p95": 0.0009588270632589027,
+          "p99": 0.03231522171909362,
+          "maximum": 0.045753676470586944,
+          "minimum": 0.0009499999999999999,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.007717701378543286,
+          "median": 0.0009924680422213972,
+          "p95": 0.0009991987290803301,
+          "p99": 0.1469252341449609,
+          "maximum": 0.20946496350364968,
+          "minimum": 0.00099,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.0018599133720691044,
+          "median": 0.0018469716492935993,
+          "p95": 0.002102908970424832,
+          "p99": 0.002378848416714918,
+          "maximum": 0.0024960491572122963,
+          "minimum": 0.0016567796296295893,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.004996332716185141,
+          "median": 0.004868626287686749,
+          "p95": 0.0049403842527226596,
+          "p99": 0.007742464724061591,
+          "maximum": 0.008943123938879454,
+          "minimum": 0.0048104849418388485,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.007940449379827054,
+          "median": 0.007394299674267079,
+          "p95": 0.013069418604651047,
+          "p99": 0.019286971629712074,
+          "maximum": 0.021951487710219954,
+          "minimum": 0.00497110532745525,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.00831298506451613,
+          "median": 0.007578889,
+          "p95": 0.012311066,
+          "p99": 0.0137424951,
+          "maximum": 0.013974786,
+          "minimum": 0.00587011,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 36.11071428571428,
+          "median": 36.435,
+          "p95": 41.516,
+          "p99": 45.3243,
+          "maximum": 46.65,
+          "minimum": 28.23,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 38.71321428571428,
+          "median": 38.925,
+          "p95": 39.322500000000005,
+          "p99": 39.4057,
+          "maximum": 39.43,
+          "minimum": 35.96,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-800rps-pool10-node-dist-broad-20261001-174805",
+      "targetRps": 800,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:18:06.0917328Z",
+      "endUtc": "2026-10-01T12:20:08.4410760Z",
+      "durationSeconds": 119.995488879,
+      "k6": {
+        "achievedRps": 800.0384089172272,
+        "requests": 96001,
+        "iterations": 96001,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "p(99)": 134.07367,
+          "avg": 8.569009687899184,
+          "min": 1.100174,
+          "med": 3.48476,
+          "max": 223.46933,
+          "p(90)": 7.20893,
+          "p(95)": 27.325737
+        },
+        "iterationDurationMs": {
+          "p(95)": 27.657158,
+          "p(99)": 134.70884,
+          "avg": 8.855706228664294,
+          "min": 2.243585,
+          "med": 3.730779,
+          "max": 242.199605,
+          "p(90)": 7.550143
+        },
+        "vus": {
+          "value": 3,
+          "min": 1,
+          "max": 140
+        },
+        "allocatedVus": {
+          "max": 300,
+          "value": 300,
+          "min": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 800.1364484098183,
+          "median": 800.0592636491593,
+          "p95": 800.7593411611807,
+          "p99": 804.5536860360668,
+          "maximum": 805.9115490036298,
+          "minimum": 796.5329481053451,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 67.38858938930211,
+          "median": 67.07904289206607,
+          "p95": 71.1875415805702,
+          "p99": 72.296568210806,
+          "maximum": 72.74612934291426,
+          "minimum": 63.41752462780538,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 138159004.9032258,
+          "median": 138166272,
+          "p95": 138631168,
+          "p99": 138852352,
+          "maximum": 138932224,
+          "minimum": 137363456,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.002458496774193549,
+          "median": 0.0021249,
+          "p95": 0.0030209499999999997,
+          "p99": 0.007352409999999995,
+          "maximum": 0.0091948,
+          "minimum": 0.0017166,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 5.516129032258065,
+          "median": 1,
+          "p95": 19.5,
+          "p99": 78.29999999999995,
+          "maximum": 96,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 8.129032258064516,
+          "median": 9,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 3.6451612903225805,
+          "median": 0,
+          "p95": 13.5,
+          "p99": 68.29999999999995,
+          "maximum": 86,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.0007751873248773684,
+          "median": 0.00015118571230178263,
+          "p95": 0.002347754543544637,
+          "p99": 0.004612128162246683,
+          "maximum": 0.005247458145202081,
+          "minimum": 0.00004580000925976892,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.0038930681566882964,
+          "median": 0.0009625674344419945,
+          "p95": 0.010783365570599609,
+          "p99": 0.012503849671179913,
+          "maximum": 0.013241200000000026,
+          "minimum": 0.0009499999999999999,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.02336716518642812,
+          "median": 0.0032376271186440576,
+          "p95": 0.06884560307987025,
+          "p99": 0.16899943299171455,
+          "maximum": 0.20004058192955573,
+          "minimum": 0.00099,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.0019753887565755945,
+          "median": 0.0018888050789388387,
+          "p95": 0.002370134523665946,
+          "p99": 0.0024737265162036583,
+          "maximum": 0.0025097347453703336,
+          "minimum": 0.001622826626232569,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.0065345496904829145,
+          "median": 0.004963628408925186,
+          "p95": 0.009903768122650914,
+          "p99": 0.011149337815681441,
+          "maximum": 0.011658415841584169,
+          "minimum": 0.004842668933276668,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.015553354434615942,
+          "median": 0.0157954545454546,
+          "p95": 0.021982589778809923,
+          "p99": 0.022247718708438,
+          "maximum": 0.022351485148514844,
+          "minimum": 0.005851923076923059,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.008152254806451613,
+          "median": 0.007328063,
+          "p95": 0.0132402245,
+          "p99": 0.020418776499999996,
+          "maximum": 0.02167597,
+          "minimum": 0.005342912,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 34.27750000000001,
+          "median": 35.41,
+          "p95": 45.616,
+          "p99": 46.8929,
+          "maximum": 47.36,
+          "minimum": 5.1,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 41.06321428571429,
+          "median": 40.935,
+          "p95": 41.395999999999994,
+          "p99": 42.504999999999995,
+          "maximum": 42.91,
+          "minimum": 40.87,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-850rps-pool10-node-dist-broad-20261001-175040",
+      "targetRps": 850,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:20:40.9366144Z",
+      "endUtc": "2026-10-01T12:22:43.3944409Z",
+      "durationSeconds": 119.997690749,
+      "k6": {
+        "achievedRps": 850.0246910030644,
+        "requests": 102001,
+        "iterations": 102001,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "avg": 6.639996512102833,
+          "min": 1.42521,
+          "med": 3.616627,
+          "max": 102.892912,
+          "p(90)": 9.983296,
+          "p(95)": 21.233128,
+          "p(99)": 74.152022
+        },
+        "iterationDurationMs": {
+          "avg": 6.9313220825973545,
+          "min": 2.291365,
+          "med": 3.864359,
+          "max": 127.330481,
+          "p(90)": 10.327969,
+          "p(95)": 21.610988,
+          "p(99)": 77.537814
+        },
+        "vus": {
+          "value": 6,
+          "min": 2,
+          "max": 81
+        },
+        "allocatedVus": {
+          "value": 300,
+          "min": 300,
+          "max": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 850.0689428388874,
+          "median": 850.0685210563355,
+          "p95": 850.1370471886808,
+          "p99": 851.8002533839831,
+          "maximum": 852.5130560391126,
+          "minimum": 847.6610244823883,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 73.47271539117489,
+          "median": 73.67212386102673,
+          "p95": 75.17546836439763,
+          "p99": 75.62032048658271,
+          "maximum": 75.76116749388846,
+          "minimum": 70.9534039558485,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 137868056.77419356,
+          "median": 138014720,
+          "p95": 138176512,
+          "p99": 138182656,
+          "maximum": 138182656,
+          "minimum": 136667136,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.0024131806451612903,
+          "median": 0.0022461,
+          "p95": 0.0037925,
+          "p99": 0.0038974799999999996,
+          "maximum": 0.0039174,
+          "minimum": 0.0018387,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 3.935483870967742,
+          "median": 2,
+          "p95": 3.5,
+          "p99": 47.399999999999956,
+          "maximum": 66,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 7.870967741935484,
+          "median": 8,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 1.8064516129032258,
+          "median": 0,
+          "p95": 0,
+          "p99": 39.19999999999996,
+          "maximum": 56,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.001140349104994199,
+          "median": 0.0005595571888040343,
+          "p95": 0.0033047211796016626,
+          "p99": 0.003558406876722847,
+          "maximum": 0.0035585538082788712,
+          "minimum": 0.00004618004793064458,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.005229131986082254,
+          "median": 0.0009940520700346526,
+          "p95": 0.030252810924578332,
+          "p99": 0.03374944029850747,
+          "maximum": 0.03375000000000003,
+          "minimum": 0.0009500413943355119,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.0341999705778197,
+          "median": 0.017401324503311194,
+          "p95": 0.0838493313299314,
+          "p99": 0.08388321629213487,
+          "maximum": 0.08388342696629217,
+          "minimum": 0.000990043137254902,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.002343615871232353,
+          "median": 0.0024305774533730563,
+          "p95": 0.0031743773732243697,
+          "p99": 0.003258150204557385,
+          "maximum": 0.003264506845316116,
+          "minimum": 0.0017650228463114937,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.008426965926991275,
+          "median": 0.00880860612460402,
+          "p95": 0.015335323221753334,
+          "p99": 0.015561072996706908,
+          "maximum": 0.015561196487376507,
+          "minimum": 0.004878035921722814,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.01710995008518913,
+          "median": 0.020981828839390388,
+          "p95": 0.023073817936485636,
+          "p99": 0.023118800768386398,
+          "maximum": 0.023118825466520318,
+          "minimum": 0.007565468409586074,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.008406319161290322,
+          "median": 0.00755868,
+          "p95": 0.013465849,
+          "p99": 0.0164384666,
+          "maximum": 0.017062124,
+          "minimum": 0.006209323,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 37.51214285714286,
+          "median": 36.49,
+          "p95": 48.6585,
+          "p99": 53.2233,
+          "maximum": 54.9,
+          "minimum": 19.42,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 41.02178571428572,
+          "median": 40.99,
+          "p95": 41.2295,
+          "p99": 41.24,
+          "maximum": 41.24,
+          "minimum": 40.89,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-900rps-pool10-node-dist-broad-20261001-175318",
+      "targetRps": 900,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:23:18.4474786Z",
+      "endUtc": "2026-10-01T12:25:20.9297020Z",
+      "durationSeconds": 119.994611344,
+      "k6": {
+        "achievedRps": 900.0487504424947,
+        "requests": 108001,
+        "iterations": 108001,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "med": 3.856027,
+          "max": 173.119993,
+          "p(90)": 26.15182,
+          "p(95)": 50.334265,
+          "p(99)": 113.199114,
+          "avg": 10.799748263312171,
+          "min": 1.126877
+        },
+        "iterationDurationMs": {
+          "p(90)": 26.477125,
+          "p(95)": 50.667263,
+          "p(99)": 114.153251,
+          "avg": 11.096576131082324,
+          "min": 2.189489,
+          "med": 4.112051,
+          "max": 207.345717
+        },
+        "vus": {
+          "value": 4,
+          "min": 2,
+          "max": 111
+        },
+        "allocatedVus": {
+          "value": 300,
+          "min": 300,
+          "max": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 900.158069406624,
+          "median": 900.066671605304,
+          "p95": 902.5817942798612,
+          "p99": 903.6808866059719,
+          "maximum": 903.851851851852,
+          "minimum": 896.5070192984406,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 79.33908907444213,
+          "median": 78.53835611364232,
+          "p95": 83.4821097859101,
+          "p99": 83.91654432096585,
+          "maximum": 84.09082490647114,
+          "minimum": 75.63513813791567,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 124400937.29032259,
+          "median": 129724416,
+          "p95": 130525184,
+          "p99": 130552627.2,
+          "maximum": 130560000,
+          "minimum": 105562112,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.0031235258064516128,
+          "median": 0.0023216,
+          "p95": 0.0072654,
+          "p99": 0.011739379999999999,
+          "maximum": 0.0123788,
+          "minimum": 0.0017537,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 8.32258064516129,
+          "median": 2,
+          "p95": 43.5,
+          "p99": 86.69999999999996,
+          "maximum": 102,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 7,
+          "median": 8,
+          "p95": 9,
+          "p99": 9.7,
+          "maximum": 10,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 5.32258064516129,
+          "median": 0,
+          "p95": 33.5,
+          "p99": 76.69999999999996,
+          "maximum": 92,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.0032654254500870065,
+          "median": 0.0032135283233186256,
+          "p95": 0.00698116637054863,
+          "p99": 0.007158251701645767,
+          "maximum": 0.007164874251028485,
+          "minimum": 0.00018628060162105653,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.023700516062224265,
+          "median": 0.02304193341869397,
+          "p95": 0.05205544933078392,
+          "p99": 0.058816216826403395,
+          "maximum": 0.061713688610240305,
+          "minimum": 0.0009683703859060402,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.06963428074929544,
+          "median": 0.06947236180904517,
+          "p95": 0.09851816443594646,
+          "p99": 0.1518912517999197,
+          "maximum": 0.17476543209876544,
+          "minimum": 0.004663697478991556,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.0032532770212735135,
+          "median": 0.003067177592592595,
+          "p95": 0.004529998516432835,
+          "p99": 0.0045920803743769705,
+          "maximum": 0.004610706388064317,
+          "minimum": 0.0023393871717836147,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.013361130065414542,
+          "median": 0.011446748878923758,
+          "p95": 0.0196211689885162,
+          "p99": 0.020011628109819494,
+          "maximum": 0.020084526431718066,
+          "minimum": 0.008036071616640338,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.022369752503556575,
+          "median": 0.02234316143497758,
+          "p95": 0.02400558966380288,
+          "p99": 0.024079408664026386,
+          "maximum": 0.02409289647577094,
+          "minimum": 0.017322462203023827,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.008930992870967743,
+          "median": 0.007480697,
+          "p95": 0.017322994,
+          "p99": 0.019897713499999997,
+          "maximum": 0.020386472,
+          "minimum": 0.005821183,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 41.86321428571427,
+          "median": 42.875,
+          "p95": 51.873,
+          "p99": 57.075500000000005,
+          "maximum": 58.79,
+          "minimum": 10.63,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 41.08357142857143,
+          "median": 40.97,
+          "p95": 41.381,
+          "p99": 42.6637,
+          "maximum": 43.12,
+          "minimum": 40.87,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-925rps-pool10-node-dist-broad-20261001-175557",
+      "targetRps": 925,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:25:57.5134035Z",
+      "endUtc": "2026-10-01T12:27:59.3848269Z",
+      "durationSeconds": 119.995016667,
+      "k6": {
+        "achievedRps": 925.0467484665681,
+        "requests": 111001,
+        "iterations": 111001,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "p(95)": 60.911388,
+          "p(99)": 156.731332,
+          "avg": 13.735572403158553,
+          "min": 2.099724,
+          "med": 3.937206,
+          "max": 186.185222,
+          "p(90)": 33.228276
+        },
+        "iterationDurationMs": {
+          "p(90)": 33.551159,
+          "p(95)": 61.211966,
+          "p(99)": 158.465587,
+          "avg": 14.050482840749044,
+          "min": 2.295946,
+          "med": 4.197288,
+          "max": 212.475774
+        },
+        "vus": {
+          "value": 17,
+          "min": 2,
+          "max": 158
+        },
+        "allocatedVus": {
+          "min": 300,
+          "max": 300,
+          "value": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 925.0290189733317,
+          "median": 925.0712989369978,
+          "p95": 925.8038227885613,
+          "p99": 927.3430422438875,
+          "maximum": 927.7804525758305,
+          "minimum": 919.9288915225362,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 80.24794632436726,
+          "median": 80.38518518518543,
+          "p95": 81.71598948109175,
+          "p99": 81.91775132238895,
+          "maximum": 81.95421883102443,
+          "minimum": 77.95103522352666,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 121070360.77419356,
+          "median": 114987008,
+          "p95": 135405568,
+          "p99": 135537459.2,
+          "maximum": 135593984,
+          "minimum": 114708480,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.0029566225806451603,
+          "median": 0.00261,
+          "p95": 0.00543715,
+          "p99": 0.006261139999999999,
+          "maximum": 0.0065789,
+          "minimum": 0.0019539,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 7.419354838709677,
+          "median": 2,
+          "p95": 9.5,
+          "p99": 106.8999999999999,
+          "maximum": 148,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 7.064516129032258,
+          "median": 8,
+          "p95": 9,
+          "p99": 9.7,
+          "maximum": 10,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 4.483870967741935,
+          "median": 0,
+          "p95": 0.5,
+          "p99": 96.8999999999999,
+          "maximum": 138,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.0026860907702649334,
+          "median": 0.0017189903539680943,
+          "p95": 0.005396820215018595,
+          "p99": 0.008550159703109596,
+          "maximum": 0.009637685185480692,
+          "minimum": 0.0006213611820761624,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.018825504417749266,
+          "median": 0.014681587837837805,
+          "p95": 0.03607320572974702,
+          "p99": 0.07992791016039855,
+          "maximum": 0.0968598862019915,
+          "minimum": 0.0009891707662803301,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.071348897392174,
+          "median": 0.04027531152647978,
+          "p95": 0.19157807572700994,
+          "p99": 0.21219583461998917,
+          "maximum": 0.21890355960264893,
+          "minimum": 0.017883437500000036,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.0032202829332946153,
+          "median": 0.0030376547249140553,
+          "p95": 0.004029097223223343,
+          "p99": 0.004081158290176647,
+          "maximum": 0.004093440828094446,
+          "minimum": 0.002341589115809541,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.013404882864653831,
+          "median": 0.012501503006012025,
+          "p95": 0.017647206301357965,
+          "p99": 0.01768381399617657,
+          "maximum": 0.017690753154574124,
+          "minimum": 0.008200545702592075,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.022646394778241888,
+          "median": 0.022519392523364455,
+          "p95": 0.023591321943634638,
+          "p99": 0.023598335394371683,
+          "maximum": 0.023599664826498425,
+          "minimum": 0.019804715672676804,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.009473872870967742,
+          "median": 0.008775624,
+          "p95": 0.014742617999999999,
+          "p99": 0.017938201299999998,
+          "maximum": 0.018730651,
+          "minimum": 0.006156233,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 46.21888888888889,
+          "median": 44.62,
+          "p95": 61.641,
+          "p99": 65.6712,
+          "maximum": 66.81,
+          "minimum": 36.02,
+          "sampleCount": 27
+        },
+        "memoryMiB": {
+          "average": 40.98074074074074,
+          "median": 40.94,
+          "p95": 41.214999999999996,
+          "p99": 41.23,
+          "maximum": 41.23,
+          "minimum": 40.88,
+          "sampleCount": 27
+        }
+      }
+    },
+    {
+      "id": "capacity-925rps-pool10-node-dist-cpu-profile-valid-20261001-185117",
+      "targetRps": 925,
+      "runLabel": "cpu-profile-valid",
+      "startUtc": "2026-10-01T13:21:17.5194493Z",
+      "endUtc": "2026-10-01T13:23:19.9410072Z",
+      "durationSeconds": 120.016346202,
+      "k6": {
+        "achievedRps": 867.6318126260766,
+        "requests": 104130,
+        "iterations": 104130,
+        "dropped": 6871,
+        "droppedPercent": 6.190034324015099,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "med": 766.2299875000001,
+          "max": 3954.535105,
+          "p(90)": 1898.5835060000004,
+          "p(95)": 2242.6631797499945,
+          "p(99)": 3497.14782504,
+          "avg": 844.8896537204129,
+          "min": 2.256159
+        },
+        "iterationDurationMs": {
+          "p(95)": 2242.9831999999933,
+          "p(99)": 3498.028685319999,
+          "avg": 845.3305657824401,
+          "min": 2.359351,
+          "med": 766.5791265,
+          "max": 3966.258435,
+          "p(90)": 1899.4416392000007
+        },
+        "vus": {
+          "value": 35,
+          "min": 2,
+          "max": 1500
+        },
+        "allocatedVus": {
+          "value": 1500,
+          "min": 346,
+          "max": 1500
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": true
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 866.3232249593972,
+          "median": 888.2509815541891,
+          "p95": 971.5714867232905,
+          "p99": 977.9636909492801,
+          "maximum": 979.6636538746483,
+          "minimum": 686.8540948994333,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 93.32553731531108,
+          "median": 91.96577397488612,
+          "p95": 101.45944529169657,
+          "p99": 103.4553086033777,
+          "maximum": 104.23766483923546,
+          "minimum": 86.93188132014672,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 258019460.12903225,
+          "median": 256475136,
+          "p95": 285784064,
+          "p99": 285820518.4,
+          "maximum": 285822976,
+          "minimum": 227508224,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.016553032258064516,
+          "median": 0.0081165,
+          "p95": 0.021443999999999998,
+          "p99": 0.18219554999999985,
+          "maximum": 0.2496753,
+          "minimum": 0.0040372,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 707.9677419354839,
+          "median": 755,
+          "p95": 1488.5,
+          "p99": 1489,
+          "maximum": 1489,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 2.2903225806451615,
+          "median": 0,
+          "p95": 8.5,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 700.258064516129,
+          "median": 745,
+          "p95": 1478.5,
+          "p99": 1479,
+          "maximum": 1479,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 1.010451013292052,
+          "median": 1.0519744157319078,
+          "p95": 1.9485886289808023,
+          "p99": 1.9804502276177307,
+          "maximum": 1.9855303987905286,
+          "minimum": 0.07013721344103863,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 2.529162134109313,
+          "median": 1.9268325530686847,
+          "p95": 4.606270683949255,
+          "p99": 4.614310535024821,
+          "maximum": 4.616457528957529,
+          "minimum": 0.4567570869990224,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 3.019986727190508,
+          "median": 1.9854498298845447,
+          "p95": 4.921254136789851,
+          "p99": 4.922862107004963,
+          "maximum": 4.923291505791505,
+          "minimum": 0.8244986072423403,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.009663056575592542,
+          "median": 0.010729927361758337,
+          "p95": 0.013685669298794891,
+          "p99": 0.01397352940882954,
+          "maximum": 0.01405150620719406,
+          "minimum": 0.00473466326088719,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.022659545583992555,
+          "median": 0.02370246080139373,
+          "p95": 0.02464872791950258,
+          "p99": 0.024715185663530675,
+          "maximum": 0.024725871160018342,
+          "minimum": 0.019002834645669285,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.034052931510656324,
+          "median": 0.02495582317073171,
+          "p95": 0.06290350723622762,
+          "p99": 0.06637205882352994,
+          "maximum": 0.06675367647058884,
+          "minimum": 0.023876157480314956,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.029338607096774195,
+          "median": 0.018504469,
+          "p95": 0.0485983355,
+          "p99": 0.26597340979999984,
+          "maximum": 0.350320556,
+          "minimum": 0.007469968,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 46.15285714285715,
+          "median": 47.32,
+          "p95": 54.182,
+          "p99": 57.346,
+          "maximum": 58.48,
+          "minimum": 30.86,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 42.85142857142858,
+          "median": 42.705,
+          "p95": 43.4835,
+          "p99": 44.3573,
+          "maximum": 44.63,
+          "minimum": 42.68,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-925rps-pool10-node-dist-cpu-profile-10ms-valid-20261001-190227",
+      "targetRps": 925,
+      "runLabel": "cpu-profile-10ms-valid",
+      "startUtc": "2026-10-01T13:32:27.6589877Z",
+      "endUtc": "2026-10-01T13:34:30.1657600Z",
+      "durationSeconds": 120.022278382,
+      "k6": {
+        "achievedRps": 916.463189024883,
+        "requests": 109996,
+        "iterations": 109996,
+        "dropped": 1004,
+        "droppedPercent": 0.9045045045045045,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "max": 1194.371018,
+          "p(90)": 657.0088304999999,
+          "p(95)": 740.5389605,
+          "p(99)": 1005.4029868000019,
+          "avg": 147.7897908770954,
+          "min": 0.310784,
+          "med": 4.6973555000000005
+        },
+        "iterationDurationMs": {
+          "med": 4.9666385,
+          "max": 1209.065684,
+          "p(90)": 658.123419,
+          "p(95)": 741.0076855,
+          "p(99)": 1008.2681174500007,
+          "avg": 148.1518188545855,
+          "min": 2.282944
+        },
+        "vus": {
+          "max": 880,
+          "value": 45,
+          "min": 2
+        },
+        "allocatedVus": {
+          "value": 884,
+          "min": 318,
+          "max": 884
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 911.2018927395474,
+          "median": 925.0685235943403,
+          "p95": 928.3306789140339,
+          "p99": 932.8456609504055,
+          "maximum": 933.5901329678877,
+          "minimum": 862.6143645590251,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 80.88657580603926,
+          "median": 79.11033741990445,
+          "p95": 89.72262695104598,
+          "p99": 90.48901998695338,
+          "maximum": 90.67812303248027,
+          "minimum": 74.72218106386133,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 155136924.9032258,
+          "median": 152092672,
+          "p95": 169041920,
+          "p99": 169908224,
+          "maximum": 169988096,
+          "minimum": 151166976,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.005247396774193548,
+          "median": 0.0026186,
+          "p95": 0.01480315,
+          "p99": 0.01717448,
+          "maximum": 0.0180533,
+          "minimum": 0.0018099,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 140.38709677419354,
+          "median": 2,
+          "p95": 665,
+          "p99": 785.9,
+          "maximum": 812,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 5.193548387096774,
+          "median": 8,
+          "p95": 9,
+          "p99": 9.7,
+          "maximum": 10,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 135.58064516129033,
+          "median": 0,
+          "p95": 655,
+          "p99": 775.9,
+          "maximum": 802,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.0997456664798308,
+          "median": 0.004909544264264095,
+          "p95": 0.503246289176748,
+          "p99": 0.543801837754838,
+          "maximum": 0.5475851480201664,
+          "minimum": 0.0004136764394967287,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.29719666922856114,
+          "median": 0.038239924433249375,
+          "p95": 0.9909564181814676,
+          "p99": 0.9915105662322361,
+          "maximum": 0.9916685074736764,
+          "minimum": 0.000982579522862823,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.5303669410683022,
+          "median": 0.16185294117647114,
+          "p95": 1.7525912408759121,
+          "p99": 1.7541334723670503,
+          "maximum": 1.754702815432744,
+          "minimum": 0.01515668604651159,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.004323850038803537,
+          "median": 0.0032588392112111965,
+          "p95": 0.009587503105266133,
+          "p99": 0.010406956221508412,
+          "maximum": 0.010559491713904905,
+          "minimum": 0.002353591908023882,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.014873753825090695,
+          "median": 0.013291587901701318,
+          "p95": 0.023917678952270156,
+          "p99": 0.024007991512019048,
+          "maximum": 0.024020047940727825,
+          "minimum": 0.008199431256181996,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.02604638949834981,
+          "median": 0.022704503676470596,
+          "p95": 0.04225973503802946,
+          "p99": 0.04229335521508859,
+          "maximum": 0.04229980276134129,
+          "minimum": 0.017799134615384578,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.01355276106451613,
+          "median": 0.009295338,
+          "p95": 0.0295858745,
+          "p99": 0.0305645947,
+          "maximum": 0.030842188,
+          "minimum": 0.005957186,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 42.33678571428571,
+          "median": 40.980000000000004,
+          "p95": 54.8125,
+          "p99": 58.334,
+          "maximum": 59.63,
+          "minimum": 17.54,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 43.35928571428572,
+          "median": 42.805,
+          "p95": 45.372,
+          "p99": 45.473,
+          "maximum": 45.5,
+          "minimum": 42.7,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-950rps-pool10-node-dist-broad-20261001-175834",
+      "targetRps": 950,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:28:34.7761428Z",
+      "endUtc": "2026-10-01T12:30:37.1527238Z",
+      "durationSeconds": 120.121613107,
+      "k6": {
+        "achievedRps": 949.0465291908129,
+        "requests": 114001,
+        "iterations": 114001,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "avg": 22.58906722390164,
+          "min": 1.137849,
+          "med": 4.290935,
+          "max": 305.051794,
+          "p(90)": 68.227156,
+          "p(95)": 113.004771,
+          "p(99)": 237.632729
+        },
+        "iterationDurationMs": {
+          "p(90)": 68.761485,
+          "p(95)": 113.523026,
+          "p(99)": 238.04327,
+          "avg": 22.89126943669829,
+          "min": 2.287179,
+          "med": 4.55358,
+          "max": 305.1943
+        },
+        "vus": {
+          "value": 155,
+          "min": 3,
+          "max": 253
+        },
+        "allocatedVus": {
+          "value": 300,
+          "min": 300,
+          "max": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 950.3412929858953,
+          "median": 950.0703755833765,
+          "p95": 952.0520038521372,
+          "p99": 955.8989513626525,
+          "maximum": 957.2222222222224,
+          "minimum": 948.1481481481483,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 84.5742751872421,
+          "median": 84.66296296296301,
+          "p95": 85.97144666013253,
+          "p99": 86.33750648196165,
+          "maximum": 86.4064004741092,
+          "minimum": 82.70918990999003,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 131016770.06451613,
+          "median": 132648960,
+          "p95": 133332992,
+          "p99": 133443993.6,
+          "maximum": 133447680,
+          "minimum": 115302400,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.004719370967741936,
+          "median": 0.0030425,
+          "p95": 0.01167085,
+          "p99": 0.014002119999999996,
+          "maximum": 0.0149287,
+          "minimum": 0.0019358,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 10,
+          "median": 2,
+          "p95": 44,
+          "p99": 61.29999999999998,
+          "maximum": 67,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 6,
+          "median": 8,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 6,
+          "median": 0,
+          "p95": 34,
+          "p99": 51.29999999999998,
+          "maximum": 57,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.014590028406941725,
+          "median": 0.011158150555576497,
+          "p95": 0.030570551200733077,
+          "p99": 0.030627058022054354,
+          "maximum": 0.030627448167641243,
+          "minimum": 0.0019195232709545507,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.0989829056604659,
+          "median": 0.07195100612423441,
+          "p95": 0.20040699922660477,
+          "p99": 0.20041337973704562,
+          "maximum": 0.20041569992266045,
+          "minimum": 0.01682123655913978,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.17125295537629645,
+          "median": 0.24005607115235889,
+          "p95": 0.24148028074866285,
+          "p99": 0.24150795454545437,
+          "maximum": 0.24151938502673806,
+          "minimum": 0.041385400313971796,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.004100183638649187,
+          "median": 0.0042322714896592525,
+          "p95": 0.004464733219771044,
+          "p99": 0.004523147471456839,
+          "maximum": 0.004545327718217425,
+          "minimum": 0.0032277695972546833,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.017328171298733548,
+          "median": 0.018000465722801787,
+          "p95": 0.01918384449780362,
+          "p99": 0.019319828614008935,
+          "maximum": 0.01931989567809239,
+          "minimum": 0.012213885224274385,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.023520051954219644,
+          "median": 0.023711331540013453,
+          "p95": 0.0238807153525507,
+          "p99": 0.023906886736214602,
+          "maximum": 0.02390690014903129,
+          "minimum": 0.022442777044854888,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.011605817096774197,
+          "median": 0.008477759,
+          "p95": 0.024977723,
+          "p99": 0.0268284107,
+          "maximum": 0.027165872,
+          "minimum": 0.005935777,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 45.176071428571426,
+          "median": 44.620000000000005,
+          "p95": 56.696999999999996,
+          "p99": 61.109100000000005,
+          "maximum": 62.64,
+          "minimum": 27.01,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 40.99142857142857,
+          "median": 40.95,
+          "p95": 41.203,
+          "p99": 41.4071,
+          "maximum": 41.48,
+          "minimum": 40.88,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-950rps-pool10-node-dist-repeat2-20261001-181440",
+      "targetRps": 950,
+      "runLabel": "repeat2",
+      "startUtc": "2026-10-01T12:44:41.0338572Z",
+      "endUtc": "2026-10-01T12:46:43.4832931Z",
+      "durationSeconds": 119.988889768,
+      "k6": {
+        "achievedRps": 950.0879641475174,
+        "requests": 114000,
+        "iterations": 114000,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "max": 300.621706,
+          "p(90)": 27.040141900000002,
+          "p(95)": 45.211525249999774,
+          "p(99)": 134.05658696999984,
+          "avg": 11.306775673964992,
+          "min": 2.140005,
+          "med": 3.5298735
+        },
+        "iterationDurationMs": {
+          "max": 352.234073,
+          "p(90)": 27.40635250000001,
+          "p(95)": 45.58562634999996,
+          "p(99)": 134.66419585999986,
+          "avg": 11.639279148710667,
+          "min": 2.28743,
+          "med": 3.766082
+        },
+        "vus": {
+          "value": 5,
+          "min": 2,
+          "max": 213
+        },
+        "allocatedVus": {
+          "value": 300,
+          "min": 300,
+          "max": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 950.1279632831539,
+          "median": 950.1389146138173,
+          "p95": 951.3121249483805,
+          "p99": 952.2274861017057,
+          "maximum": 952.5502833648184,
+          "minimum": 947.69595495629,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 75.05157960822498,
+          "median": 74.43049227691921,
+          "p95": 77.53143564915455,
+          "p99": 78.23529411764672,
+          "maximum": 78.42643354571017,
+          "minimum": 72.45018887489853,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 135662426.83870968,
+          "median": 139014144,
+          "p95": 139491328,
+          "p99": 139539251.2,
+          "maximum": 139558912,
+          "minimum": 112115712,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.003123922580645161,
+          "median": 0.0024862,
+          "p95": 0.00633295,
+          "p99": 0.008022489999999998,
+          "maximum": 0.0086917,
+          "minimum": 0.0017988,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 8,
+          "median": 2,
+          "p95": 40.5,
+          "p99": 59.499999999999986,
+          "maximum": 67,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 6.258064516129032,
+          "median": 8,
+          "p95": 9,
+          "p99": 9.7,
+          "maximum": 10,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 4.258064516129032,
+          "median": 0,
+          "p95": 30.5,
+          "p99": 49.499999999999986,
+          "maximum": 57,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.0025524579980653076,
+          "median": 0.00199676813406641,
+          "p95": 0.005085236826950373,
+          "p99": 0.00519057950546972,
+          "maximum": 0.005227390565271998,
+          "minimum": 0.0008268589824218539,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.01977469630381941,
+          "median": 0.01727045235803653,
+          "p95": 0.037164718246480315,
+          "p99": 0.03987523169375448,
+          "maximum": 0.04082943925233648,
+          "minimum": 0.0045671140939597295,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.06383672052318638,
+          "median": 0.04175819134993442,
+          "p95": 0.14459109589041136,
+          "p99": 0.14475424657534258,
+          "maximum": 0.14482328767123298,
+          "minimum": 0.022544247787610668,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.003019317455943606,
+          "median": 0.003034358803121087,
+          "p95": 0.0032658389189692077,
+          "p99": 0.003282635909319234,
+          "maximum": 0.003287998421113326,
+          "minimum": 0.002659302506627974,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.011369727968562747,
+          "median": 0.010816666666666658,
+          "p95": 0.01350253462401381,
+          "p99": 0.014141172632307322,
+          "maximum": 0.014387959866220736,
+          "minimum": 0.00952420252225519,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.0222505311847891,
+          "median": 0.022252402745995433,
+          "p95": 0.02281670334538492,
+          "p99": 0.02292297015459881,
+          "maximum": 0.022944481605351168,
+          "minimum": 0.021316029411764678,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.009835434064516133,
+          "median": 0.008415487,
+          "p95": 0.018828523,
+          "p99": 0.023980807499999996,
+          "maximum": 0.025804341,
+          "minimum": 0.006089213,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 39.40821428571429,
+          "median": 39.79,
+          "p95": 49.595499999999994,
+          "p99": 54.5437,
+          "maximum": 56.08,
+          "minimum": 9.93,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 40.958571428571425,
+          "median": 40.91,
+          "p95": 41.156499999999994,
+          "p99": 41.3206,
+          "maximum": 41.38,
+          "minimum": 40.86,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-950rps-pool10-node-dist-repeat3-20261001-181719",
+      "targetRps": 950,
+      "runLabel": "repeat3",
+      "startUtc": "2026-10-01T12:47:19.8202940Z",
+      "endUtc": "2026-10-01T12:49:22.0143545Z",
+      "durationSeconds": 119.990816979,
+      "k6": {
+        "achievedRps": 949.8810231448587,
+        "requests": 113977,
+        "iterations": 113977,
+        "dropped": 24,
+        "droppedPercent": 0.021052446908360452,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "p(90)": 75.75418280000014,
+          "p(95)": 123.730538,
+          "p(99)": 218.15661168000005,
+          "avg": 24.057144140071536,
+          "min": 2.150332,
+          "med": 4.214144,
+          "max": 357.051732
+        },
+        "iterationDurationMs": {
+          "min": 2.337124,
+          "med": 4.480276,
+          "max": 360.168491,
+          "p(90)": 76.5741406,
+          "p(95)": 124.18327159999996,
+          "p(99)": 218.46576628000034,
+          "avg": 24.364493103906938
+        },
+        "vus": {
+          "value": 7,
+          "min": 2,
+          "max": 301
+        },
+        "allocatedVus": {
+          "value": 317,
+          "min": 300,
+          "max": 317
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 950.1173435126359,
+          "median": 950.0666765446734,
+          "p95": 953.3281447638226,
+          "p99": 957.0057770642501,
+          "maximum": 958.5494147281081,
+          "minimum": 943.9917024744409,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 82.98038952478822,
+          "median": 82.88942396740151,
+          "p95": 85.08297525559351,
+          "p99": 85.67307233659443,
+          "maximum": 85.90057049714788,
+          "minimum": 80.61708274687051,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 135411910.19354838,
+          "median": 140943360,
+          "p95": 141021184,
+          "p99": 141021184,
+          "maximum": 141021184,
+          "minimum": 121556992,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.005470335483870967,
+          "median": 0.0040045,
+          "p95": 0.01129635,
+          "p99": 0.015443909999999996,
+          "maximum": 0.0172104,
+          "minimum": 0.0017525,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 20.129032258064516,
+          "median": 6,
+          "p95": 94.5,
+          "p99": 146.59999999999997,
+          "maximum": 167,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 4.129032258064516,
+          "median": 4,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 14.258064516129032,
+          "median": 0,
+          "p95": 84.5,
+          "p99": 136.59999999999997,
+          "maximum": 157,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.014538726935535344,
+          "median": 0.015172220003896533,
+          "p95": 0.02874360960443108,
+          "p99": 0.02998223137991742,
+          "maximum": 0.030163601572674465,
+          "minimum": 0.0034583051057517234,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.1149470342499571,
+          "median": 0.131034322820037,
+          "p95": 0.20460658482142846,
+          "p99": 0.2048032924107142,
+          "maximum": 0.20485351562499993,
+          "minimum": 0.03039793165467627,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.23025509734066799,
+          "median": 0.22620686456400751,
+          "p95": 0.41325880758807587,
+          "p99": 0.4134180216802169,
+          "maximum": 0.41345867208672094,
+          "minimum": 0.06868215158924203,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.004247475813269219,
+          "median": 0.004270565555555605,
+          "p95": 0.005228224263589144,
+          "p99": 0.0055310134233951145,
+          "maximum": 0.005547077031773999,
+          "minimum": 0.0032517385411383083,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.017622495300854978,
+          "median": 0.018227038091847614,
+          "p95": 0.01995132974868378,
+          "p99": 0.020538030957523393,
+          "maximum": 0.02054013678905687,
+          "minimum": 0.01327735330073348,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.023590016785405832,
+          "median": 0.02368930425752857,
+          "p95": 0.024118813434282446,
+          "p99": 0.0242227969762419,
+          "maximum": 0.024223218142548596,
+          "minimum": 0.02268481051344742,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.01315656096774194,
+          "median": 0.012383354,
+          "p95": 0.0214088945,
+          "p99": 0.029901018099999996,
+          "maximum": 0.032498341,
+          "minimum": 0.005822474,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 48.932857142857145,
+          "median": 48.245,
+          "p95": 58.458,
+          "p99": 62.3789,
+          "maximum": 63.71,
+          "minimum": 40.32,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 41.00428571428571,
+          "median": 40.96,
+          "p95": 41.3565,
+          "p99": 41.43,
+          "maximum": 41.43,
+          "minimum": 40.88,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-955rps-pool10-node-dist-fine-20261001-180937",
+      "targetRps": 955,
+      "runLabel": "fine",
+      "startUtc": "2026-10-01T12:39:38.1543512Z",
+      "endUtc": "2026-10-01T12:41:40.1806982Z",
+      "durationSeconds": 119.998706763,
+      "k6": {
+        "achievedRps": 953.5019425332638,
+        "requests": 114419,
+        "iterations": 114419,
+        "dropped": 182,
+        "droppedPercent": 0.158811877732306,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "med": 4.004967,
+          "max": 514.21215,
+          "p(90)": 63.400549999999974,
+          "p(95)": 105.6765839999998,
+          "p(99)": 421.8463917399997,
+          "avg": 27.255612120871618,
+          "min": 2.105649
+        },
+        "iterationDurationMs": {
+          "avg": 27.568514474335363,
+          "min": 2.290445,
+          "med": 4.255363,
+          "max": 519.95917,
+          "p(90)": 63.75697439999999,
+          "p(95)": 106.36785499999995,
+          "p(99)": 422.45549257999954
+        },
+        "vus": {
+          "value": 11,
+          "min": 2,
+          "max": 433
+        },
+        "allocatedVus": {
+          "value": 436,
+          "min": 300,
+          "max": 436
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 953.3917996342108,
+          "median": 954.8838759862207,
+          "p95": 959.4184855487715,
+          "p99": 966.6254434791305,
+          "maximum": 968.849544410697,
+          "minimum": 934.8051563194549,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 78.96769205303575,
+          "median": 79.64067419892686,
+          "p95": 83.02341764325169,
+          "p99": 83.27381348569249,
+          "maximum": 83.34197658912441,
+          "minimum": 74.8787081959928,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 143920887.7419355,
+          "median": 143953920,
+          "p95": 144191488,
+          "p99": 144430694.4,
+          "maximum": 144519168,
+          "minimum": 143532032,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.003907645161290323,
+          "median": 0.0027904,
+          "p95": 0.0100594,
+          "p99": 0.010963819999999999,
+          "maximum": 0.0110996,
+          "minimum": 0.0018341,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 28.93548387096774,
+          "median": 4,
+          "p95": 89.5,
+          "p99": 295.1999999999998,
+          "maximum": 372,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 4.645161290322581,
+          "median": 6,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 23.580645161290324,
+          "median": 0,
+          "p95": 79.5,
+          "p99": 285.1999999999998,
+          "maximum": 362,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.018535209079456022,
+          "median": 0.006545149298043372,
+          "p95": 0.051135456487121145,
+          "p99": 0.05135447604123789,
+          "maximum": 0.0514325595594128,
+          "minimum": 0.0037141538395856666,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.13370035974115324,
+          "median": 0.043345735027223206,
+          "p95": 0.3607511966927762,
+          "p99": 0.36094375543951235,
+          "maximum": 0.36102045256744963,
+          "minimum": 0.030054457953394068,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.20347488968160105,
+          "median": 0.08411992619926204,
+          "p95": 0.47215023933855527,
+          "p99": 0.47218875108790237,
+          "maximum": 0.47220409051348977,
+          "minimum": 0.048183676231727125,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.004268460145970569,
+          "median": 0.003980750135853263,
+          "p95": 0.005711975636050226,
+          "p99": 0.005848832523896643,
+          "maximum": 0.005884897640537298,
+          "minimum": 0.003152699379605099,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.017400474254209975,
+          "median": 0.0176170604182804,
+          "p95": 0.020771894667030597,
+          "p99": 0.02087911795415796,
+          "maximum": 0.02090895338413267,
+          "minimum": 0.010849999999999978,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.023585859228779968,
+          "median": 0.023548851894374282,
+          "p95": 0.024329453633266055,
+          "p99": 0.024346479280522224,
+          "maximum": 0.02435122142536979,
+          "minimum": 0.022312222222222216,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.012472083806451612,
+          "median": 0.010149751,
+          "p95": 0.024493462,
+          "p99": 0.030028598799999993,
+          "maximum": 0.031793998,
+          "minimum": 0.005699933,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 45.528888888888886,
+          "median": 46.38,
+          "p95": 53.866,
+          "p99": 60.44139999999999,
+          "maximum": 62.68,
+          "minimum": 33.18,
+          "sampleCount": 27
+        },
+        "memoryMiB": {
+          "average": 40.96814814814815,
+          "median": 40.95,
+          "p95": 41.124,
+          "p99": 41.1374,
+          "maximum": 41.14,
+          "minimum": 40.89,
+          "sampleCount": 27
+        }
+      }
+    },
+    {
+      "id": "capacity-955rps-pool10-node-dist-repeat2-20261001-182010",
+      "targetRps": 955,
+      "runLabel": "repeat2",
+      "startUtc": "2026-10-01T12:50:10.8872965Z",
+      "endUtc": "2026-10-01T12:52:13.0229580Z",
+      "durationSeconds": 119.994905622,
+      "k6": {
+        "achievedRps": 954.0905041472861,
+        "requests": 114486,
+        "iterations": 114486,
+        "dropped": 115,
+        "droppedPercent": 0.10034816450118236,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "p(90)": 142.2984315,
+          "p(95)": 226.29207524999998,
+          "p(99)": 349.6370535499999,
+          "avg": 38.45015352143525,
+          "min": 2.217681,
+          "med": 4.2371115,
+          "max": 474.86622
+        },
+        "iterationDurationMs": {
+          "med": 4.5045375,
+          "max": 479.481175,
+          "p(90)": 142.6949405,
+          "p(95)": 226.62453449999998,
+          "p(99)": 350.11970045,
+          "avg": 38.76028412487093,
+          "min": 2.371233
+        },
+        "vus": {
+          "value": 4,
+          "min": 2,
+          "max": 347
+        },
+        "allocatedVus": {
+          "value": 383,
+          "min": 300,
+          "max": 383
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 953.8163745400603,
+          "median": 954.5117795228924,
+          "p95": 958.7189871750547,
+          "p99": 961.4481481481482,
+          "maximum": 961.5925925925927,
+          "minimum": 942.7015815400571,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 82.96788974270308,
+          "median": 82.7641132019559,
+          "p95": 85.04861114171388,
+          "p99": 85.89910737434741,
+          "maximum": 86.22911959702235,
+          "minimum": 80.68531209483218,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 131223419.87096775,
+          "median": 130912256,
+          "p95": 139018240,
+          "p99": 139261952,
+          "maximum": 139304960,
+          "minimum": 107352064,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.004274890322580644,
+          "median": 0.00272,
+          "p95": 0.0091851,
+          "p99": 0.012402719999999997,
+          "maximum": 0.0136083,
+          "minimum": 0.0018716,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 39.58064516129032,
+          "median": 2,
+          "p95": 245.5,
+          "p99": 267.4,
+          "maximum": 268,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 5.064516129032258,
+          "median": 8,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 34.645161290322584,
+          "median": 0,
+          "p95": 235.5,
+          "p99": 257.4,
+          "maximum": 258,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.02443557058002541,
+          "median": 0.021117780364504436,
+          "p95": 0.046677005106447476,
+          "p99": 0.0520852112692343,
+          "maximum": 0.05440184597136213,
+          "minimum": 0.001183886978376408,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.1821679169991654,
+          "median": 0.18308910034602066,
+          "p95": 0.3498901581722316,
+          "p99": 0.38977502597282054,
+          "maximum": 0.3904770017035776,
+          "minimum": 0.011820660828025449,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.2755866984474367,
+          "median": 0.23661782006920407,
+          "p95": 0.4699780316344462,
+          "p99": 0.47795500519456413,
+          "maximum": 0.4780954003407156,
+          "minimum": 0.024150756369426735,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.004043401838905341,
+          "median": 0.0038614970972870822,
+          "p95": 0.005009021773288325,
+          "p99": 0.0053611916772408385,
+          "maximum": 0.005478475584244663,
+          "minimum": 0.0028958152019845514,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.017252052321802477,
+          "median": 0.017325120192307683,
+          "p95": 0.02048532580733054,
+          "p99": 0.020795192436348767,
+          "maximum": 0.020842843222174102,
+          "minimum": 0.00977838427947598,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.023483584434920296,
+          "median": 0.02352271634615385,
+          "p95": 0.02413500516709126,
+          "p99": 0.024174859163292255,
+          "maximum": 0.024184159809441327,
+          "minimum": 0.021658455565142343,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.012634398483870967,
+          "median": 0.008222779,
+          "p95": 0.027749398,
+          "p99": 0.035355697,
+          "maximum": 0.036043093,
+          "minimum": 0.005889069,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 44.83892857142856,
+          "median": 44.769999999999996,
+          "p95": 57.386,
+          "p99": 59.6493,
+          "maximum": 60.3,
+          "minimum": 28.04,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 41.251071428571436,
+          "median": 40.98,
+          "p95": 42.5105,
+          "p99": 42.6211,
+          "maximum": 42.64,
+          "minimum": 40.88,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-955rps-pool10-node-dist-repeat3-20261001-182251",
+      "targetRps": 955,
+      "runLabel": "repeat3",
+      "startUtc": "2026-10-01T12:52:52.1735837Z",
+      "endUtc": "2026-10-01T12:54:54.0232788Z",
+      "durationSeconds": 119.990834637,
+      "k6": {
+        "achievedRps": 955.0812805552565,
+        "requests": 114601,
+        "iterations": 114601,
+        "dropped": 0,
+        "droppedPercent": 0,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "avg": 16.750146198724337,
+          "min": 0.651741,
+          "med": 4.141819,
+          "max": 240.028741,
+          "p(90)": 48.683898,
+          "p(95)": 78.862805,
+          "p(99)": 157.298995
+        },
+        "iterationDurationMs": {
+          "p(99)": 157.775184,
+          "avg": 17.05405476295993,
+          "min": 2.370827,
+          "med": 4.40771,
+          "max": 240.32726,
+          "p(90)": 49.129894,
+          "p(95)": 79.299041
+        },
+        "vus": {
+          "max": 168,
+          "value": 7,
+          "min": 2
+        },
+        "allocatedVus": {
+          "value": 300,
+          "min": 300,
+          "max": 300
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 954.3295776803348,
+          "median": 955.0994702330235,
+          "p95": 957.8270970995433,
+          "p99": 959.4151549492813,
+          "maximum": 959.9614800548169,
+          "minimum": 931.5454141354273,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 83.3145702733672,
+          "median": 82.94806253241447,
+          "p95": 85.76746869590804,
+          "p99": 86.08992392755957,
+          "maximum": 86.1767538336176,
+          "minimum": 81.2083271595792,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 132050811.87096775,
+          "median": 139763712,
+          "p95": 140206080,
+          "p99": 140380979.2,
+          "maximum": 140431360,
+          "minimum": 115122176,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.005142183870967742,
+          "median": 0.0031841,
+          "p95": 0.01384745,
+          "p99": 0.016425949999999998,
+          "maximum": 0.0169235,
+          "minimum": 0.0019548,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 15.903225806451612,
+          "median": 3,
+          "p95": 85.5,
+          "p99": 122.39999999999996,
+          "maximum": 138,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 5.032258064516129,
+          "median": 7,
+          "p95": 9,
+          "p99": 9.7,
+          "maximum": 10,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 10.935483870967742,
+          "median": 0,
+          "p95": 75.5,
+          "p99": 112.39999999999996,
+          "maximum": 128,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.00897655428162218,
+          "median": 0.005952879840495923,
+          "p95": 0.020651920137009387,
+          "p99": 0.022048304986642408,
+          "maximum": 0.02262068891989748,
+          "minimum": 0.001586353382873501,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.06564002352489055,
+          "median": 0.04772657450076797,
+          "p95": 0.1542649508895887,
+          "p99": 0.1595276998597475,
+          "maximum": 0.15958976157082744,
+          "minimum": 0.01155586080586082,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.14266010800200934,
+          "median": 0.16346788990825661,
+          "p95": 0.23085299017791766,
+          "p99": 0.2319055399719495,
+          "maximum": 0.23191795231416548,
+          "minimum": 0.04075896624472573,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.0038168882902683016,
+          "median": 0.003611822973706822,
+          "p95": 0.005038746688023881,
+          "p99": 0.005139413369010886,
+          "maximum": 0.0051623428931463315,
+          "minimum": 0.002863644922374191,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.01554909561238864,
+          "median": 0.015507673267326706,
+          "p95": 0.019977976004753012,
+          "p99": 0.020158534003704678,
+          "maximum": 0.020214285714285705,
+          "minimum": 0.009508367867389223,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.02310801208141807,
+          "median": 0.023160386819484242,
+          "p95": 0.024075209791965594,
+          "p99": 0.024124115577125554,
+          "maximum": 0.024134042553191494,
+          "minimum": 0.02105864699898271,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.012389498354838711,
+          "median": 0.008920185,
+          "p95": 0.024213119499999998,
+          "p99": 0.0261805483,
+          "maximum": 0.026907025,
+          "minimum": 0.006377045,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 45.551851851851836,
+          "median": 44.76,
+          "p95": 60.72,
+          "p99": 62.49379999999999,
+          "maximum": 62.98,
+          "minimum": 27.51,
+          "sampleCount": 27
+        },
+        "memoryMiB": {
+          "average": 41.28888888888888,
+          "median": 40.95,
+          "p95": 43.339,
+          "p99": 43.633799999999994,
+          "maximum": 43.73,
+          "minimum": 40.88,
+          "sampleCount": 27
+        }
+      }
+    },
+    {
+      "id": "capacity-960rps-pool10-node-dist-fine-20261001-180651",
+      "targetRps": 960,
+      "runLabel": "fine",
+      "startUtc": "2026-10-01T12:36:52.0060366Z",
+      "endUtc": "2026-10-01T12:38:54.3563278Z",
+      "durationSeconds": 119.97924144,
+      "k6": {
+        "achievedRps": 953.1648860873145,
+        "requests": 114360,
+        "iterations": 114360,
+        "dropped": 841,
+        "droppedPercent": 0.7300283851702676,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "avg": 91.34057984221826,
+          "min": 2.117954,
+          "med": 4.3235405,
+          "max": 1070.286855,
+          "p(90)": 437.8001294,
+          "p(95)": 562.3047423999996,
+          "p(99)": 820.3131163100013
+        },
+        "iterationDurationMs": {
+          "p(95)": 562.6554075,
+          "p(99)": 822.3270010800005,
+          "avg": 91.73498864713919,
+          "min": 2.29378,
+          "med": 4.596389,
+          "max": 1291.010304,
+          "p(90)": 438.39047060000007
+        },
+        "vus": {
+          "value": 4,
+          "min": 2,
+          "max": 723
+        },
+        "allocatedVus": {
+          "value": 782,
+          "min": 338,
+          "max": 782
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 959.3796950428743,
+          "median": 960.2163283449402,
+          "p95": 970.5435547815775,
+          "p99": 983.923079773241,
+          "maximum": 986.8464930156732,
+          "minimum": 911.023855385983,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 80.77380554820421,
+          "median": 79.70289694006027,
+          "p95": 87.70545997757489,
+          "p99": 90.59168989340117,
+          "maximum": 91.2172173655354,
+          "minimum": 77.56251157621799,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 167774406.19354838,
+          "median": 167337984,
+          "p95": 169132032,
+          "p99": 169308160,
+          "maximum": 169332736,
+          "minimum": 167215104,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.004204754838709677,
+          "median": 0.0033762,
+          "p95": 0.0092595,
+          "p99": 0.01084076,
+          "maximum": 0.011123,
+          "minimum": 0.0022577,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 13.516129032258064,
+          "median": 3,
+          "p95": 80.5,
+          "p99": 92.79999999999998,
+          "maximum": 97,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 5.32258064516129,
+          "median": 7,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 8.838709677419354,
+          "median": 0,
+          "p95": 70.5,
+          "p99": 82.79999999999998,
+          "maximum": 87,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.052731467171948564,
+          "median": 0.006934939423239912,
+          "p95": 0.29730437340649724,
+          "p99": 0.34376669873822463,
+          "maximum": 0.35388139692226456,
+          "minimum": 0.0029112630810793905,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.21518659117130598,
+          "median": 0.04933596165739021,
+          "p95": 0.9044377397698209,
+          "p99": 0.9072646259590793,
+          "maximum": 0.9081841432225064,
+          "minimum": 0.024269818331957044,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.28699578015444405,
+          "median": 0.1652336956521744,
+          "p95": 0.9860665760869566,
+          "p99": 0.9866319533248082,
+          "maximum": 0.9868158567774937,
+          "minimum": 0.04951277724204438,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.0044115407396893335,
+          "median": 0.004000367165792122,
+          "p95": 0.007265039016129047,
+          "p99": 0.008332680801002305,
+          "maximum": 0.008582697540051087,
+          "minimum": 0.0033998553806379125,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.016734259092742714,
+          "median": 0.01676614291863969,
+          "p95": 0.022207334054529612,
+          "p99": 0.022952546598404868,
+          "maximum": 0.023086111111111113,
+          "minimum": 0.012679672447013481,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.023862317263351397,
+          "median": 0.023492805916629313,
+          "p95": 0.026403062151243717,
+          "p99": 0.030454261209852004,
+          "maximum": 0.03175306748466253,
+          "minimum": 0.022666955684007693,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.011326299322580648,
+          "median": 0.009520296,
+          "p95": 0.019544941,
+          "p99": 0.0215993991,
+          "maximum": 0.021706242,
+          "minimum": 0.005413601,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 43.544642857142854,
+          "median": 42.265,
+          "p95": 54.981500000000004,
+          "p99": 58.6524,
+          "maximum": 59.97,
+          "minimum": 17.58,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 41.041785714285716,
+          "median": 40.94,
+          "p95": 41.495000000000005,
+          "p99": 42.589800000000004,
+          "maximum": 42.93,
+          "minimum": 40.86,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-975rps-pool10-node-dist-broad-20261001-180113",
+      "targetRps": 975,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:31:14.0866238Z",
+      "endUtc": "2026-10-01T12:33:16.5548039Z",
+      "durationSeconds": 119.992975662,
+      "k6": {
+        "achievedRps": 971.9652284357397,
+        "requests": 116629,
+        "iterations": 116629,
+        "dropped": 371,
+        "droppedPercent": 0.3170940170940171,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "min": 2.24559,
+          "med": 5.07605,
+          "max": 670.811115,
+          "p(90)": 182.6488962,
+          "p(95)": 451.050109,
+          "p(99)": 575.40351164,
+          "avg": 61.04227099229258
+        },
+        "iterationDurationMs": {
+          "max": 689.075522,
+          "p(90)": 183.42232099999998,
+          "p(95)": 451.55726939999965,
+          "p(99)": 575.65291612,
+          "avg": 61.38436755826629,
+          "min": 2.37947,
+          "med": 5.356542
+        },
+        "vus": {
+          "max": 552,
+          "value": 8,
+          "min": 3
+        },
+        "allocatedVus": {
+          "value": 574,
+          "min": 300,
+          "max": 574
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 971.2939113917713,
+          "median": 975.0722275724127,
+          "p95": 985.350959461686,
+          "p99": 990.78810157611,
+          "maximum": 990.8882139417734,
+          "minimum": 945.9589599229572,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 86.93820204271064,
+          "median": 86.81062261565259,
+          "p95": 89.33069116230823,
+          "p99": 89.73215684543501,
+          "maximum": 89.89072050379686,
+          "minimum": 84.4364606096521,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 132952460.38709678,
+          "median": 137814016,
+          "p95": 138698752,
+          "p99": 138821632,
+          "maximum": 138846208,
+          "minimum": 117768192,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.0047431580645161285,
+          "median": 0.003013,
+          "p95": 0.01255405,
+          "p99": 0.01580518,
+          "maximum": 0.0165136,
+          "minimum": 0.0021979,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 64.83870967741936,
+          "median": 3,
+          "p95": 379,
+          "p99": 458.9,
+          "maximum": 473,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 4.838709677419355,
+          "median": 7,
+          "p95": 9,
+          "p99": 9.7,
+          "maximum": 10,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 59.67741935483871,
+          "median": 0,
+          "p95": 369,
+          "p99": 448.9,
+          "maximum": 463,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.06145637878055879,
+          "median": 0.020909122556021353,
+          "p95": 0.18163528264872503,
+          "p99": 0.18177303859107213,
+          "maximum": 0.18181652901622425,
+          "minimum": 0.004703894546081411,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.31934387156473404,
+          "median": 0.17271320093457931,
+          "p95": 0.8010055265581822,
+          "p99": 0.8021776174393611,
+          "maximum": 0.8025944120356153,
+          "minimum": 0.042489747095010216,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.4252109509751942,
+          "median": 0.2345426401869159,
+          "p95": 0.9602011053116364,
+          "p99": 0.9604355234878723,
+          "maximum": 0.9605188824071231,
+          "minimum": 0.08500000000000002,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.0050285009724496755,
+          "median": 0.004442570715753779,
+          "p95": 0.007104526265198946,
+          "p99": 0.007128788511705125,
+          "maximum": 0.007131891773906703,
+          "minimum": 0.003704879624573525,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.018687201670214645,
+          "median": 0.018452689243027884,
+          "p95": 0.02212753692338052,
+          "p99": 0.022135674166392765,
+          "maximum": 0.022137633587786254,
+          "minimum": 0.014886317135549852,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.023764338852485852,
+          "median": 0.023690537848605576,
+          "p95": 0.024491161268310642,
+          "p99": 0.024492951043889655,
+          "maximum": 0.02449348091603053,
+          "minimum": 0.02298804679552391,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.01396246387096774,
+          "median": 0.010564964,
+          "p95": 0.024674426,
+          "p99": 0.047573977399999974,
+          "maximum": 0.05710004,
+          "minimum": 0.00627278,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 46.64999999999999,
+          "median": 46.655,
+          "p95": 58.5635,
+          "p99": 60.0866,
+          "maximum": 60.47,
+          "minimum": 29.57,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 40.977500000000006,
+          "median": 40.955,
+          "p95": 41.1485,
+          "p99": 41.1946,
+          "maximum": 41.2,
+          "minimum": 40.88,
+          "sampleCount": 28
+        }
+      }
+    },
+    {
+      "id": "capacity-1000rps-pool10-node-dist-broad-20261001-180402",
+      "targetRps": 1000,
+      "runLabel": "broad",
+      "startUtc": "2026-10-01T12:34:02.5560702Z",
+      "endUtc": "2026-10-01T12:36:05.5396709Z",
+      "durationSeconds": 120.468620792,
+      "k6": {
+        "achievedRps": 989.9341356775911,
+        "requests": 119256,
+        "iterations": 119256,
+        "dropped": 745,
+        "droppedPercent": 0.6208281597653353,
+        "checksSuccessPercent": 100,
+        "httpErrorPercent": 0,
+        "latencyMs": {
+          "med": 83.374824,
+          "max": 989.538837,
+          "p(90)": 506.5717305,
+          "p(95)": 588.74129625,
+          "p(99)": 876.2685761999996,
+          "avg": 195.2147082231678,
+          "min": 2.284498
+        },
+        "iterationDurationMs": {
+          "min": 2.41256,
+          "med": 83.982955,
+          "max": 991.612664,
+          "p(90)": 507.2213985,
+          "p(95)": 589.608481,
+          "p(99)": 877.6926543,
+          "avg": 195.60564299509753
+        },
+        "vus": {
+          "value": 486,
+          "min": 3,
+          "max": 851
+        },
+        "allocatedVus": {
+          "value": 860,
+          "min": 300,
+          "max": 860
+        },
+        "configuredMaxVUs": 1500,
+        "maxVUsReached": false
+      },
+      "api": {
+        "requestsPerSecond": {
+          "average": 992.6216243449305,
+          "median": 994.1843236034966,
+          "p95": 1015.5940474661779,
+          "p99": 1021.9937668873013,
+          "maximum": 1024.4823882366015,
+          "minimum": 969.9585123722035,
+          "sampleCount": 31
+        },
+        "cpuPercentOfOneCore": {
+          "average": 92.46922006792114,
+          "median": 91.96266528389965,
+          "p95": 96.41467996257623,
+          "p99": 96.47537290828137,
+          "maximum": 96.47751685310033,
+          "minimum": 88.66911138274598,
+          "sampleCount": 31
+        },
+        "residentMemoryBytes": {
+          "average": 148626002.58064517,
+          "median": 155066368,
+          "p95": 159539200,
+          "p99": 159891865.6,
+          "maximum": 159956992,
+          "minimum": 135061504,
+          "sampleCount": 31
+        },
+        "eventLoopLagSeconds": {
+          "average": 0.006254287096774195,
+          "median": 0.0046688,
+          "p95": 0.01235265,
+          "p99": 0.014083739999999999,
+          "maximum": 0.0147837,
+          "minimum": 0.0023894,
+          "sampleCount": 31
+        },
+        "activeRequests": {
+          "average": 213.90322580645162,
+          "median": 162,
+          "p95": 606.5,
+          "p99": 710.9,
+          "maximum": 728,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "httpErrorRatePercent": {
+          "average": 0,
+          "median": 0,
+          "p95": 0,
+          "p99": 0,
+          "maximum": 0,
+          "minimum": 0,
+          "sampleCount": 31
+        }
+      },
+      "pool": {
+        "totalConnections": {
+          "average": 10,
+          "median": 10,
+          "p95": 10,
+          "p99": 10,
+          "maximum": 10,
+          "minimum": 10,
+          "sampleCount": 31
+        },
+        "idleConnections": {
+          "average": 2.806451612903226,
+          "median": 0,
+          "p95": 9,
+          "p99": 9,
+          "maximum": 9,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "waiters": {
+          "average": 206.70967741935485,
+          "median": 152,
+          "p95": 596.5,
+          "p99": 700.9,
+          "maximum": 718,
+          "minimum": 0,
+          "sampleCount": 31
+        },
+        "acquisitionRollingAverageSeconds": {
+          "average": 0.21672835393641543,
+          "median": 0.21182713974281892,
+          "p95": 0.45739168003747926,
+          "p99": 0.47530671375196426,
+          "maximum": 0.4805899617559863,
+          "minimum": 0.016304606072725936,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP95Seconds": {
+          "average": 0.5554424264263742,
+          "median": 0.48274577954319764,
+          "p95": 0.9340914682149183,
+          "p99": 0.9349547333202125,
+          "maximum": 0.9352735681952371,
+          "minimum": 0.09956510809451985,
+          "sampleCount": 31
+        },
+        "acquisitionRollingP99Seconds": {
+          "average": 0.6267431480040506,
+          "median": 0.4965491559086396,
+          "p95": 0.9868182936429837,
+          "p99": 0.9869909466640425,
+          "maximum": 0.9870547136390474,
+          "minimum": 0.21961065266316593,
+          "sampleCount": 31
+        }
+      },
+      "query": {
+        "executionRollingAverageSeconds": {
+          "average": 0.007475968850791505,
+          "median": 0.006847581226472805,
+          "p95": 0.00991350553268654,
+          "p99": 0.009940913712712926,
+          "maximum": 0.00994686528546972,
+          "minimum": 0.004782151307117373,
+          "sampleCount": 31
+        },
+        "executionRollingP95Seconds": {
+          "average": 0.021479705007802184,
+          "median": 0.021839080917489644,
+          "p95": 0.023113158984682504,
+          "p99": 0.023140776136732977,
+          "maximum": 0.023150501829096705,
+          "minimum": 0.01818143000669792,
+          "sampleCount": 31
+        },
+        "executionRollingP99Seconds": {
+          "average": 0.024330956268346842,
+          "median": 0.024379741997133303,
+          "p95": 0.02470113192453785,
+          "p99": 0.024704626852224014,
+          "maximum": 0.024704656788630177,
+          "minimum": 0.023644323509711983,
+          "sampleCount": 31
+        }
+      },
+      "observability": {
+        "scrapeAvailability": {
+          "average": 1,
+          "median": 1,
+          "p95": 1,
+          "p99": 1,
+          "maximum": 1,
+          "minimum": 1,
+          "sampleCount": 31
+        },
+        "scrapeDurationSeconds": {
+          "average": 0.01503137216129032,
+          "median": 0.014757016,
+          "p95": 0.024420841,
+          "p99": 0.0283120392,
+          "maximum": 0.029176545,
+          "minimum": 0.00625555,
+          "sampleCount": 31
+        }
+      },
+      "postgresContainer": {
+        "cpuPercent": {
+          "average": 49.817499999999995,
+          "median": 50.58,
+          "p95": 58.9285,
+          "p99": 59.405300000000004,
+          "maximum": 59.57,
+          "minimum": 28.59,
+          "sampleCount": 28
+        },
+        "memoryMiB": {
+          "average": 41.19535714285714,
+          "median": 41,
+          "p95": 42.43,
+          "p99": 43.0986,
+          "maximum": 43.32,
+          "minimum": 40.89,
+          "sampleCount": 28
+        }
+      }
+    }
+  ]
+}

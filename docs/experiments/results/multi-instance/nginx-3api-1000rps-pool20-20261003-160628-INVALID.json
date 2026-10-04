@@ -1,0 +1,6 @@
+{
+  "valid": false,
+  "reason": "k6 used the Docker Desktop host-port hairpin at host.docker.internal:3001 and received connection refused before the measured run could complete.",
+  "partialDockerStats": "nginx-3api-1000rps-pool20-20261003-160628-docker-stats.ndjson",
+  "excludedFromConclusions": true
+}

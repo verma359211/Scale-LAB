@@ -9,3 +9,7 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: false
+    jsonData:
+      # Match Prometheus so Grafana does not downsample short ranges to its
+      # default 15-second datasource interval.
+      timeInterval: 3s

@@ -1,0 +1,19 @@
+{
+  "format": "scalelab-capacity-run-v1",
+  "targetRps": 700,
+  "duration": "2m",
+  "preAllocatedVUs": 300,
+  "maxVUs": 1500,
+  "poolMax": 10,
+  "runtime": "node-dist",
+  "nodeEnv": "production",
+  "instanceId": "api-1",
+  "gitCommit": "be2cd4044110253834d702a87786cc97493c648b",
+  "gitDirty": true,
+  "nodeVersion": "v26.3.0",
+  "startUtc": "2026-10-01T12:12:18.9069991Z",
+  "endUtc": "2026-10-01T12:14:21.119747Z",
+  "k6ExitCode": 0,
+  "k6Summary": "capacity-700rps-pool10-node-dist-20261001-174218-k6-summary.json",
+  "postgresDockerStats": "capacity-700rps-pool10-node-dist-20261001-174218-postgres-docker-stats.ndjson"
+}

@@ -1,12 +1,13 @@
 import { Router } from "express";
 import type { Pool } from "pg";
 import { ApiError } from "../../lib/api-error.js";
+import type { ApiMetrics } from "../../observability/metrics.js";
 import { createOrderSchema, orderIdSchema } from "./order.schema.js";
 import { OrderService } from "./order.service.js";
 
-export function createOrderRouter(database: Pool) {
+export function createOrderRouter(database: Pool, metrics: ApiMetrics) {
   const router = Router();
-  const orders = new OrderService(database);
+  const orders = new OrderService(database, metrics);
 
   router.post("/", async (request, response) => {
     const parsed = createOrderSchema.safeParse(request.body);

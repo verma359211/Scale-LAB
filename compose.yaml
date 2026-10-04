@@ -1,3 +1,35 @@
+x-api-environment: &api-environment
+  NODE_ENV: production
+  PORT: "3000"
+  CLIENT_ORIGIN: http://localhost:5174
+  DATABASE_URL: postgresql://scalelab:scalelab@postgres:5432/scalelab
+  DATABASE_POOL_MAX: "20"
+  INSTANCE_ID: api
+  SERVER_KEEP_ALIVE_TIMEOUT_MS: "65000"
+  SERVER_HEADERS_TIMEOUT_MS: "70000"
+
+x-api-service: &api-service
+  image: scalelab-api:local
+  build:
+    context: .
+    dockerfile: apps/api/Dockerfile
+  environment:
+    <<: *api-environment
+  depends_on:
+    postgres:
+      condition: service_healthy
+  healthcheck:
+    test:
+      - CMD
+      - node
+      - -e
+      - "fetch('http://127.0.0.1:3000/health').then(response => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"
+    interval: 3s
+    timeout: 2s
+    retries: 20
+    start_period: 5s
+  restart: unless-stopped
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -15,6 +47,58 @@ services:
       timeout: 3s
       retries: 15
 
+  api-1:
+    <<: *api-service
+    environment:
+      <<: *api-environment
+      INSTANCE_ID: api-1
+
+  api-2:
+    <<: *api-service
+    environment:
+      <<: *api-environment
+      INSTANCE_ID: api-2
+
+  api-3:
+    <<: *api-service
+    environment:
+      <<: *api-environment
+      INSTANCE_ID: api-3
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "3001:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api-1:
+        condition: service_healthy
+      api-2:
+        condition: service_healthy
+      api-3:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/nginx-health >/dev/null 2>&1"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    image: scalelab-web:local
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001/api
+    ports:
+      - "5174:80"
+    depends_on:
+      nginx:
+        condition: service_healthy
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:v3.5.0
     command:
@@ -26,8 +110,6 @@ services:
     volumes:
       - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - scalelab_prometheus_data:/prometheus
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   grafana:
@@ -46,16 +128,27 @@ services:
       - prometheus
     restart: unless-stopped
 
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.5.1
+    command:
+      - "--nginx.scrape-uri=http://nginx:8080/stub_status"
+      - "--log.level=warn"
+    depends_on:
+      nginx:
+        condition: service_healthy
+    restart: unless-stopped
+
   k6:
     image: grafana/k6:1.8.1
     profiles: ["tools"]
     environment:
-      BASE_URL: http://host.docker.internal:3001
+      BASE_URL: http://nginx:80
+    depends_on:
+      nginx:
+        condition: service_healthy
     volumes:
       - ./load-tests:/scripts:ro
       - ./docs/experiments/results:/results
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
 volumes:
   scalelab_postgres_data:

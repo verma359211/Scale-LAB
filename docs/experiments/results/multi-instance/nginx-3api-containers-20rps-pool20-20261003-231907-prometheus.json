@@ -1,0 +1,2981 @@
+{
+  "format": "scalelab-grafana-range-export-v1",
+  "generatedAt": "2026-10-03T17:49:17.997Z",
+  "source": {
+    "dashboardTitle": "ScaleLab Multi-Instance",
+    "dashboardUid": "scalelab-multi-instance",
+    "dashboardTimezone": "browser",
+    "prometheusUrl": "http://localhost:9090",
+    "queryStepSeconds": 3
+  },
+  "range": {
+    "requestedStart": "2026-10-03T17:49:07.6179669Z",
+    "requestedEnd": "2026-10-03T17:49:16.6735044Z",
+    "utcStart": "2026-10-03T17:49:07.617Z",
+    "utcEnd": "2026-10-03T17:49:16.673Z"
+  },
+  "notes": [
+    "This file contains the Prometheus query results behind every target in the provisioned ScaleLab Grafana dashboard.",
+    "Each sample is [Unix timestamp in seconds, string value]. Missing timestamps represent periods when no sample was available.",
+    "Values are already transformed by the dashboard PromQL expressions; units are defined by their corresponding Grafana panels."
+  ],
+  "queries": [
+    {
+      "panelId": 2,
+      "panelTitle": "API target health",
+      "refId": "A",
+      "legendFormat": "{{api_instance}}",
+      "originalExpression": "up{job=\"scalelab-api\",api_instance=~\"$instance\"}",
+      "expression": "up{job=\"scalelab-api\",api_instance=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "up",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "up",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "up",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 3,
+      "panelTitle": "Total requests / second",
+      "refId": "A",
+      "legendFormat": "RPS",
+      "originalExpression": "sum(rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s]))",
+      "expression": "sum(rate(scalelab_http_requests_total{instance_id=~\".*\"}[30s]))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.9259835445821607"
+            ],
+            [
+              1791049750.617,
+              "0.8889547373879546"
+            ],
+            [
+              1791049753.617,
+              "2.2964993328270724"
+            ],
+            [
+              1791049756.617,
+              "4.333710596609436"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 4,
+      "panelTitle": "Total active requests",
+      "refId": "A",
+      "legendFormat": "active",
+      "originalExpression": "sum(scalelab_http_requests_active{instance_id=~\"$instance\"}) or vector(0)",
+      "expression": "sum(scalelab_http_requests_active{instance_id=~\".*\"}) or vector(0)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 5,
+      "panelTitle": "RPS by API instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s]))",
+      "expression": "sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\".*\"}[30s]))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.29629629629629634"
+            ],
+            [
+              1791049750.617,
+              "0.29631824579598487"
+            ],
+            [
+              1791049753.617,
+              "0.5555967108674718"
+            ],
+            [
+              1791049756.617,
+              "1.296392325357434"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.33335802652048296"
+            ],
+            [
+              1791049750.617,
+              "0.29631824579598487"
+            ],
+            [
+              1791049753.617,
+              "0.888987665296144"
+            ],
+            [
+              1791049756.617,
+              "1.5186872615475795"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.29632922176538135"
+            ],
+            [
+              1791049750.617,
+              "0.29631824579598487"
+            ],
+            [
+              1791049753.617,
+              "0.8519149566634565"
+            ],
+            [
+              1791049756.617,
+              "1.5186310097044227"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 6,
+      "panelTitle": "Traffic share by API instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "100 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])) / scalar(clamp_min(sum(rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])), 0.000000001))",
+      "expression": "100 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\".*\"}[30s])) / scalar(clamp_min(sum(rate(scalelab_http_requests_total{instance_id=~\".*\"}[30s])), 0.000000001))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "31.998008823147778"
+            ],
+            [
+              1791049750.617,
+              "33.333333333333336"
+            ],
+            [
+              1791049753.617,
+              "24.193201492617565"
+            ],
+            [
+              1791049756.617,
+              "29.914141622001534"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "36.00042662430971"
+            ],
+            [
+              1791049750.617,
+              "33.333333333333336"
+            ],
+            [
+              1791049753.617,
+              "38.710556218702166"
+            ],
+            [
+              1791049756.617,
+              "35.04357819222526"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "32.001564552542504"
+            ],
+            [
+              1791049750.617,
+              "33.333333333333336"
+            ],
+            [
+              1791049753.617,
+              "37.09624228868026"
+            ],
+            [
+              1791049756.617,
+              "35.04228018577322"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 7,
+      "panelTitle": "Average response time by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "sum by (instance_id) (rate(scalelab_http_request_duration_seconds_sum{instance_id=~\"$instance\"}[30s])) / clamp_min(sum by (instance_id) (rate(scalelab_http_request_duration_seconds_count{instance_id=~\"$instance\"}[30s])), 0.000000001)",
+      "expression": "sum by (instance_id) (rate(scalelab_http_request_duration_seconds_sum{instance_id=~\".*\"}[30s])) / clamp_min(sum by (instance_id) (rate(scalelab_http_request_duration_seconds_count{instance_id=~\".*\"}[30s])), 0.000000001)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0009656516250000081"
+            ],
+            [
+              1791049750.617,
+              "0.0009872672500000068"
+            ],
+            [
+              1791049753.617,
+              "0.0011566604666754484"
+            ],
+            [
+              1791049756.617,
+              "0.0012438915428616098"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0011932344444444503"
+            ],
+            [
+              1791049750.617,
+              "0.0012109761250000128"
+            ],
+            [
+              1791049753.617,
+              "0.0012257746250011932"
+            ],
+            [
+              1791049756.617,
+              "0.0011863177317072927"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0011063297499999958"
+            ],
+            [
+              1791049750.617,
+              "0.001146332"
+            ],
+            [
+              1791049753.617,
+              "0.0011590116521783594"
+            ],
+            [
+              1791049756.617,
+              "0.0011771512682979795"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 8,
+      "panelTitle": "p95 / p99 response time by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}} p95",
+      "originalExpression": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))",
+      "expression": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\".*\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.00475"
+            ],
+            [
+              1791049750.617,
+              "0.004749999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.00475"
+            ],
+            [
+              1791049756.617,
+              "0.00475"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.004750000000000001"
+            ],
+            [
+              1791049750.617,
+              "0.004749999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.004749999999999999"
+            ],
+            [
+              1791049756.617,
+              "0.00475"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.004750000000000001"
+            ],
+            [
+              1791049750.617,
+              "0.004749999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.00475"
+            ],
+            [
+              1791049756.617,
+              "0.00475"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 8,
+      "panelTitle": "p95 / p99 response time by instance",
+      "refId": "B",
+      "legendFormat": "{{instance_id}} p99",
+      "originalExpression": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))",
+      "expression": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\".*\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.00495"
+            ],
+            [
+              1791049750.617,
+              "0.00495"
+            ],
+            [
+              1791049753.617,
+              "0.00495"
+            ],
+            [
+              1791049756.617,
+              "0.00495"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.00495"
+            ],
+            [
+              1791049750.617,
+              "0.00495"
+            ],
+            [
+              1791049753.617,
+              "0.00495"
+            ],
+            [
+              1791049756.617,
+              "0.00495"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.00495"
+            ],
+            [
+              1791049750.617,
+              "0.00495"
+            ],
+            [
+              1791049753.617,
+              "0.00495"
+            ],
+            [
+              1791049756.617,
+              "0.00495"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 9,
+      "panelTitle": "HTTP error rate by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "(100 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\",status_code=~\"4..|5..\"}[30s])) / clamp_min(sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])), 0.000000001)) or on(instance_id) (0 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])))",
+      "expression": "(100 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\".*\",status_code=~\"4..|5..\"}[30s])) / clamp_min(sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\".*\"}[30s])), 0.000000001)) or on(instance_id) (0 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\".*\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 10,
+      "panelTitle": "Node CPU by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "100 * (sum by (instance_id) (rate(scalelab_node_process_cpu_user_seconds_total{instance_id=~\"$instance\"}[30s])) + sum by (instance_id) (rate(scalelab_node_process_cpu_system_seconds_total{instance_id=~\"$instance\"}[30s])))",
+      "expression": "100 * (sum by (instance_id) (rate(scalelab_node_process_cpu_user_seconds_total{instance_id=~\".*\"}[30s])) + sum by (instance_id) (rate(scalelab_node_process_cpu_system_seconds_total{instance_id=~\".*\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.896699999999892"
+            ],
+            [
+              1791049750.617,
+              "0.8731313430623238"
+            ],
+            [
+              1791049753.617,
+              "0.9149048077633763"
+            ],
+            [
+              1791049756.617,
+              "1.0061486036002327"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.9274094377358724"
+            ],
+            [
+              1791049750.617,
+              "0.9137158308019108"
+            ],
+            [
+              1791049753.617,
+              "1.0078971737596931"
+            ],
+            [
+              1791049756.617,
+              "1.0710634514943245"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.8641478682820849"
+            ],
+            [
+              1791049750.617,
+              "0.8699125861178593"
+            ],
+            [
+              1791049753.617,
+              "0.9186124898143805"
+            ],
+            [
+              1791049756.617,
+              "0.9825690791913859"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 11,
+      "panelTitle": "Resident memory by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "scalelab_node_process_resident_memory_bytes{instance_id=~\"$instance\"}",
+      "expression": "scalelab_node_process_resident_memory_bytes{instance_id=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "scalelab_node_process_resident_memory_bytes",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "instance_id": "api-1",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "99028992"
+            ],
+            [
+              1791049750.617,
+              "99028992"
+            ],
+            [
+              1791049753.617,
+              "99074048"
+            ],
+            [
+              1791049756.617,
+              "99684352"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_node_process_resident_memory_bytes",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "instance_id": "api-2",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "100958208"
+            ],
+            [
+              1791049750.617,
+              "100995072"
+            ],
+            [
+              1791049753.617,
+              "100257792"
+            ],
+            [
+              1791049756.617,
+              "100274176"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_node_process_resident_memory_bytes",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "instance_id": "api-3",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "104321024"
+            ],
+            [
+              1791049750.617,
+              "104349696"
+            ],
+            [
+              1791049753.617,
+              "104407040"
+            ],
+            [
+              1791049756.617,
+              "104456192"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 12,
+      "panelTitle": "Event-loop lag by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "scalelab_node_nodejs_eventloop_lag_seconds{instance_id=~\"$instance\"}",
+      "expression": "scalelab_node_nodejs_eventloop_lag_seconds{instance_id=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "scalelab_node_nodejs_eventloop_lag_seconds",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "instance_id": "api-1",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.002193985"
+            ],
+            [
+              1791049750.617,
+              "0.001470736"
+            ],
+            [
+              1791049753.617,
+              "0.00238984"
+            ],
+            [
+              1791049756.617,
+              "0.001817563"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_node_nodejs_eventloop_lag_seconds",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "instance_id": "api-2",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.001205453"
+            ],
+            [
+              1791049750.617,
+              "0.001414674"
+            ],
+            [
+              1791049753.617,
+              "0.003417897"
+            ],
+            [
+              1791049756.617,
+              "0.001514197"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_node_nodejs_eventloop_lag_seconds",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "instance_id": "api-3",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.003228286"
+            ],
+            [
+              1791049750.617,
+              "0.003750339"
+            ],
+            [
+              1791049753.617,
+              "0.001663185"
+            ],
+            [
+              1791049756.617,
+              "0.001903259"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 13,
+      "panelTitle": "Active requests by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "sum by (instance_id) (scalelab_http_requests_active{instance_id=~\"$instance\"})",
+      "expression": "sum by (instance_id) (scalelab_http_requests_active{instance_id=~\".*\"})",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 14,
+      "panelTitle": "Pool connections by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}} total",
+      "originalExpression": "scalelab_pg_pool_connections_total{instance_id=~\"$instance\"}",
+      "expression": "scalelab_pg_pool_connections_total{instance_id=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_connections_total",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "instance_id": "api-1",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_connections_total",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "instance_id": "api-2",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_connections_total",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "instance_id": "api-3",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 14,
+      "panelTitle": "Pool connections by instance",
+      "refId": "B",
+      "legendFormat": "{{instance_id}} idle",
+      "originalExpression": "scalelab_pg_pool_connections_idle{instance_id=~\"$instance\"}",
+      "expression": "scalelab_pg_pool_connections_idle{instance_id=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_connections_idle",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "instance_id": "api-1",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_connections_idle",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "instance_id": "api-2",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_connections_idle",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "instance_id": "api-3",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 15,
+      "panelTitle": "Pool waiters by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}}",
+      "originalExpression": "scalelab_pg_pool_waiting_requests{instance_id=~\"$instance\"}",
+      "expression": "scalelab_pg_pool_waiting_requests{instance_id=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_waiting_requests",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "instance_id": "api-1",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_waiting_requests",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "instance_id": "api-2",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scalelab_pg_pool_waiting_requests",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "instance_id": "api-3",
+            "job": "scalelab-api",
+            "service": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 16,
+      "panelTitle": "Pool acquisition p95 / p99 by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}} p95",
+      "originalExpression": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.00095"
+            ],
+            [
+              1791049750.617,
+              "0.0009499999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.00095"
+            ],
+            [
+              1791049756.617,
+              "0.00095"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0009500000000000001"
+            ],
+            [
+              1791049750.617,
+              "0.0009499999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.0009499999999999999"
+            ],
+            [
+              1791049756.617,
+              "0.00095"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0009500000000000001"
+            ],
+            [
+              1791049750.617,
+              "0.0009499999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.00095"
+            ],
+            [
+              1791049756.617,
+              "0.00095"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 16,
+      "panelTitle": "Pool acquisition p95 / p99 by instance",
+      "refId": "B",
+      "legendFormat": "{{instance_id}} p99",
+      "originalExpression": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0009900000000000002"
+            ],
+            [
+              1791049750.617,
+              "0.00099"
+            ],
+            [
+              1791049753.617,
+              "0.0009900000000000002"
+            ],
+            [
+              1791049756.617,
+              "0.00099"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0009900000000000002"
+            ],
+            [
+              1791049750.617,
+              "0.00099"
+            ],
+            [
+              1791049753.617,
+              "0.00099"
+            ],
+            [
+              1791049756.617,
+              "0.00099"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0009900000000000002"
+            ],
+            [
+              1791049750.617,
+              "0.00099"
+            ],
+            [
+              1791049753.617,
+              "0.00099"
+            ],
+            [
+              1791049756.617,
+              "0.00099"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 17,
+      "panelTitle": "PostgreSQL query p95 / p99 by API instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}} p95",
+      "originalExpression": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.00095"
+            ],
+            [
+              1791049750.617,
+              "0.0009499999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.002000000000000006"
+            ],
+            [
+              1791049756.617,
+              "0.0032499999999999985"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0032000000000000006"
+            ],
+            [
+              1791049750.617,
+              "0.003399999999999995"
+            ],
+            [
+              1791049753.617,
+              "0.0037999999999999974"
+            ],
+            [
+              1791049756.617,
+              "0.003360000000000001"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0034"
+            ],
+            [
+              1791049750.617,
+              "0.003399999999999995"
+            ],
+            [
+              1791049753.617,
+              "0.0034666666666666656"
+            ],
+            [
+              1791049756.617,
+              "0.003633333333333334"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 17,
+      "panelTitle": "PostgreSQL query p95 / p99 by API instance",
+      "refId": "B",
+      "legendFormat": "{{instance_id}} p99",
+      "originalExpression": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0009900000000000002"
+            ],
+            [
+              1791049750.617,
+              "0.00099"
+            ],
+            [
+              1791049753.617,
+              "0.004400000000000006"
+            ],
+            [
+              1791049756.617,
+              "0.004650000000000001"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.004640000000000003"
+            ],
+            [
+              1791049750.617,
+              "0.00468"
+            ],
+            [
+              1791049753.617,
+              "0.004759999999999999"
+            ],
+            [
+              1791049756.617,
+              "0.004672000000000001"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.004680000000000002"
+            ],
+            [
+              1791049750.617,
+              "0.00468"
+            ],
+            [
+              1791049753.617,
+              "0.004693333333333333"
+            ],
+            [
+              1791049756.617,
+              "0.004726666666666667"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 18,
+      "panelTitle": "Diagnostic failures by instance",
+      "refId": "A",
+      "legendFormat": "{{instance_id}} pool timeout",
+      "originalExpression": "sum by (instance_id) (rate(scalelab_pg_pool_acquire_timeouts_total{instance_id=~\"$instance\"}[30s]))",
+      "expression": "sum by (instance_id) (rate(scalelab_pg_pool_acquire_timeouts_total{instance_id=~\".*\"}[30s]))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "instance_id": "api-1"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-2"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "instance_id": "api-3"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 18,
+      "panelTitle": "Diagnostic failures by instance",
+      "refId": "B",
+      "legendFormat": "{{instance_id}} query error",
+      "originalExpression": "sum by (instance_id) (rate(scalelab_pg_query_errors_total{instance_id=~\"$instance\"}[30s]))",
+      "expression": "sum by (instance_id) (rate(scalelab_pg_query_errors_total{instance_id=~\".*\"}[30s]))",
+      "resultType": "matrix",
+      "series": []
+    },
+    {
+      "panelId": 18,
+      "panelTitle": "Diagnostic failures by instance",
+      "refId": "C",
+      "legendFormat": "{{instance_id}} client abort",
+      "originalExpression": "sum by (instance_id) (rate(scalelab_http_request_aborts_total{instance_id=~\"$instance\"}[30s]))",
+      "expression": "sum by (instance_id) (rate(scalelab_http_request_aborts_total{instance_id=~\".*\"}[30s]))",
+      "resultType": "matrix",
+      "series": []
+    },
+    {
+      "panelId": 19,
+      "panelTitle": "Prometheus target availability",
+      "refId": "A",
+      "legendFormat": "{{api_instance}}",
+      "originalExpression": "up{job=\"scalelab-api\",api_instance=~\"$instance\"}",
+      "expression": "up{job=\"scalelab-api\",api_instance=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "up",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "up",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "up",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 20,
+      "panelTitle": "Prometheus scrape duration",
+      "refId": "A",
+      "legendFormat": "{{api_instance}}",
+      "originalExpression": "scrape_duration_seconds{job=\"scalelab-api\",api_instance=~\"$instance\"}",
+      "expression": "scrape_duration_seconds{job=\"scalelab-api\",api_instance=~\".*\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "scrape_duration_seconds",
+            "api_instance": "api-1",
+            "environment": "local",
+            "instance": "api-1:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.002658529"
+            ],
+            [
+              1791049750.617,
+              "0.003585711"
+            ],
+            [
+              1791049753.617,
+              "0.002755537"
+            ],
+            [
+              1791049756.617,
+              "0.004753244"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scrape_duration_seconds",
+            "api_instance": "api-2",
+            "environment": "local",
+            "instance": "api-2:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.00238968"
+            ],
+            [
+              1791049750.617,
+              "0.003879509"
+            ],
+            [
+              1791049753.617,
+              "0.00265912"
+            ],
+            [
+              1791049756.617,
+              "0.003074534"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "scrape_duration_seconds",
+            "api_instance": "api-3",
+            "environment": "local",
+            "instance": "api-3:3000",
+            "job": "scalelab-api"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.004958045"
+            ],
+            [
+              1791049750.617,
+              "0.003091106"
+            ],
+            [
+              1791049753.617,
+              "0.002845852"
+            ],
+            [
+              1791049756.617,
+              "0.002511153"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 22,
+      "panelTitle": "Nginx exporter / scrape health",
+      "refId": "A",
+      "legendFormat": "Nginx",
+      "originalExpression": "nginx_up",
+      "expression": "nginx_up",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "nginx_up",
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 22,
+      "panelTitle": "Nginx exporter / scrape health",
+      "refId": "B",
+      "legendFormat": "scrape",
+      "originalExpression": "up{job=\"scalelab-nginx\"}",
+      "expression": "up{job=\"scalelab-nginx\"}",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "up",
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 23,
+      "panelTitle": "Requests entering Nginx",
+      "refId": "A",
+      "legendFormat": "Nginx RPS",
+      "originalExpression": "rate(nginx_http_requests_total[30s])",
+      "expression": "rate(nginx_http_requests_total[30s])",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.8148449942590467"
+            ],
+            [
+              1791049750.617,
+              "0.8148751759389585"
+            ],
+            [
+              1791049753.617,
+              "0.9259945181124529"
+            ],
+            [
+              1791049756.617,
+              "3.1484979812571767"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 24,
+      "panelTitle": "Nginx active connections",
+      "refId": "A",
+      "legendFormat": "active",
+      "originalExpression": "nginx_connections_active",
+      "expression": "nginx_connections_active",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "nginx_connections_active",
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "4"
+            ],
+            [
+              1791049756.617,
+              "11"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 25,
+      "panelTitle": "Nginx connection states",
+      "refId": "A",
+      "legendFormat": "reading",
+      "originalExpression": "nginx_connections_reading",
+      "expression": "nginx_connections_reading",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "nginx_connections_reading",
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 25,
+      "panelTitle": "Nginx connection states",
+      "refId": "B",
+      "legendFormat": "writing",
+      "originalExpression": "nginx_connections_writing",
+      "expression": "nginx_connections_writing",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "nginx_connections_writing",
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "1"
+            ],
+            [
+              1791049750.617,
+              "1"
+            ],
+            [
+              1791049753.617,
+              "1"
+            ],
+            [
+              1791049756.617,
+              "1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 25,
+      "panelTitle": "Nginx connection states",
+      "refId": "C",
+      "legendFormat": "waiting/keep-alive",
+      "originalExpression": "nginx_connections_waiting",
+      "expression": "nginx_connections_waiting",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "__name__": "nginx_connections_waiting",
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "3"
+            ],
+            [
+              1791049756.617,
+              "10"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 26,
+      "panelTitle": "Nginx accepted vs handled connections",
+      "refId": "A",
+      "legendFormat": "accepted / sec",
+      "originalExpression": "rate(nginx_connections_accepted[30s])",
+      "expression": "rate(nginx_connections_accepted[30s])",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.4814993147894367"
+            ],
+            [
+              1791049750.617,
+              "0.4815171494184755"
+            ],
+            [
+              1791049753.617,
+              "0.5926364915919698"
+            ],
+            [
+              1791049756.617,
+              "0.8519465125754714"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 26,
+      "panelTitle": "Nginx accepted vs handled connections",
+      "refId": "B",
+      "legendFormat": "handled / sec",
+      "originalExpression": "rate(nginx_connections_handled[30s])",
+      "expression": "rate(nginx_connections_handled[30s])",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.4814993147894367"
+            ],
+            [
+              1791049750.617,
+              "0.4815171494184755"
+            ],
+            [
+              1791049753.617,
+              "0.5926364915919698"
+            ],
+            [
+              1791049756.617,
+              "0.8519465125754714"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 37,
+      "panelTitle": "Nginx intake vs completed API requests",
+      "refId": "A",
+      "legendFormat": "entered Nginx",
+      "originalExpression": "rate(nginx_http_requests_total[30s])",
+      "expression": "rate(nginx_http_requests_total[30s])",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.8148449942590467"
+            ],
+            [
+              1791049750.617,
+              "0.8148751759389585"
+            ],
+            [
+              1791049753.617,
+              "0.9259945181124529"
+            ],
+            [
+              1791049756.617,
+              "3.1484979812571767"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 37,
+      "panelTitle": "Nginx intake vs completed API requests",
+      "refId": "B",
+      "legendFormat": "completed by APIs",
+      "originalExpression": "sum(rate(scalelab_http_requests_total[30s]))",
+      "expression": "sum(rate(scalelab_http_requests_total[30s]))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.9259835445821607"
+            ],
+            [
+              1791049750.617,
+              "0.8889547373879546"
+            ],
+            [
+              1791049753.617,
+              "2.2964993328270724"
+            ],
+            [
+              1791049756.617,
+              "4.333710596609436"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 37,
+      "panelTitle": "Nginx intake vs completed API requests",
+      "refId": "C",
+      "legendFormat": "delivery/completion gap",
+      "originalExpression": "clamp_min(rate(nginx_http_requests_total[30s]) - scalar(sum(rate(scalelab_http_requests_total[30s]))), 0)",
+      "expression": "clamp_min(rate(nginx_http_requests_total[30s]) - scalar(sum(rate(scalelab_http_requests_total[30s]))), 0)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "environment": "local",
+            "instance": "nginx-exporter:9113",
+            "job": "scalelab-nginx"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 29,
+      "panelTitle": "System response time (all selected instances)",
+      "refId": "A",
+      "legendFormat": "average",
+      "originalExpression": "sum(rate(scalelab_http_request_duration_seconds_sum{instance_id=~\"$instance\"}[30s])) / clamp_min(sum(rate(scalelab_http_request_duration_seconds_count{instance_id=~\"$instance\"}[30s])), 0.000000001)",
+      "expression": "sum(rate(scalelab_http_request_duration_seconds_sum{instance_id=~\".*\"}[30s])) / clamp_min(sum(rate(scalelab_http_request_duration_seconds_count{instance_id=~\".*\"}[30s])), 0.000000001)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.001092601611906817"
+            ],
+            [
+              1791049750.617,
+              "0.0011148584583333399"
+            ],
+            [
+              1791049753.617,
+              "0.0011842871432600347"
+            ],
+            [
+              1791049756.617,
+              "0.001200328305322161"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 29,
+      "panelTitle": "System response time (all selected instances)",
+      "refId": "B",
+      "legendFormat": "p95",
+      "originalExpression": "histogram_quantile(0.95, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))",
+      "expression": "histogram_quantile(0.95, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\".*\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.00475"
+            ],
+            [
+              1791049750.617,
+              "0.00475"
+            ],
+            [
+              1791049753.617,
+              "0.00475"
+            ],
+            [
+              1791049756.617,
+              "0.00475"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 29,
+      "panelTitle": "System response time (all selected instances)",
+      "refId": "C",
+      "legendFormat": "p99",
+      "originalExpression": "histogram_quantile(0.99, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))",
+      "expression": "histogram_quantile(0.99, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\".*\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.00495"
+            ],
+            [
+              1791049750.617,
+              "0.00495"
+            ],
+            [
+              1791049753.617,
+              "0.00495"
+            ],
+            [
+              1791049756.617,
+              "0.0049499999999999995"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 30,
+      "panelTitle": "Total Node CPU (selected instances)",
+      "refId": "A",
+      "legendFormat": "CPU",
+      "originalExpression": "100 * (sum(rate(scalelab_node_process_cpu_user_seconds_total{instance_id=~\"$instance\"}[30s])) + sum(rate(scalelab_node_process_cpu_system_seconds_total{instance_id=~\"$instance\"}[30s])))",
+      "expression": "100 * (sum(rate(scalelab_node_process_cpu_user_seconds_total{instance_id=~\".*\"}[30s])) + sum(rate(scalelab_node_process_cpu_system_seconds_total{instance_id=~\".*\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "2.6882573060178494"
+            ],
+            [
+              1791049750.617,
+              "2.656759759982094"
+            ],
+            [
+              1791049753.617,
+              "2.8414144713374503"
+            ],
+            [
+              1791049756.617,
+              "3.059781134285943"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 31,
+      "panelTitle": "Total Node resident memory",
+      "refId": "A",
+      "legendFormat": "resident memory",
+      "originalExpression": "sum(scalelab_node_process_resident_memory_bytes{instance_id=~\"$instance\"})",
+      "expression": "sum(scalelab_node_process_resident_memory_bytes{instance_id=~\".*\"})",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "304308224"
+            ],
+            [
+              1791049750.617,
+              "304373760"
+            ],
+            [
+              1791049753.617,
+              "303738880"
+            ],
+            [
+              1791049756.617,
+              "304414720"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 32,
+      "panelTitle": "Aggregate pool state",
+      "refId": "A",
+      "legendFormat": "total",
+      "originalExpression": "sum(scalelab_pg_pool_connections_total{instance_id=~\"$instance\"})",
+      "expression": "sum(scalelab_pg_pool_connections_total{instance_id=~\".*\"})",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "3"
+            ],
+            [
+              1791049750.617,
+              "3"
+            ],
+            [
+              1791049753.617,
+              "3"
+            ],
+            [
+              1791049756.617,
+              "3"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 32,
+      "panelTitle": "Aggregate pool state",
+      "refId": "B",
+      "legendFormat": "idle",
+      "originalExpression": "sum(scalelab_pg_pool_connections_idle{instance_id=~\"$instance\"})",
+      "expression": "sum(scalelab_pg_pool_connections_idle{instance_id=~\".*\"})",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "3"
+            ],
+            [
+              1791049750.617,
+              "3"
+            ],
+            [
+              1791049753.617,
+              "3"
+            ],
+            [
+              1791049756.617,
+              "3"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 32,
+      "panelTitle": "Aggregate pool state",
+      "refId": "C",
+      "legendFormat": "waiting",
+      "originalExpression": "sum(scalelab_pg_pool_waiting_requests{instance_id=~\"$instance\"})",
+      "expression": "sum(scalelab_pg_pool_waiting_requests{instance_id=~\".*\"})",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 33,
+      "panelTitle": "Aggregate pool acquisition time",
+      "refId": "A",
+      "legendFormat": "average",
+      "originalExpression": "sum(rate(scalelab_pg_pool_acquire_duration_seconds_sum{instance_id=~\"$instance\",outcome=\"success\"}[30s])) / clamp_min(sum(rate(scalelab_pg_pool_acquire_duration_seconds_count{instance_id=~\"$instance\",outcome=\"success\"}[30s])), 0.000000001)",
+      "expression": "sum(rate(scalelab_pg_pool_acquire_duration_seconds_sum{instance_id=~\".*\",outcome=\"success\"}[30s])) / clamp_min(sum(rate(scalelab_pg_pool_acquire_duration_seconds_count{instance_id=~\".*\",outcome=\"success\"}[30s])), 0.000000001)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.00006410247447839951"
+            ],
+            [
+              1791049750.617,
+              "0.00006566829166783823"
+            ],
+            [
+              1791049753.617,
+              "0.00005473100660272042"
+            ],
+            [
+              1791049756.617,
+              "0.00005395714265455398"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 33,
+      "panelTitle": "Aggregate pool acquisition time",
+      "refId": "B",
+      "legendFormat": "p95",
+      "originalExpression": "histogram_quantile(0.95, sum by (le) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.95, sum by (le) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.00095"
+            ],
+            [
+              1791049750.617,
+              "0.00095"
+            ],
+            [
+              1791049753.617,
+              "0.00095"
+            ],
+            [
+              1791049756.617,
+              "0.00095"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 33,
+      "panelTitle": "Aggregate pool acquisition time",
+      "refId": "C",
+      "legendFormat": "p99",
+      "originalExpression": "histogram_quantile(0.99, sum by (le) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.99, sum by (le) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.00099"
+            ],
+            [
+              1791049750.617,
+              "0.00099"
+            ],
+            [
+              1791049753.617,
+              "0.00099"
+            ],
+            [
+              1791049756.617,
+              "0.00099"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 34,
+      "panelTitle": "Aggregate PostgreSQL query time",
+      "refId": "A",
+      "legendFormat": "average",
+      "originalExpression": "sum(rate(scalelab_pg_query_duration_seconds_sum{instance_id=~\"$instance\",outcome=\"success\"}[30s])) / clamp_min(sum(rate(scalelab_pg_query_duration_seconds_count{instance_id=~\"$instance\",outcome=\"success\"}[30s])), 0.000000001)",
+      "expression": "sum(rate(scalelab_pg_query_duration_seconds_sum{instance_id=~\".*\",outcome=\"success\"}[30s])) / clamp_min(sum(rate(scalelab_pg_query_duration_seconds_count{instance_id=~\".*\",outcome=\"success\"}[30s])), 0.000000001)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.0006626204522302877"
+            ],
+            [
+              1791049750.617,
+              "0.0006741873750000006"
+            ],
+            [
+              1791049753.617,
+              "0.0007184254138963589"
+            ],
+            [
+              1791049756.617,
+              "0.000755234857297545"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 34,
+      "panelTitle": "Aggregate PostgreSQL query time",
+      "refId": "B",
+      "legendFormat": "p95",
+      "originalExpression": "histogram_quantile(0.95, sum by (le) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.95, sum by (le) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.0025000759263717857"
+            ],
+            [
+              1791049750.617,
+              "0.002599999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.003450006482081675"
+            ],
+            [
+              1791049756.617,
+              "0.0034399990122481214"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 34,
+      "panelTitle": "Aggregate PostgreSQL query time",
+      "refId": "C",
+      "legendFormat": "p99",
+      "originalExpression": "histogram_quantile(0.99, sum by (le) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.99, sum by (le) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0.0045000151852743545"
+            ],
+            [
+              1791049750.617,
+              "0.004519999999999998"
+            ],
+            [
+              1791049753.617,
+              "0.004690001296416335"
+            ],
+            [
+              1791049756.617,
+              "0.004687999802449622"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 35,
+      "panelTitle": "Query p95 by operation",
+      "refId": "A",
+      "legendFormat": "{{operation}}",
+      "originalExpression": "histogram_quantile(0.95, sum by (le, operation) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))",
+      "expression": "histogram_quantile(0.95, sum by (le, operation) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\".*\",outcome=\"success\"}[30s])))",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {
+            "operation": "health.check"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "0.0025000759263717857"
+            ],
+            [
+              1791049750.617,
+              "0.002599999999999999"
+            ],
+            [
+              1791049753.617,
+              "0.003400019754793623"
+            ],
+            [
+              1791049756.617,
+              "0.002600014816186683"
+            ]
+          ]
+        },
+        {
+          "metric": {
+            "operation": "product.get"
+          },
+          "values": [
+            [
+              1791049747.617,
+              "NaN"
+            ],
+            [
+              1791049750.617,
+              "NaN"
+            ],
+            [
+              1791049753.617,
+              "0.0034799988147006756"
+            ],
+            [
+              1791049756.617,
+              "0.003569228270625276"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 36,
+      "panelTitle": "Aggregate 5xx, aborts, pool timeouts and query errors",
+      "refId": "A",
+      "legendFormat": "5xx responses",
+      "originalExpression": "sum(rate(scalelab_http_requests_total{instance_id=~\"$instance\",status_code=~\"5..\"}[30s])) or vector(0)",
+      "expression": "sum(rate(scalelab_http_requests_total{instance_id=~\".*\",status_code=~\"5..\"}[30s])) or vector(0)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 36,
+      "panelTitle": "Aggregate 5xx, aborts, pool timeouts and query errors",
+      "refId": "B",
+      "legendFormat": "client aborts",
+      "originalExpression": "sum(rate(scalelab_http_request_aborts_total{instance_id=~\"$instance\"}[30s])) or vector(0)",
+      "expression": "sum(rate(scalelab_http_request_aborts_total{instance_id=~\".*\"}[30s])) or vector(0)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 36,
+      "panelTitle": "Aggregate 5xx, aborts, pool timeouts and query errors",
+      "refId": "C",
+      "legendFormat": "pool timeouts",
+      "originalExpression": "sum(rate(scalelab_pg_pool_acquire_timeouts_total{instance_id=~\"$instance\"}[30s])) or vector(0)",
+      "expression": "sum(rate(scalelab_pg_pool_acquire_timeouts_total{instance_id=~\".*\"}[30s])) or vector(0)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "panelId": 36,
+      "panelTitle": "Aggregate 5xx, aborts, pool timeouts and query errors",
+      "refId": "D",
+      "legendFormat": "query errors",
+      "originalExpression": "sum(rate(scalelab_pg_query_errors_total{instance_id=~\"$instance\"}[30s])) or vector(0)",
+      "expression": "sum(rate(scalelab_pg_query_errors_total{instance_id=~\".*\"}[30s])) or vector(0)",
+      "resultType": "matrix",
+      "series": [
+        {
+          "metric": {},
+          "values": [
+            [
+              1791049747.617,
+              "0"
+            ],
+            [
+              1791049750.617,
+              "0"
+            ],
+            [
+              1791049753.617,
+              "0"
+            ],
+            [
+              1791049756.617,
+              "0"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

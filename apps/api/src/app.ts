@@ -1,6 +1,6 @@
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 import { env } from "./config/env.js";
 import { pool as defaultPool } from "./db/pool.js";
 import { ApiError } from "./lib/api-error.js";
@@ -36,16 +36,21 @@ export function createApp(dependencies: AppDependencies = {}) {
   });
 
   app.get("/health", async (_request, response) => {
+    let client: PoolClient | undefined;
     try {
-      await database.query("SELECT 1");
+      const acquiredClient = await metrics.observePoolAcquire(() => database.connect());
+      client = acquiredClient;
+      await metrics.observeQuery("health.check", () => acquiredClient.query("SELECT 1"));
       response.json({ status: "ok", database: "healthy", instanceId });
     } catch {
       response.status(503).json({ status: "degraded", database: "unhealthy", instanceId });
+    } finally {
+      client?.release();
     }
   });
 
-  app.use("/api/products", createProductRouter(database));
-  app.use("/api/orders", createOrderRouter(database));
+  app.use("/api/products", createProductRouter(database, metrics));
+  app.use("/api/orders", createOrderRouter(database, metrics));
 
   app.use((_request, response) => {
     response.status(404).json({ error: "Route not found" });
@@ -65,9 +70,20 @@ export function createApp(dependencies: AppDependencies = {}) {
     console.error(JSON.stringify({
       timestamp: new Date().toISOString(),
       level: "error",
+      event: "request_failed",
       requestId: response.locals.requestId,
       instanceId,
+      method: _request.method,
+      path: _request.originalUrl,
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      errorCode: typeof error === "object" && error && "code" in error ? String(error.code) : undefined,
       message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      pool: {
+        total: database.totalCount,
+        idle: database.idleCount,
+        waiting: database.waitingCount,
+      },
     }));
     response.status(500).json({ error: "Internal server error" });
   };

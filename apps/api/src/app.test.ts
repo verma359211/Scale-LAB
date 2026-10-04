@@ -137,6 +137,12 @@ describe("ScaleLab API", () => {
     assert.match(response.text, /scalelab_pg_pool_connections_total/);
     assert.match(response.text, /scalelab_pg_pool_connections_idle/);
     assert.match(response.text, /scalelab_pg_pool_waiting_requests/);
+    assert.match(response.text, /scalelab_pg_pool_acquire_duration_seconds_bucket/);
+    assert.match(response.text, /scalelab_pg_query_duration_seconds_bucket/);
+    assert.match(response.text, /operation="product.get"/);
+    assert.match(response.text, /scalelab_pg_pool_acquire_timeouts_total/);
+    assert.match(response.text, /scalelab_pg_query_errors_total/);
+    assert.match(response.text, /scalelab_http_request_aborts_total/);
     assert.match(response.text, /instance_id="api-test-1"/);
     assert.doesNotMatch(response.text, /requestId|userId/);
   });

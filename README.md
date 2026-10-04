@@ -1,82 +1,97 @@
 # ScaleLab
 
-ScaleLab is a deliberately small flash-sale application that will be evolved through later system-design milestones. Milestone 2 measures the single Express instance with Prometheus, Grafana, and repeatable k6 workloads before any scaling technology is introduced.
+ScaleLab is a small flash-sale system used to observe how an application behaves under load.
+
+The repository intentionally supports one runtime topology:
+
+```text
+React web app :5174
+        |
+        v
+Nginx :3001
+        |
+        +----> api-1 ----+
+        +----> api-2 ----+----> PostgreSQL
+        +----> api-3 ----+
+
+Prometheus :9090 ---> API and Nginx metrics
+Grafana    :3002 ---> Prometheus
+k6                  ---> Nginx
+```
+
+All runtime services run in Docker. The three APIs use the same compiled image and differ only by `INSTANCE_ID`. Nginx uses `least_conn`, and each API has a PostgreSQL pool maximum of 20 connections.
 
 ## Requirements
 
-- Node.js 20+
-- pnpm 10+
-- Docker with Docker Compose
+- Docker Desktop with Docker Compose
+- Node.js 20+ and pnpm 10+ for repository checks
 
-## Run locally
+## Run the system
 
-```bash
+```powershell
 pnpm install
-pnpm observability:up
-pnpm dev
+pnpm stack:up
 ```
 
-The API waits briefly for PostgreSQL, applies pending migrations, seeds the initial products, and then starts accepting requests.
+Open:
 
 - Web: http://localhost:5174
-- API: http://localhost:3001
+- API through Nginx: http://localhost:3001
 - Health: http://localhost:3001/health
-- Metrics: http://localhost:3001/metrics
 - Prometheus: http://localhost:9090
-- Grafana: http://localhost:3002 (`admin` / `admin`, local development only)
+- Grafana: http://localhost:3002 (`admin` / `admin`)
 
-Stop the applications with `Ctrl+C`, then stop PostgreSQL with:
-
-```bash
-docker compose down
-```
-
-The named Docker volume keeps products, orders, and stock when the API or PostgreSQL container restarts. Use `docker compose down -v` only when you intentionally want to erase local database data.
+The API containers apply pending migrations and seed products during startup. PostgreSQL, Prometheus, and Grafana use named volumes, so `pnpm stack:down` does not erase their data.
 
 ## Commands
 
-```bash
-pnpm dev          # Start web and API development servers
-pnpm db:up        # Start PostgreSQL and wait until it is healthy
-pnpm db:down      # Stop PostgreSQL and preserve its volume
-pnpm db:migrate   # Apply pending database migrations manually
-pnpm observability:up    # Start PostgreSQL, Prometheus, and Grafana
-pnpm observability:down  # Stop Prometheus and Grafana; preserve their data
-pnpm load:baseline       # Run the light, read-only baseline workload
-pnpm load:ramp           # Gradually increase read traffic
-pnpm load:spike          # Run the flash-sale traffic spike
-pnpm typecheck    # Type-check every workspace package
-pnpm test         # Run tests (PostgreSQL must be running)
-pnpm build        # Build every workspace package
+```powershell
+pnpm stack:up       # Build and start the complete Docker stack
+pnpm stack:down     # Stop the stack and preserve named volumes
+pnpm stack:logs     # Follow container logs
+pnpm load:test -- -TargetRps 1900 -Duration 4m -PreAllocatedVUs 1500 -MaxVUs 4000
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
-## Environment
+The load-test command runs the single read-only capacity workload and writes a timestamped k6 summary under `docs/experiments/results/`. Change only the four command parameters when testing another load level. Grafana retains the detailed API, Nginx, process, query, and pool metrics.
 
-Defaults work with the included Compose service. Copy `.env.example` only when you need to customize them.
+## Important files
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `PORT` | `3001` | API HTTP port |
-| `CLIENT_ORIGIN` | `http://localhost:5174` | Allowed browser origin |
-| `DATABASE_URL` | `postgresql://scalelab:scalelab@localhost:5433/scalelab` | PostgreSQL connection string; port 5433 avoids common local PostgreSQL conflicts |
-| `DATABASE_POOL_MAX` | `10` | Maximum connections in the API pool |
-| `INSTANCE_ID` | `api-1` | Identity returned and logged by this API process |
+```text
+compose.yaml                         complete runtime topology
+infrastructure/nginx/nginx.conf      only Nginx configuration
+infrastructure/prometheus/           only Prometheus configuration
+infrastructure/grafana/              one provisioned dashboard
+load-tests/capacity.js               only k6 workload
+scripts/run-load-test.ps1            small load-test command wrapper
+apps/api/                             Express application
+apps/web/                             React application
+docs/experiments/                     historical experiment reports
+```
+
+Historical reports remain because they explain how the current topology was selected. Their alternative runtime configurations and helper scripts are intentionally not retained as supported paths.
 
 ## API
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/health` | Verify API, database, and instance identity |
-| `GET` | `/metrics` | Prometheus-format application, process, and pool metrics |
-| `GET` | `/api/products` | List flash-sale products and current stock |
+| `GET` | `/metrics` | Prometheus application, process, and pool metrics |
+| `GET` | `/api/products` | List products and current stock |
 | `GET` | `/api/products/:id` | Get one product |
 | `POST` | `/api/orders` | Create an order and atomically reduce stock |
-| `GET` | `/api/orders/:id` | Get one persisted order |
+| `GET` | `/api/orders/:id` | Get one order |
 
-Every response includes `x-request-id` and `x-instance-id`. Every completed API request writes one JSON log record with the request ID, instance ID, status, path, and latency.
+Every response includes `x-request-id` and `x-instance-id`. Successful `/metrics` and ordinary 2xx requests are not written to the terminal during load tests. Errors and important lifecycle events remain logged.
 
-## Observability and load testing
+## Configuration decisions
 
-Start the API with `pnpm dev` before running a load command. Grafana automatically provisions the **ScaleLab Milestone 2 Baseline** dashboard and Prometheus datasource. Its panels cover traffic, latency percentiles, errors, in-flight requests, Node.js CPU/memory/event-loop lag, and PostgreSQL pool state.
-
-k6 runs in Docker, calls the host API at port 3001, and writes machine-readable summaries to `docs/experiments/results/`. All three workloads are read-only and can be repeated without consuming product stock. The baseline is intentionally light; ramp and spike are aggressive failure-seeking profiles that reach 2,000 requested iterations/second. Watch local CPU and memory while running them. Workload values can be adjusted with environment variables defined in each script.
+- Nginx is the only public API entry point.
+- API container ports are not published to Windows.
+- Prometheus scrapes each API directly on the Docker network for per-instance metrics.
+- k6 calls `http://nginx:80` inside Docker.
+- PostgreSQL port `5433` is published only for local database inspection and integration tests.
+- The React build calls the public Nginx endpoint at `http://localhost:3001/api`.
+- Nginx access logs are disabled so successful-request I/O does not contaminate benchmarks.

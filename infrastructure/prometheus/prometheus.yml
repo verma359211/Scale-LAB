@@ -1,5 +1,4 @@
 global:
-  # A short interval makes local load-test changes visible without long waits.
   scrape_interval: 3s
   evaluation_interval: 3s
 
@@ -7,6 +6,21 @@ scrape_configs:
   - job_name: scalelab-api
     metrics_path: /metrics
     static_configs:
-      - targets: ["host.docker.internal:3001"]
+      - targets: ["api-1:3000"]
+        labels:
+          environment: local
+          api_instance: api-1
+      - targets: ["api-2:3000"]
+        labels:
+          environment: local
+          api_instance: api-2
+      - targets: ["api-3:3000"]
+        labels:
+          environment: local
+          api_instance: api-3
+
+  - job_name: scalelab-nginx
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
         labels:
           environment: local

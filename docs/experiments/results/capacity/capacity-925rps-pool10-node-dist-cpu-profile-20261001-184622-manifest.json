@@ -1,0 +1,22 @@
+{
+  "format": "scalelab-capacity-run-v1",
+  "targetRps": 925,
+  "duration": "2m",
+  "preAllocatedVUs": 300,
+  "maxVUs": 1500,
+  "poolMax": 10,
+  "runtime": "node-dist",
+  "runLabel": "cpu-profile",
+  "nodeEnv": "production",
+  "instanceId": "api-1",
+  "gitCommit": "be2cd4044110253834d702a87786cc97493c648b",
+  "gitDirty": true,
+  "nodeVersion": "v26.3.0",
+  "startUtc": "2026-10-01T13:16:22.8510932Z",
+  "endUtc": "2026-10-01T13:18:54.3666645Z",
+  "k6ExitCode": 99,
+  "k6Summary": "capacity-925rps-pool10-node-dist-cpu-profile-20261001-184622-k6-summary.json",
+  "postgresDockerStats": "capacity-925rps-pool10-node-dist-cpu-profile-20261001-184622-postgres-docker-stats.ndjson",
+  "valid": false,
+  "invalidReason": "Profiled API self-shutdown occurred before the two-minute measured workload completed; connection-refused/timeouts contaminated the run."
+}

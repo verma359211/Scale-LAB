@@ -1,0 +1,1449 @@
+{
+  "format": "scalelab-multi-instance-analysis-v2",
+  "manifest": {
+    "format": "scalelab-multi-instance-run-v2",
+    "topology": "nginx container -> 3 api containers -> postgres container",
+    "nginxExperiment": "nginx-c",
+    "targetRps": 2000,
+    "duration": "4m",
+    "preAllocatedVUs": 1500,
+    "maxVUs": 4000,
+    "apiInstances": 3,
+    "poolMaxPerInstance": 20,
+    "aggregatePoolMax": 60,
+    "runtime": "node-dist-linux-container",
+    "nodeEnv": "production",
+    "gitCommit": "be2cd4044110253834d702a87786cc97493c648b",
+    "gitDirty": true,
+    "nodeImage": "node:26.3.0-alpine",
+    "startUtc": "2026-10-04T10:34:18.1495463Z",
+    "endUtc": "2026-10-04T10:38:23.5443420Z",
+    "k6ExitCode": 99,
+    "k6Summary": "nginx-3api-containers-nginx-c-2000rps-pool20-20261004-160417-k6-summary.json",
+    "dockerStats": "nginx-3api-containers-nginx-c-2000rps-pool20-20261004-160417-docker-stats.ndjson",
+    "nginxLogs": "nginx-3api-containers-nginx-c-2000rps-pool20-20261004-160417-nginx.log",
+    "prometheusExport": "nginx-3api-containers-nginx-c-2000rps-pool20-20261004-160417-prometheus.json"
+  },
+  "prometheusSteadyWindow": {
+    "startUtc": "2026-10-04T10:34:48.149Z",
+    "endUtc": "2026-10-04T10:38:18.544Z",
+    "reason": "Excludes the first 30 seconds needed to fill rolling PromQL windows and the final five seconds where the workload is stopping."
+  },
+  "k6": {
+    "achievedRps": 1991.9737709138456,
+    "totalRequests": 478154,
+    "droppedIterations": 1847,
+    "droppedIterationsPerSecond": 7.694540994905141,
+    "checkSuccessRate": 0.9737218553018484,
+    "httpFailureRate": 0.02627814469815164,
+    "latencyMs": {
+      "average": 144.70717648545283,
+      "median": 34.578494000000006,
+      "p90": 215.10844480000003,
+      "p95": 331.86038609999997,
+      "p99": 3243.7533449199987,
+      "maximum": 10004.527506
+    },
+    "successfulResponseLatencyMs": {
+      "average": 146.35969406617815,
+      "median": 36.950604,
+      "p90": 218.01602760000003,
+      "p95": 334.8856492,
+      "p99": 3270.246955119999,
+      "maximum": 9997.227242
+    },
+    "iterationDurationMs": {
+      "average": 145.01202743398417,
+      "p95": 332.28089194999967,
+      "p99": 3247.2479130799875
+    },
+    "vus": {
+      "value": 94,
+      "min": 1,
+      "max": 2222
+    },
+    "vusMax": {
+      "value": 2248,
+      "min": 1500,
+      "max": 2248
+    }
+  },
+  "grafana": {
+    "targetHealth": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      }
+    ],
+    "totalRps": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 1779.3946519700985,
+        "maximum": 2027.3614087488568,
+        "p95": 2015.297996073638,
+        "last": 1998.1234101611228,
+        "steady": {
+          "samples": 71,
+          "average": 1965.4195518086735,
+          "maximum": 2027.3614087488568,
+          "p95": 2015.446732849311,
+          "last": 1999.2222103406004
+        }
+      }
+    ],
+    "totalActiveRequests": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 98.39024390243902,
+        "maximum": 689,
+        "p95": 366,
+        "last": 148,
+        "steady": {
+          "samples": 71,
+          "average": 82.01408450704226,
+          "maximum": 421,
+          "p95": 220,
+          "last": 80
+        }
+      }
+    ],
+    "rpsByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 594.1005794419488,
+        "maximum": 682.1498685039079,
+        "p95": 675.5445251148319,
+        "last": 665.5678198385065,
+        "steady": {
+          "samples": 71,
+          "average": 656.0980381340979,
+          "maximum": 682.1498685039079,
+          "p95": 676.3213452350086,
+          "last": 667.6174248036747
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 590.791380500249,
+        "maximum": 674.6555045191878,
+        "p95": 672.2228395747676,
+        "last": 664.641825320394,
+        "steady": {
+          "samples": 71,
+          "average": 652.8250210190402,
+          "maximum": 674.6555045191878,
+          "p95": 672.6673334074156,
+          "last": 665.9999259176946
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 594.5026920279001,
+        "maximum": 679.2368957214298,
+        "p95": 674.0008149053599,
+        "last": 667.9137650022224,
+        "steady": {
+          "samples": 71,
+          "average": 656.4964926555356,
+          "maximum": 679.2368957214298,
+          "p95": 674.9638848760974,
+          "last": 665.6048596192311
+        }
+      }
+    ],
+    "trafficShareByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 33.43202382822307,
+        "maximum": 36.089238098911615,
+        "p95": 34.08237978331999,
+        "last": 33.309645262843745,
+        "steady": {
+          "samples": 71,
+          "average": 33.3881168050337,
+          "maximum": 34.466513624114185,
+          "p95": 33.94679917683432,
+          "last": 33.39385793887989
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 33.1522063156817,
+        "maximum": 33.545341291999236,
+        "p95": 33.45361012153289,
+        "last": 33.2633020533401,
+        "steady": {
+          "samples": 71,
+          "average": 33.210142955170504,
+          "maximum": 33.545341291999236,
+          "p95": 33.45951422513752,
+          "last": 33.312951530496974
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 33.41576985609522,
+        "maximum": 34.12246808174461,
+        "p95": 33.74985629745562,
+        "last": 33.42705268381615,
+        "steady": {
+          "samples": 71,
+          "average": 33.40174023979579,
+          "maximum": 33.773138042254615,
+          "p95": 33.65414195647868,
+          "last": 33.29319053062313
+        }
+      }
+    ],
+    "averageLatencyByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.0520096194464869,
+        "maximum": 0.23005122690106108,
+        "p95": 0.16559260377151594,
+        "last": 0.025696124406308384,
+        "steady": {
+          "samples": 71,
+          "average": 0.046051404871148796,
+          "maximum": 0.18929864705260646,
+          "p95": 0.15373382057808532,
+          "last": 0.025083103937911376
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.04662553602779582,
+        "maximum": 0.177576097668461,
+        "p95": 0.14496998933258753,
+        "last": 0.03109411300562809,
+        "steady": {
+          "samples": 71,
+          "average": 0.04189374624384182,
+          "maximum": 0.14496998933258753,
+          "p95": 0.11733249003946468,
+          "last": 0.028701700916407114
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.04843394782455764,
+        "maximum": 0.19405783733218177,
+        "p95": 0.15404823490973032,
+        "last": 0.028882960864511056,
+        "steady": {
+          "samples": 71,
+          "average": 0.04311892651685058,
+          "maximum": 0.16006205204538992,
+          "p95": 0.1297021657020487,
+          "last": 0.026584359902671443
+        }
+      }
+    ],
+    "httpP95ByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.21380201043480532,
+        "maximum": 0.48556585237364924,
+        "p95": 0.4722898688320828,
+        "last": 0.15227157360406096,
+        "steady": {
+          "samples": 71,
+          "average": 0.2103892282350208,
+          "maximum": 0.47767066727822405,
+          "p95": 0.46806378252591496,
+          "last": 0.16551718749999988
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.2089486887304598,
+        "maximum": 0.46874114165220027,
+        "p95": 0.4520058811113824,
+        "last": 0.19065994500458266,
+        "steady": {
+          "samples": 71,
+          "average": 0.20640859438948553,
+          "maximum": 0.45805846214951856,
+          "p95": 0.4439359267734552,
+          "last": 0.18131286394917945
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.2126618602689963,
+        "maximum": 0.47751540481949706,
+        "p95": 0.4678465853365428,
+        "last": 0.18081209327548797,
+        "steady": {
+          "samples": 71,
+          "average": 0.21014611371639302,
+          "maximum": 0.468028161778152,
+          "p95": 0.4560047526200339,
+          "last": 0.17862156092083087
+        }
+      }
+    ],
+    "httpP99ByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.3113203575581155,
+        "maximum": 0.8063540184916458,
+        "p95": 0.6097162401927297,
+        "last": 0.23045431472081213,
+        "steady": {
+          "samples": 71,
+          "average": 0.3046075936417601,
+          "maximum": 0.666088275165637,
+          "p95": 0.566381215469613,
+          "last": 0.23310343749999993
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.294823137901309,
+        "maximum": 0.4937482283304401,
+        "p95": 0.49040117622227647,
+        "last": 0.24000183318056817,
+        "steady": {
+          "samples": 71,
+          "average": 0.3012638795427223,
+          "maximum": 0.49161169242990377,
+          "p95": 0.488787185354691,
+          "last": 0.23842244573848595
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.29694884749353956,
+        "maximum": 0.6245830366827261,
+        "p95": 0.497013616776273,
+        "last": 0.23948129067245125,
+        "steady": {
+          "samples": 71,
+          "average": 0.2987366482346643,
+          "maximum": 0.497013616776273,
+          "p95": 0.4946130879844015,
+          "last": 0.2391605839416056
+        }
+      }
+    ],
+    "errorRateByInstancePercent": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0,
+        "maximum": 0,
+        "p95": 0,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0,
+          "maximum": 0,
+          "p95": 0,
+          "last": 0
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0,
+        "maximum": 0,
+        "p95": 0,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0,
+          "maximum": 0,
+          "p95": 0,
+          "last": 0
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0,
+        "maximum": 0,
+        "p95": 0,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0,
+          "maximum": 0,
+          "p95": 0,
+          "last": 0
+        }
+      }
+    ],
+    "cpuByInstancePercent": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 85.25950736291233,
+        "maximum": 97.2210777777778,
+        "p95": 96.69610327073374,
+        "last": 90.7454218831025,
+        "steady": {
+          "samples": 71,
+          "average": 92.4975469938817,
+          "maximum": 97.2210777777778,
+          "p95": 96.70181878796859,
+          "last": 90.43400503778345
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 85.4204880651087,
+        "maximum": 98.44428804267298,
+        "p95": 96.30960491724365,
+        "last": 90.62760204459607,
+        "steady": {
+          "samples": 71,
+          "average": 92.35345445608787,
+          "maximum": 98.44428804267298,
+          "p95": 96.48709390627897,
+          "last": 90.31253472608086
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 85.4342075916552,
+        "maximum": 98.17008372851214,
+        "p95": 96.41324341349538,
+        "last": 90.53264928137501,
+        "steady": {
+          "samples": 71,
+          "average": 92.36514277317647,
+          "maximum": 98.17008372851214,
+          "p95": 96.41625736192915,
+          "last": 90.32547596118232
+        }
+      }
+    ],
+    "residentMemoryByInstanceBytes": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 157525466.53658536,
+        "maximum": 173686784,
+        "p95": 173051904,
+        "last": 158437376,
+        "steady": {
+          "samples": 71,
+          "average": 162028933.4084507,
+          "maximum": 173686784,
+          "p95": 173203456,
+          "last": 158707712
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 163644141.2682927,
+        "maximum": 190377984,
+        "p95": 189386752,
+        "last": 160829440,
+        "steady": {
+          "samples": 71,
+          "average": 168650377.01408452,
+          "maximum": 190377984,
+          "p95": 189587456,
+          "last": 160899072
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 160055945.36585367,
+        "maximum": 181149696,
+        "p95": 179195904,
+        "last": 159547392,
+        "steady": {
+          "samples": 71,
+          "average": 164463111.21126762,
+          "maximum": 181149696,
+          "p95": 179900416,
+          "last": 159653888
+        }
+      }
+    ],
+    "eventLoopLagByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.005832100231707316,
+        "maximum": 0.024237306,
+        "p95": 0.012027642,
+        "last": 0.003748574,
+        "steady": {
+          "samples": 71,
+          "average": 0.005677689915492957,
+          "maximum": 0.024237306,
+          "p95": 0.010899873,
+          "last": 0.003377037
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.00741295062195122,
+        "maximum": 0.027202743,
+        "p95": 0.015466508,
+        "last": 0.007460143,
+        "steady": {
+          "samples": 71,
+          "average": 0.007506608492957747,
+          "maximum": 0.027202743,
+          "p95": 0.022746963,
+          "last": 0.011770866
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.007608315939024389,
+        "maximum": 0.02387694,
+        "p95": 0.016495841,
+        "last": 0.006809845,
+        "steady": {
+          "samples": 71,
+          "average": 0.00744527018309859,
+          "maximum": 0.02387694,
+          "p95": 0.016495841,
+          "last": 0.006130568
+        }
+      }
+    ],
+    "activeRequestsByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 25.890243902439025,
+        "maximum": 228,
+        "p95": 111,
+        "last": 99,
+        "steady": {
+          "samples": 71,
+          "average": 19.267605633802816,
+          "maximum": 145,
+          "p95": 111,
+          "last": 1
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 34.670731707317074,
+        "maximum": 226,
+        "p95": 136,
+        "last": 32,
+        "steady": {
+          "samples": 71,
+          "average": 29.95774647887324,
+          "maximum": 169,
+          "p95": 101,
+          "last": 35
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 37.829268292682926,
+        "maximum": 235,
+        "p95": 119,
+        "last": 17,
+        "steady": {
+          "samples": 71,
+          "average": 32.7887323943662,
+          "maximum": 179,
+          "p95": 93,
+          "last": 44
+        }
+      }
+    ],
+    "poolTotalByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 19.536585365853657,
+        "maximum": 20,
+        "p95": 20,
+        "last": 20,
+        "steady": {
+          "samples": 71,
+          "average": 20,
+          "maximum": 20,
+          "p95": 20,
+          "last": 20
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 19.536585365853657,
+        "maximum": 20,
+        "p95": 20,
+        "last": 20,
+        "steady": {
+          "samples": 71,
+          "average": 20,
+          "maximum": 20,
+          "p95": 20,
+          "last": 20
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 19.536585365853657,
+        "maximum": 20,
+        "p95": 20,
+        "last": 20,
+        "steady": {
+          "samples": 71,
+          "average": 20,
+          "maximum": 20,
+          "p95": 20,
+          "last": 20
+        }
+      }
+    ],
+    "poolIdleByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 12.109756097560975,
+        "maximum": 20,
+        "p95": 20,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 13.23943661971831,
+          "maximum": 20,
+          "p95": 20,
+          "last": 19
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 7.5,
+        "maximum": 20,
+        "p95": 20,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 7.985915492957746,
+          "maximum": 20,
+          "p95": 20,
+          "last": 0
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 5.902439024390244,
+        "maximum": 20,
+        "p95": 19,
+        "last": 3,
+        "steady": {
+          "samples": 71,
+          "average": 6.211267605633803,
+          "maximum": 20,
+          "p95": 20,
+          "last": 0
+        }
+      }
+    ],
+    "poolWaitersByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 18.475609756097562,
+        "maximum": 208,
+        "p95": 92,
+        "last": 79,
+        "steady": {
+          "samples": 71,
+          "average": 12.52112676056338,
+          "maximum": 125,
+          "p95": 91,
+          "last": 0
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 22.634146341463413,
+        "maximum": 206,
+        "p95": 116,
+        "last": 12,
+        "steady": {
+          "samples": 71,
+          "average": 17.943661971830984,
+          "maximum": 149,
+          "p95": 81,
+          "last": 15
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 24.195121951219512,
+        "maximum": 215,
+        "p95": 99,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 19,
+          "maximum": 159,
+          "p95": 73,
+          "last": 24
+        }
+      }
+    ],
+    "poolAcquireP95ByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.17811536611376264,
+        "maximum": 0.47565864088565457,
+        "p95": 0.46119334520399424,
+        "last": 0.0901954452753229,
+        "steady": {
+          "samples": 71,
+          "average": 0.17047086899061,
+          "maximum": 0.46706592673285946,
+          "p95": 0.45653535471786466,
+          "last": 0.0908155002891845
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.16625171461133303,
+        "maximum": 0.44312742580614056,
+        "p95": 0.41776769301470584,
+        "last": 0.12839575812274354,
+        "steady": {
+          "samples": 71,
+          "average": 0.16141218081533082,
+          "maximum": 0.42777408244043896,
+          "p95": 0.4098000919117646,
+          "last": 0.10591515474919938
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.1736088191142701,
+        "maximum": 0.46386584722985824,
+        "p95": 0.44761730205278605,
+        "last": 0.10034015486725621,
+        "steady": {
+          "samples": 71,
+          "average": 0.16878768663802823,
+          "maximum": 0.4540041900040126,
+          "p95": 0.44245234604105566,
+          "last": 0.0962289663461538
+        }
+      }
+    ],
+    "poolAcquireP99ByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.2743716100344509,
+        "maximum": 0.497497834397036,
+        "p95": 0.49429315075842734,
+        "last": 0.20581393442622933,
+        "steady": {
+          "samples": 71,
+          "average": 0.27045504254954483,
+          "maximum": 0.49546734034190343,
+          "p95": 0.49336747834230854,
+          "last": 0.20365694682675822
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.26470228994453915,
+        "maximum": 0.4886254851612281,
+        "p95": 0.48355353860294115,
+        "last": 0.22567915162454863,
+        "steady": {
+          "samples": 71,
+          "average": 0.26400715021573135,
+          "maximum": 0.48555481648808774,
+          "p95": 0.48196001838235303,
+          "last": 0.22118303094983977
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.27195209328706377,
+        "maximum": 0.4932726723754839,
+        "p95": 0.4899926686217011,
+        "last": 0.22006803097345112,
+        "steady": {
+          "samples": 71,
+          "average": 0.2719472396585556,
+          "maximum": 0.49126922207574397,
+          "p95": 0.488959677419355,
+          "last": 0.21513565891472836
+        }
+      }
+    ],
+    "queryP95ByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.045791093658853414,
+        "maximum": 0.07674052124256063,
+        "p95": 0.06466062806021225,
+        "last": 0.04363874570446734,
+        "steady": {
+          "samples": 71,
+          "average": 0.0454136546996513,
+          "maximum": 0.05498564383003953,
+          "p95": 0.04923230678116672,
+          "last": 0.043045529497984604
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.04499642343645343,
+        "maximum": 0.06811747871420064,
+        "p95": 0.04994836156594626,
+        "last": 0.04446396862977213,
+        "steady": {
+          "samples": 71,
+          "average": 0.04557558634098192,
+          "maximum": 0.04960055586245989,
+          "p95": 0.04921752368064953,
+          "last": 0.044027643455834944
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.044966196117018534,
+        "maximum": 0.07069407496013744,
+        "p95": 0.05554973573679302,
+        "last": 0.04410435360584912,
+        "steady": {
+          "samples": 71,
+          "average": 0.04530522910545792,
+          "maximum": 0.049965561531336494,
+          "p95": 0.04928966666666667,
+          "last": 0.04349287828338881
+        }
+      }
+    ],
+    "queryP99ByInstanceSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.06206148197180691,
+        "maximum": 0.09968314464799728,
+        "p95": 0.09571853103630948,
+        "last": 0.049813659793814406,
+        "steady": {
+          "samples": 71,
+          "average": 0.06136692136515376,
+          "maximum": 0.09395979206865548,
+          "p95": 0.08925473684210528,
+          "last": 0.04964978013924514
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.06342622320961452,
+        "maximum": 0.10779861084679149,
+        "p95": 0.0916172830670735,
+        "last": 0.04977471145309263,
+        "steady": {
+          "samples": 71,
+          "average": 0.06309769857973893,
+          "maximum": 0.08939634412650796,
+          "p95": 0.0858896925858953,
+          "last": 0.04982422630560927
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.061785204596391384,
+        "maximum": 0.13593864191271457,
+        "p95": 0.09345781590575586,
+        "last": 0.05308994708994712,
+        "steady": {
+          "samples": 71,
+          "average": 0.06054700824473317,
+          "maximum": 0.09178655753377676,
+          "p95": 0.08638860103626941,
+          "last": 0.05400261780104726
+        }
+      }
+    ],
+    "poolTimeoutRateByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0,
+        "maximum": 0,
+        "p95": 0,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0,
+          "maximum": 0,
+          "p95": 0,
+          "last": 0
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0,
+        "maximum": 0,
+        "p95": 0,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0,
+          "maximum": 0,
+          "p95": 0,
+          "last": 0
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0,
+        "maximum": 0,
+        "p95": 0,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0,
+          "maximum": 0,
+          "p95": 0,
+          "last": 0
+        }
+      }
+    ],
+    "queryErrorRateByInstance": [],
+    "clientAbortRateByInstance": [
+      {
+        "instance": "api-1",
+        "samples": 77,
+        "average": 0.017399562498834367,
+        "maximum": 0.039985329421178974,
+        "p95": 0.03749062343723954,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0.01830677440829672,
+          "maximum": 0.03887654046578252,
+          "p95": 0.03704801422643746,
+          "last": 0
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 73,
+        "average": 0.025370464955967707,
+        "maximum": 0.07409328344385581,
+        "p95": 0.07408230544134534,
+        "last": 0.03703978072449811,
+        "steady": {
+          "samples": 71,
+          "average": 0.025563438888185137,
+          "maximum": 0.07409328344385581,
+          "p95": 0.07408230544134534,
+          "last": 0.03704115272067267
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 73,
+        "average": 0.011163275114716617,
+        "maximum": 0.07409328344385581,
+        "p95": 0.07408230544134534,
+        "last": 0.03704252481849162,
+        "steady": {
+          "samples": 71,
+          "average": 0.0109560078669834,
+          "maximum": 0.07409328344385581,
+          "p95": 0.07408230544134534,
+          "last": 0.037039780724498116
+        }
+      }
+    ],
+    "scrapeAvailability": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      }
+    ],
+    "scrapeDurationSeconds": [
+      {
+        "instance": "api-1",
+        "samples": 82,
+        "average": 0.022932455768292684,
+        "maximum": 0.070679604,
+        "p95": 0.061193258,
+        "last": 0.036974032,
+        "steady": {
+          "samples": 71,
+          "average": 0.020979958211267608,
+          "maximum": 0.067753272,
+          "p95": 0.059955811,
+          "last": 0.005381257
+        }
+      },
+      {
+        "instance": "api-2",
+        "samples": 82,
+        "average": 0.03740903334146341,
+        "maximum": 0.142220569,
+        "p95": 0.079968454,
+        "last": 0.04149529,
+        "steady": {
+          "samples": 71,
+          "average": 0.03679805374647887,
+          "maximum": 0.142220569,
+          "p95": 0.077545745,
+          "last": 0.048766883
+        }
+      },
+      {
+        "instance": "api-3",
+        "samples": 82,
+        "average": 0.04037621324390244,
+        "maximum": 0.132831228,
+        "p95": 0.080709215,
+        "last": 0.057055284,
+        "steady": {
+          "samples": 71,
+          "average": 0.0388994786056338,
+          "maximum": 0.110642785,
+          "p95": 0.076914698,
+          "last": 0.039610815
+        }
+      }
+    ],
+    "nginxUp": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      }
+    ],
+    "nginxScrapeAvailability": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 1,
+        "maximum": 1,
+        "p95": 1,
+        "last": 1,
+        "steady": {
+          "samples": 71,
+          "average": 1,
+          "maximum": 1,
+          "p95": 1,
+          "last": 1
+        }
+      }
+    ],
+    "nginxRps": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 1821.8716901449484,
+        "maximum": 2001.5187997777364,
+        "p95": 2001.2965844261687,
+        "last": 2001.5187997777364,
+        "steady": {
+          "samples": 71,
+          "average": 1993.5542067310303,
+          "maximum": 2001.407615943103,
+          "p95": 2001.2965844261687,
+          "last": 2001.0371522761789
+        }
+      }
+    ],
+    "nginxActiveConnections": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 2154.9024390243903,
+        "maximum": 2249,
+        "p95": 2249,
+        "last": 2249,
+        "steady": {
+          "samples": 71,
+          "average": 2249,
+          "maximum": 2249,
+          "p95": 2249,
+          "last": 2249
+        }
+      }
+    ],
+    "nginxConnectionsReading": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 0.024390243902439025,
+        "maximum": 1,
+        "p95": 0,
+        "last": 0,
+        "steady": {
+          "samples": 71,
+          "average": 0.028169014084507043,
+          "maximum": 1,
+          "p95": 0,
+          "last": 0
+        }
+      }
+    ],
+    "nginxConnectionsWriting": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 279.390243902439,
+        "maximum": 2183,
+        "p95": 1390,
+        "last": 172,
+        "steady": {
+          "samples": 71,
+          "average": 184.35211267605635,
+          "maximum": 1390,
+          "p95": 728,
+          "last": 36
+        }
+      }
+    ],
+    "nginxConnectionsWaiting": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 1875.4024390243903,
+        "maximum": 2248,
+        "p95": 2239,
+        "last": 2077,
+        "steady": {
+          "samples": 71,
+          "average": 2064.521126760563,
+          "maximum": 2246,
+          "p95": 2239,
+          "last": 2213
+        }
+      }
+    ],
+    "nginxAcceptedConnectionsPerSecond": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 9.599814663417648,
+        "maximum": 83.68511754827875,
+        "p95": 73.30715661579495,
+        "last": 0.48157066123356174,
+        "steady": {
+          "samples": 71,
+          "average": 3.3208239862616744,
+          "maximum": 83.68511754827875,
+          "p95": 11.593021963776437,
+          "last": 0.444493832648072
+        }
+      }
+    ],
+    "nginxHandledConnectionsPerSecond": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 9.599814663417648,
+        "maximum": 83.68511754827875,
+        "p95": 73.30715661579495,
+        "last": 0.48157066123356174,
+        "steady": {
+          "samples": 71,
+          "average": 3.3208239862616744,
+          "maximum": 83.68511754827875,
+          "p95": 11.593021963776437,
+          "last": 0.444493832648072
+        }
+      }
+    ],
+    "nginxIncomingRps": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 1821.8716901449484,
+        "maximum": 2001.5187997777364,
+        "p95": 2001.2965844261687,
+        "last": 2001.5187997777364,
+        "steady": {
+          "samples": 71,
+          "average": 1993.5542067310303,
+          "maximum": 2001.407615943103,
+          "p95": 2001.2965844261687,
+          "last": 2001.0371522761789
+        }
+      }
+    ],
+    "completedApiRps": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 1779.3946519700985,
+        "maximum": 2027.3614087488568,
+        "p95": 2015.297996073638,
+        "last": 1998.1234101611228,
+        "steady": {
+          "samples": 71,
+          "average": 1965.4195518086735,
+          "maximum": 2027.3614087488568,
+          "p95": 2015.446732849311,
+          "last": 1999.2222103406004
+        }
+      }
+    ],
+    "nginxDeliveryCompletionGapRps": [
+      {
+        "instance": "total",
+        "samples": 82,
+        "average": 45.44326770156347,
+        "maximum": 427.84004987139224,
+        "p95": 256.19785516951276,
+        "last": 3.3953896166135564,
+        "steady": {
+          "samples": 71,
+          "average": 31.157336696519053,
+          "maximum": 427.84004987139224,
+          "p95": 223.76084591439485,
+          "last": 1.8149419355784175
+        }
+      }
+    ]
+  },
+  "nginxLogEvents": {
+    "upstreamTimeouts": 185,
+    "temporarilyDisabled": 161,
+    "noLiveUpstreams": 12478
+  },
+  "docker": {
+    "system-design-lab-nginx-1": {
+      "cpuPercent": {
+        "samples": 44,
+        "average": 89.52045454545454,
+        "maximum": 134.63,
+        "p95": 108.32,
+        "last": 104.43
+      },
+      "memoryPercent": {
+        "samples": 44,
+        "average": 0.4845454545454546,
+        "maximum": 0.82,
+        "p95": 0.65,
+        "last": 0.44
+      }
+    },
+    "system-design-lab-postgres-1": {
+      "cpuPercent": {
+        "samples": 44,
+        "average": 84.0575,
+        "maximum": 104.4,
+        "p95": 100.81,
+        "last": 94.73
+      },
+      "memoryPercent": {
+        "samples": 44,
+        "average": 1.7063636363636356,
+        "maximum": 1.76,
+        "p95": 1.75,
+        "last": 1.73
+      }
+    },
+    "system-design-lab-api-1-1": {
+      "cpuPercent": {
+        "samples": 44,
+        "average": 103.41454545454545,
+        "maximum": 159.7,
+        "p95": 140.84,
+        "last": 99.32
+      },
+      "memoryPercent": {
+        "samples": 44,
+        "average": 1.299090909090909,
+        "maximum": 1.68,
+        "p95": 1.52,
+        "last": 1.27
+      }
+    },
+    "system-design-lab-api-2-1": {
+      "cpuPercent": {
+        "samples": 44,
+        "average": 105.70727272727272,
+        "maximum": 158.77,
+        "p95": 145.6,
+        "last": 152.91
+      },
+      "memoryPercent": {
+        "samples": 44,
+        "average": 1.378863636363636,
+        "maximum": 1.87,
+        "p95": 1.67,
+        "last": 1.29
+      }
+    },
+    "system-design-lab-api-3-1": {
+      "cpuPercent": {
+        "samples": 44,
+        "average": 104.05886363636365,
+        "maximum": 148.89,
+        "p95": 141.66,
+        "last": 100.45
+      },
+      "memoryPercent": {
+        "samples": 44,
+        "average": 1.3281818181818181,
+        "maximum": 1.77,
+        "p95": 1.69,
+        "last": 1.29
+      }
+    },
+    "system-design-lab-k6-run-2f76f94aecea": {
+      "cpuPercent": {
+        "samples": 43,
+        "average": 198.36232558139534,
+        "maximum": 319.22,
+        "p95": 291.49,
+        "last": 182.73
+      },
+      "memoryPercent": {
+        "samples": 43,
+        "average": 7.75860465116279,
+        "maximum": 8.63,
+        "p95": 8.63,
+        "last": 8.23
+      }
+    }
+  }
+}

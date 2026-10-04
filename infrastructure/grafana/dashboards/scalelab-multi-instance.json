@@ -1,0 +1,380 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "type": "text", "title": "Live architecture", "id": 1,
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "### ScaleLab request path\n\n```text\nClient / k6\n     ↓\n Nginx :3001\n  ↙   ↓   ↘\napi-1 api-2 api-3\n3101  3102  3103\n  ↘   ↓   ↙\nPostgreSQL :5433\n```\n\nPrometheus scrapes each API directly."
+      }
+    },
+    {
+      "type": "stat", "title": "API target health", "id": 2,
+      "gridPos": { "h": 7, "w": 5, "x": 8, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "up{job=\"scalelab-api\",api_instance=~\"$instance\"}", "legendFormat": "{{api_instance}}" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "type": "stat", "title": "Total requests / second", "id": 3,
+      "gridPos": { "h": 7, "w": 5, "x": 13, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s]))", "legendFormat": "RPS" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 1, "min": 0 }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "type": "stat", "title": "Total active requests", "id": 4,
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(scalelab_http_requests_active{instance_id=~\"$instance\"}) or vector(0)", "legendFormat": "active" }],
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "min": 0 }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "type": "timeseries", "title": "RPS by API instance", "id": 5,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s]))", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Traffic share by API instance", "id": 6,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "100 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])) / scalar(clamp_min(sum(rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])), 0.000000001))", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "mean"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Average response time by instance", "id": 7,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum by (instance_id) (rate(scalelab_http_request_duration_seconds_sum{instance_id=~\"$instance\"}[30s])) / clamp_min(sum by (instance_id) (rate(scalelab_http_request_duration_seconds_count{instance_id=~\"$instance\"}[30s])), 0.000000001)", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "p95 / p99 response time by instance", "id": 8,
+      "gridPos": { "h": 8, "w": 10, "x": 8, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))", "legendFormat": "{{instance_id}} p95" },
+        { "refId": "B", "expr": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))", "legendFormat": "{{instance_id}} p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "HTTP error rate by instance", "id": 9,
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "(100 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\",status_code=~\"4..|5..\"}[30s])) / clamp_min(sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])), 0.000000001)) or on(instance_id) (0 * sum by (instance_id) (rate(scalelab_http_requests_total{instance_id=~\"$instance\"}[30s])))", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Node CPU by instance", "id": 10,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "100 * (sum by (instance_id) (rate(scalelab_node_process_cpu_user_seconds_total{instance_id=~\"$instance\"}[30s])) + sum by (instance_id) (rate(scalelab_node_process_cpu_system_seconds_total{instance_id=~\"$instance\"}[30s])))", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Resident memory by instance", "id": 11,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "scalelab_node_process_resident_memory_bytes{instance_id=~\"$instance\"}", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "bytes", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Event-loop lag by instance", "id": 12,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "scalelab_node_nodejs_eventloop_lag_seconds{instance_id=~\"$instance\"}", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Active requests by instance", "id": 13,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 31 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum by (instance_id) (scalelab_http_requests_active{instance_id=~\"$instance\"})", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Pool connections by instance", "id": 14,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 31 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "scalelab_pg_pool_connections_total{instance_id=~\"$instance\"}", "legendFormat": "{{instance_id}} total" },
+        { "refId": "B", "expr": "scalelab_pg_pool_connections_idle{instance_id=~\"$instance\"}", "legendFormat": "{{instance_id}} idle" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Pool waiters by instance", "id": 15,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 31 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "scalelab_pg_pool_waiting_requests{instance_id=~\"$instance\"}", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Pool acquisition p95 / p99 by instance", "id": 16,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "{{instance_id}} p95" },
+        { "refId": "B", "expr": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "{{instance_id}} p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "PostgreSQL query p95 / p99 by API instance", "id": 17,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, instance_id) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "{{instance_id}} p95" },
+        { "refId": "B", "expr": "histogram_quantile(0.99, sum by (le, instance_id) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "{{instance_id}} p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Diagnostic failures by instance", "id": 18,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 47 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (instance_id) (rate(scalelab_pg_pool_acquire_timeouts_total{instance_id=~\"$instance\"}[30s]))", "legendFormat": "{{instance_id}} pool timeout" },
+        { "refId": "B", "expr": "sum by (instance_id) (rate(scalelab_pg_query_errors_total{instance_id=~\"$instance\"}[30s]))", "legendFormat": "{{instance_id}} query error" },
+        { "refId": "C", "expr": "sum by (instance_id) (rate(scalelab_http_request_aborts_total{instance_id=~\"$instance\"}[30s]))", "legendFormat": "{{instance_id}} client abort" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Prometheus target availability", "id": 19,
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 47 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "up{job=\"scalelab-api\",api_instance=~\"$instance\"}", "legendFormat": "{{api_instance}}" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Prometheus scrape duration", "id": 20,
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 47 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "scrape_duration_seconds{job=\"scalelab-api\",api_instance=~\"$instance\"}", "legendFormat": "{{api_instance}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "row", "title": "Nginx load balancer", "id": 21,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 55 },
+      "collapsed": false, "panels": []
+    },
+    {
+      "type": "stat", "title": "Nginx exporter / scrape health", "id": 22,
+      "gridPos": { "h": 7, "w": 4, "x": 0, "y": 56 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "nginx_up", "legendFormat": "Nginx" },
+        { "refId": "B", "expr": "up{job=\"scalelab-nginx\"}", "legendFormat": "scrape" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "min": 0, "max": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "type": "timeseries", "title": "Requests entering Nginx", "id": 23,
+      "gridPos": { "h": 7, "w": 8, "x": 4, "y": 56 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "rate(nginx_http_requests_total[30s])", "legendFormat": "Nginx RPS" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "timeseries", "title": "Nginx active connections", "id": 24,
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 56 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "nginx_connections_active", "legendFormat": "active" }],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "timeseries", "title": "Nginx connection states", "id": 25,
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 56 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "nginx_connections_reading", "legendFormat": "reading" },
+        { "refId": "B", "expr": "nginx_connections_writing", "legendFormat": "writing" },
+        { "refId": "C", "expr": "nginx_connections_waiting", "legendFormat": "waiting/keep-alive" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Nginx accepted vs handled connections", "id": 26,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 63 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(nginx_connections_accepted[30s])", "legendFormat": "accepted / sec" },
+        { "refId": "B", "expr": "rate(nginx_connections_handled[30s])", "legendFormat": "handled / sec" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "cps", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Nginx intake vs completed API requests", "id": 37,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 63 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(nginx_http_requests_total[30s])", "legendFormat": "entered Nginx" },
+        { "refId": "B", "expr": "sum(rate(scalelab_http_requests_total[30s]))", "legendFormat": "completed by APIs" },
+        { "refId": "C", "expr": "clamp_min(rate(nginx_http_requests_total[30s]) - scalar(sum(rate(scalelab_http_requests_total[30s]))), 0)", "legendFormat": "delivery/completion gap" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "text", "title": "What Nginx metrics can and cannot show", "id": 27,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 63 },
+      "options": {
+        "mode": "markdown",
+        "content": "**Live here:** incoming RPS, accepted/handled connections, active connections, and reading/writing/keep-alive states.\n\n**Still log-derived:** `upstream timed out`, `upstream server temporarily disabled`, and `no live upstreams`. Open-source Nginx `stub_status` does not expose per-upstream ejection counters. Keeping access logs off also avoids benchmark I/O distortion; warning/error logs remain available through `docker compose logs nginx`."
+      }
+    },
+    {
+      "type": "row", "title": "Cross-instance aggregate diagnostics", "id": 28,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 71 },
+      "collapsed": false, "panels": []
+    },
+    {
+      "type": "timeseries", "title": "System response time (all selected instances)", "id": 29,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 72 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_http_request_duration_seconds_sum{instance_id=~\"$instance\"}[30s])) / clamp_min(sum(rate(scalelab_http_request_duration_seconds_count{instance_id=~\"$instance\"}[30s])), 0.000000001)", "legendFormat": "average" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{instance_id=~\"$instance\"}[30s])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Total Node CPU (selected instances)", "id": 30,
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 72 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "100 * (sum(rate(scalelab_node_process_cpu_user_seconds_total{instance_id=~\"$instance\"}[30s])) + sum(rate(scalelab_node_process_cpu_system_seconds_total{instance_id=~\"$instance\"}[30s])))", "legendFormat": "CPU" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "timeseries", "title": "Total Node resident memory", "id": 31,
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 72 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(scalelab_node_process_resident_memory_bytes{instance_id=~\"$instance\"})", "legendFormat": "resident memory" }],
+      "fieldConfig": { "defaults": { "unit": "bytes", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "type": "timeseries", "title": "Aggregate pool state", "id": 32,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 80 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(scalelab_pg_pool_connections_total{instance_id=~\"$instance\"})", "legendFormat": "total" },
+        { "refId": "B", "expr": "sum(scalelab_pg_pool_connections_idle{instance_id=~\"$instance\"})", "legendFormat": "idle" },
+        { "refId": "C", "expr": "sum(scalelab_pg_pool_waiting_requests{instance_id=~\"$instance\"})", "legendFormat": "waiting" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Aggregate pool acquisition time", "id": 33,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 80 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_pg_pool_acquire_duration_seconds_sum{instance_id=~\"$instance\",outcome=\"success\"}[30s])) / clamp_min(sum(rate(scalelab_pg_pool_acquire_duration_seconds_count{instance_id=~\"$instance\",outcome=\"success\"}[30s])), 0.000000001)", "legendFormat": "average" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Aggregate PostgreSQL query time", "id": 34,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 80 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_pg_query_duration_seconds_sum{instance_id=~\"$instance\",outcome=\"success\"}[30s])) / clamp_min(sum(rate(scalelab_pg_query_duration_seconds_count{instance_id=~\"$instance\",outcome=\"success\"}[30s])), 0.000000001)", "legendFormat": "average" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Query p95 by operation", "id": 35,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 88 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [{ "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(scalelab_pg_query_duration_seconds_bucket{instance_id=~\"$instance\",outcome=\"success\"}[30s])))", "legendFormat": "{{operation}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries", "title": "Aggregate 5xx, aborts, pool timeouts and query errors", "id": 36,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 88 },
+      "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_http_requests_total{instance_id=~\"$instance\",status_code=~\"5..\"}[30s])) or vector(0)", "legendFormat": "5xx responses" },
+        { "refId": "B", "expr": "sum(rate(scalelab_http_request_aborts_total{instance_id=~\"$instance\"}[30s])) or vector(0)", "legendFormat": "client aborts" },
+        { "refId": "C", "expr": "sum(rate(scalelab_pg_pool_acquire_timeouts_total{instance_id=~\"$instance\"}[30s])) or vector(0)", "legendFormat": "pool timeouts" },
+        { "refId": "D", "expr": "sum(rate(scalelab_pg_query_errors_total{instance_id=~\"$instance\"}[30s])) or vector(0)", "legendFormat": "query errors" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "min": 0 }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": ["scalelab", "multi-instance", "nginx"],
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "label": "API instance",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "scalelab-prometheus" },
+        "definition": "label_values(up{job=\"scalelab-api\"}, api_instance)",
+        "query": { "query": "label_values(up{job=\"scalelab-api\"}, api_instance)", "refId": "ScaleLabInstanceVariable" },
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": { "selected": true, "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "ScaleLab Multi-Instance",
+  "uid": "scalelab-multi-instance",
+  "version": 3
+}

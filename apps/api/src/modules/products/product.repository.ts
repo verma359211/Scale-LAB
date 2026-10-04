@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import type { ApiMetrics } from "../../observability/metrics.js";
 
 export type Product = {
   id: number;
@@ -30,23 +31,36 @@ function mapProduct(row: ProductRow): Product {
 }
 
 export class ProductRepository {
-  constructor(private readonly database: Pool) {}
+  constructor(
+    private readonly database: Pool,
+    private readonly metrics: ApiMetrics,
+  ) {}
 
   async list() {
-    const result = await this.database.query<ProductRow>(`
-      SELECT id, name, description, price, stock, created_at
-      FROM products
-      ORDER BY id
-    `);
-    return result.rows.map(mapProduct);
+    const client = await this.metrics.observePoolAcquire(() => this.database.connect());
+    try {
+      const result = await this.metrics.observeQuery("product.list", () => client.query<ProductRow>(`
+        SELECT id, name, description, price, stock, created_at
+        FROM products
+        ORDER BY id
+      `));
+      return result.rows.map(mapProduct);
+    } finally {
+      client.release();
+    }
   }
 
   async getById(id: number) {
-    const result = await this.database.query<ProductRow>(`
-      SELECT id, name, description, price, stock, created_at
-      FROM products
-      WHERE id = $1
-    `, [id]);
-    return result.rows[0] ? mapProduct(result.rows[0]) : undefined;
+    const client = await this.metrics.observePoolAcquire(() => this.database.connect());
+    try {
+      const result = await this.metrics.observeQuery("product.get", () => client.query<ProductRow>(`
+        SELECT id, name, description, price, stock, created_at
+        FROM products
+        WHERE id = $1
+      `, [id]));
+      return result.rows[0] ? mapProduct(result.rows[0]) : undefined;
+    } finally {
+      client.release();
+    }
   }
 }

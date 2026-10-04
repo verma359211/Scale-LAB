@@ -1,0 +1,23 @@
+﻿{
+    "format":  "scalelab-multi-instance-run-v2",
+    "topology":  "nginx container -\u003e 3 api containers -\u003e postgres container",
+    "targetRps":  1800,
+    "duration":  "4m",
+    "preAllocatedVUs":  500,
+    "maxVUs":  3000,
+    "apiInstances":  3,
+    "poolMaxPerInstance":  20,
+    "aggregatePoolMax":  60,
+    "runtime":  "node-dist-linux-container",
+    "nodeEnv":  "production",
+    "gitCommit":  "be2cd4044110253834d702a87786cc97493c648b",
+    "gitDirty":  true,
+    "nodeImage":  "node:26.3.0-alpine",
+    "startUtc":  "2026-10-04T08:40:28.3466212Z",
+    "endUtc":  "2026-10-04T08:44:32.9685092Z",
+    "k6ExitCode":  0,
+    "k6Summary":  "nginx-3api-containers-1800rps-pool20-20261004-141028-k6-summary.json",
+    "dockerStats":  "nginx-3api-containers-1800rps-pool20-20261004-141028-docker-stats.ndjson",
+    "nginxLogs":  "nginx-3api-containers-1800rps-pool20-20261004-141028-nginx.log",
+    "prometheusExport":  "nginx-3api-containers-1800rps-pool20-20261004-141028-prometheus.json"
+}
