@@ -20,7 +20,11 @@ function isPoolTimeout(error: unknown) {
   return error instanceof Error && error.message.toLowerCase().includes("timeout");
 }
 
-export function createApiMetrics(database: Pool, instanceId: string) {
+export function createApiMetrics(
+  database: Pool,
+  instanceId: string,
+  redisReady: () => boolean = () => false,
+) {
   const registry = new Registry();
   registry.setDefaultLabels({ service: "scalelab-api", instance_id: instanceId });
 
@@ -86,6 +90,30 @@ export function createApiMetrics(database: Pool, instanceId: string) {
     help: "PostgreSQL query failures grouped by a bounded application operation name.",
     labelNames: ["operation"],
     registers: [registry],
+  });
+
+  const cacheOperations = new Counter({
+    name: "scalelab_cache_operations_total",
+    help: "Redis cache operations grouped by a bounded operation and result.",
+    labelNames: ["operation", "result"],
+    registers: [registry],
+  });
+
+  const cacheDuration = new Histogram({
+    name: "scalelab_cache_operation_duration_seconds",
+    help: "Redis cache command duration in seconds.",
+    labelNames: ["operation", "outcome"],
+    buckets: [0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25],
+    registers: [registry],
+  });
+
+  new Gauge({
+    name: "scalelab_redis_connected",
+    help: "Whether this API instance currently has a ready Redis connection.",
+    registers: [registry],
+    collect() {
+      this.set(redisReady() ? 1 : 0);
+    },
   });
 
   new Gauge({
@@ -179,7 +207,24 @@ export function createApiMetrics(database: Pool, instanceId: string) {
     }
   }
 
-  return { registry, middleware, observePoolAcquire, observeQuery };
+  async function observeCache<T>(operation: string, command: () => Promise<T>) {
+    const stopTimer = cacheDuration.startTimer();
+
+    try {
+      const result = await command();
+      stopTimer({ operation, outcome: "success" });
+      return result;
+    } catch (error) {
+      stopTimer({ operation, outcome: "error" });
+      throw error;
+    }
+  }
+
+  function recordCacheResult(operation: string, result: "hit" | "miss" | "write" | "invalidate" | "error") {
+    cacheOperations.inc({ operation, result });
+  }
+
+  return { registry, middleware, observePoolAcquire, observeQuery, observeCache, recordCacheResult };
 }
 
 export type ApiMetrics = ReturnType<typeof createApiMetrics>;

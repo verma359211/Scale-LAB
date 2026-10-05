@@ -5,6 +5,7 @@ import { Pool } from "pg";
 import request from "supertest";
 import type { Express } from "express";
 import { createApp } from "./app.js";
+import type { CacheStore } from "./cache/cache-store.js";
 import { env } from "./config/env.js";
 import { migrateDatabase } from "./db/migration-runner.js";
 
@@ -14,6 +15,19 @@ const adminPool = new Pool({ connectionString: env.databaseUrl });
 let testPool: Pool;
 let application: Express;
 
+class TestCache implements CacheStore {
+  readonly enabled = true;
+  readonly values = new Map<string, unknown>();
+
+  isReady() { return true; }
+  async get<T>(key: string) { return (this.values.get(key) as T | undefined) ?? null; }
+  async set<T>(key: string, value: T) { this.values.set(key, value); }
+  async delete(keys: string[]) { keys.forEach((key) => this.values.delete(key)); }
+  async ping() { return undefined; }
+}
+
+const testCache = new TestCache();
+
 describe("ScaleLab API", () => {
   before(async () => {
     await adminPool.query(`CREATE SCHEMA ${schema}`);
@@ -22,10 +36,11 @@ describe("ScaleLab API", () => {
       options: `-c search_path=${schema}`,
     });
     await migrateDatabase(testPool);
-    application = createApp({ database: testPool, instanceId: testInstanceId });
+    application = createApp({ database: testPool, instanceId: testInstanceId, cache: testCache });
   });
 
   beforeEach(async () => {
+    testCache.values.clear();
     await testPool.query("TRUNCATE TABLE orders");
     await testPool.query(`
       UPDATE products
@@ -58,6 +73,9 @@ describe("ScaleLab API", () => {
   });
 
   it("creates an order and safely reduces stock", async () => {
+    await request(application).get("/api/products/1");
+    assert.equal(testCache.values.has("product:1"), true);
+
     const response = await request(application).post("/api/orders").send({
       userId: "user-123",
       productId: 1,
@@ -66,6 +84,8 @@ describe("ScaleLab API", () => {
     assert.equal(response.status, 201);
     assert.equal(response.body.data.status, "confirmed");
     assert.equal(response.body.data.totalPrice, 159.98);
+    assert.equal(testCache.values.has("product:1"), false);
+    assert.equal(testCache.values.has("products:list"), false);
 
     const product = await request(application).get("/api/products/1");
     assert.equal(product.body.data.stock, 23);
@@ -109,8 +129,18 @@ describe("ScaleLab API", () => {
     assert.equal(response.status, 200);
     assert.equal(response.body.status, "ok");
     assert.equal(response.body.database, "healthy");
+    assert.equal(response.body.redis, "healthy");
     assert.equal(response.body.instanceId, testInstanceId);
     assert.equal(response.headers["x-instance-id"], testInstanceId);
+  });
+
+  it("serves repeated product reads from the cache", async () => {
+    const first = await request(application).get("/api/products/1");
+    assert.equal(first.body.data.stock, 25);
+
+    await testPool.query("UPDATE products SET stock = 7 WHERE id = 1");
+    const second = await request(application).get("/api/products/1");
+    assert.equal(second.body.data.stock, 25);
   });
 
   it("generates a request ID when the caller does not provide one", async () => {
@@ -143,6 +173,9 @@ describe("ScaleLab API", () => {
     assert.match(response.text, /scalelab_pg_pool_acquire_timeouts_total/);
     assert.match(response.text, /scalelab_pg_query_errors_total/);
     assert.match(response.text, /scalelab_http_request_aborts_total/);
+    assert.match(response.text, /scalelab_cache_operations_total/);
+    assert.match(response.text, /scalelab_cache_operation_duration_seconds_bucket/);
+    assert.match(response.text, /scalelab_redis_connected/);
     assert.match(response.text, /instance_id="api-test-1"/);
     assert.doesNotMatch(response.text, /requestId|userId/);
   });

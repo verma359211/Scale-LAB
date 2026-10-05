@@ -401,3 +401,39 @@ Load testing now uses only `load-tests/capacity.js`, the constant-arrival-rate p
 Root commands were reduced to `pnpm stack:up`, `pnpm stack:down`, `pnpm stack:logs`, `pnpm load:test`, `pnpm typecheck`, `pnpm test`, and `pnpm build`. `README.md` now documents only this path. No Redis or other future-milestone technology was added during the cleanup.
 
 Verification rebuilt the complete Docker stack from the single Compose file. The web container returned HTTP 200, nine health requests were distributed 3/3/3 across the APIs, all three Prometheus API targets reported up, and Nginx configuration validation succeeded. A three-second 5-RPS smoke test completed 15/15 requests without errors and verified the simplified wrapper; its temporary result was removed afterward. Both TypeScript applications passed typechecking, all 10 API integration tests passed, and the API plus Vite production builds succeeded inside their Docker build stages. Codex's bundled pnpm 11 could not run the root pnpm wrappers without trying to replace the repository's pnpm 10 installation in a non-interactive shell, so verification used the project-local binaries and the pinned pnpm 10 Docker builds without modifying dependencies.
+
+## Redis product cache — shared cache removes repeated product queries
+
+### Summary headline
+
+All three API instances now share a Redis cache for product reads while PostgreSQL remains the source of truth for stock and orders.
+
+### Detailed body
+
+`compose.yaml` adds one internal Redis 8.2 service with a 256 MB memory ceiling and `allkeys-lru` eviction. Redis has no published host port and no persistent volume because every cached value can be reconstructed from PostgreSQL. The API services receive `REDIS_URL=redis://redis:6379` and a 30-second product TTL, and they start after both PostgreSQL and Redis are healthy.
+
+The official `redis` Node client is created once per API process. `CacheStore` is the small boundary used by application code; its production implementation serializes JSON to Redis and its disabled implementation keeps tests and non-server app construction simple. `ProductService` implements cache-aside reads for both `product:{id}` and `products:list`: read Redis, fall back to the repository on a miss or cache error, then populate Redis after the PostgreSQL result. Redis failures therefore reduce performance but do not make product reads unavailable.
+
+Order creation still locks stock and commits entirely in PostgreSQL. After `COMMIT`, the service releases its PostgreSQL client and deletes both the affected product key and the product-list key. The invalidation is shared across all API instances. A Redis error after commit is measured but never changes the successful order response. This is deliberately simple cache invalidation; a small race remains possible if a concurrent miss reads old data immediately before the order commits and writes it after invalidation. The 30-second TTL bounds that stale window. A later milestone can evaluate versioned keys or an outbox if stronger consistency becomes necessary.
+
+Prometheus now exposes `scalelab_redis_connected`, `scalelab_cache_operations_total`, and `scalelab_cache_operation_duration_seconds`. Labels are limited to bounded operation and result names; product IDs and user IDs are never metric labels. The Grafana dashboard adds Redis connection status by API, aggregate hit ratio, operation rate by hit/miss/write/invalidate/error, and command p95 latency. `/health` reports Redis as healthy, unhealthy, or disabled. Redis being unhealthy produces a degraded health body while leaving the HTTP response usable because PostgreSQL fallback remains available.
+
+Important files are `apps/api/src/cache/cache-store.ts`, `apps/api/src/cache/redis-client.ts`, `apps/api/src/modules/products/product.service.ts`, the product/order routes and order service, `apps/api/src/observability/metrics.ts`, `compose.yaml`, and the multi-instance Grafana dashboard. No session storage, distributed locks, queues, rate limiting, or Redis-backed order processing was added.
+
+Verification passed API typechecking and all 11 integration tests, including cache hits and post-order invalidation. The Docker build installed the pinned official Redis client, compiled both applications, started Redis and all existing services, and reported every container healthy. Direct reads from api-1, api-2, and api-3 confirmed that all processes share the Redis entry. A read-only 100-RPS smoke workload completed 1,001 requests with zero failures and approximately 2.62 ms average latency; it was functional validation, not a capacity result. Prometheus reported all three Redis connections ready and exposed hit/miss/write plus latency series. Grafana provisioned all 42 panels, and each new Redis query returned successfully. During a controlled Redis stop, product reads still returned HTTP 200 from PostgreSQL and `/health` reported `redis: unhealthy`; after Redis restarted, the clients reconnected and health returned to `ok`.
+
+## Sequential capacity suite — one command runs the selected comparison points
+
+### Summary headline
+
+One command now runs the 2,500, 3,000, and 3,500-RPS capacity tests with a 60-second recovery interval.
+
+### Detailed body
+
+`scripts/run-capacity-suite.ps1` invokes the existing `run-load-test.ps1` in a separate PowerShell process for each target. Every point uses the same four-minute duration, 2,000 preallocated VUs, and 6,000 maximum VUs, ensuring that target RPS is the only planned variable. Each underlying run continues to save its own timestamped k6 JSON summary in `docs/experiments/results/`.
+
+The child process boundary is important because the single-test script returns k6's exit code when thresholds fail. The suite records that result and continues after the configured 60-second interval instead of abandoning the remaining points. At completion it prints a compact pass/fail table and returns a non-zero exit code when any test crossed a threshold.
+
+Run the default sequence with `pnpm load:suite`. Optional suite-wide settings are `-Duration`, `-IntervalSeconds`, `-PreAllocatedVUs`, and `-MaxVUs`. The stack must already be running, just as it must for `pnpm load:test`. No new load model or application behavior was introduced; the suite only orchestrates the existing read-only capacity workload.
+
+Verification performed a PowerShell parse check and did not execute the approximately fourteen-minute load suite. Runtime results will be produced when the suite is run against the complete Docker stack.

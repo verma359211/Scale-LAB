@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 $repositoryPath = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $resultDirectory = Join-Path $repositoryPath "docs\experiments\results"
 $runningServices = @(docker compose -f (Join-Path $repositoryPath "compose.yaml") ps --services --status running)
-$requiredServices = @("postgres", "api-1", "api-2", "api-3", "nginx")
+$requiredServices = @("postgres", "redis", "api-1", "api-2", "api-3", "nginx")
 
 foreach ($service in $requiredServices) {
   if ($service -notin $runningServices) {

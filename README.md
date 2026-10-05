@@ -11,15 +11,18 @@ React web app :5174
 Nginx :3001
         |
         +----> api-1 ----+
-        +----> api-2 ----+----> PostgreSQL
-        +----> api-3 ----+
+        +----> api-2 ----+----> Redis cache
+        +----> api-3 ----+           |
+                                  miss
+                                    v
+                               PostgreSQL
 
 Prometheus :9090 ---> API and Nginx metrics
 Grafana    :3002 ---> Prometheus
 k6                  ---> Nginx
 ```
 
-All runtime services run in Docker. The three APIs use the same compiled image and differ only by `INSTANCE_ID`. Nginx uses `least_conn`, and each API has a PostgreSQL pool maximum of 20 connections.
+All runtime services run in Docker. The three APIs use the same compiled image and differ only by `INSTANCE_ID`. Nginx uses `least_conn`, each API has a PostgreSQL pool maximum of 20 connections, and every API uses the same Redis cache.
 
 ## Requirements
 
@@ -50,12 +53,15 @@ pnpm stack:up       # Build and start the complete Docker stack
 pnpm stack:down     # Stop the stack and preserve named volumes
 pnpm stack:logs     # Follow container logs
 pnpm load:test -- -TargetRps 1900 -Duration 4m -PreAllocatedVUs 1500 -MaxVUs 4000
+pnpm load:suite     # Run 2500, 3000, and 3500 RPS with 60-second recovery intervals
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
 The load-test command runs the single read-only capacity workload and writes a timestamped k6 summary under `docs/experiments/results/`. Change only the four command parameters when testing another load level. Grafana retains the detailed API, Nginx, process, query, and pool metrics.
+
+The load-suite command calls that same workload three times using a four-minute duration, 2,000 preallocated VUs, and a 6,000 VU maximum. It continues after a failed run so all three points are attempted, then prints a pass/fail table and returns a failing exit code if any point failed.
 
 ## Important files
 
@@ -95,3 +101,6 @@ Every response includes `x-request-id` and `x-instance-id`. Successful `/metrics
 - PostgreSQL port `5433` is published only for local database inspection and integration tests.
 - The React build calls the public Nginx endpoint at `http://localhost:3001/api`.
 - Nginx access logs are disabled so successful-request I/O does not contaminate benchmarks.
+- Product reads use a 30-second cache-aside Redis entry.
+- A committed order invalidates the affected product and product-list cache keys.
+- Redis is disposable cache state and deliberately has no persistent volume.

@@ -1,4 +1,6 @@
 import { createApp } from "./app.js";
+import { createRedisCache } from "./cache/cache-store.js";
+import { redisClient } from "./cache/redis-client.js";
 import { env } from "./config/env.js";
 import { migrateDatabase } from "./db/migration-runner.js";
 import { pool } from "./db/pool.js";
@@ -59,8 +61,10 @@ async function waitForDatabase(attempts = 30) {
 
 await waitForDatabase();
 await migrateDatabase(pool);
+await redisClient.connect();
+const cache = createRedisCache(redisClient);
 
-const server = createApp().listen(env.port, () => {
+const server = createApp({ cache }).listen(env.port, () => {
   console.log(JSON.stringify({
     timestamp: new Date().toISOString(),
     event: "api_started",
@@ -87,7 +91,7 @@ server.on("error", (error) => {
 function shutdown(signal: string) {
   console.log(JSON.stringify({ timestamp: new Date().toISOString(), event: "api_stopping", signal, instanceId: env.instanceId }));
   server.close(() => {
-    void pool.end().finally(() => process.exit(0));
+    void Promise.allSettled([pool.end(), redisClient.quit()]).finally(() => process.exit(0));
   });
 }
 

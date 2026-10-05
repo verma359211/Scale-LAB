@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
 import type { Pool } from "pg";
+import type { CacheStore } from "../../cache/cache-store.js";
 import { ApiError } from "../../lib/api-error.js";
 import type { ApiMetrics } from "../../observability/metrics.js";
+import { productCacheKeys } from "../products/product.service.js";
 import type { CreateOrderInput } from "./order.schema.js";
 
 export type Order = {
@@ -40,10 +42,12 @@ export class OrderService {
   constructor(
     private readonly database: Pool,
     private readonly metrics: ApiMetrics,
+    private readonly cache: CacheStore,
   ) {}
 
   async create(input: CreateOrderInput) {
     const client = await this.metrics.observePoolAcquire(() => this.database.connect());
+    let order: Order;
 
     try {
       await this.metrics.observeQuery("order.begin", () => client.query("BEGIN"));
@@ -72,13 +76,28 @@ export class OrderService {
       `, [randomUUID(), input.userId, input.productId, input.quantity, totalPrice.toFixed(2)]));
 
       await this.metrics.observeQuery("order.commit", () => client.query("COMMIT"));
-      return mapOrder(orderResult.rows[0]);
+      order = mapOrder(orderResult.rows[0]);
     } catch (error) {
       await this.metrics.observeQuery("order.rollback", () => client.query("ROLLBACK"));
       throw error;
     } finally {
       client.release();
     }
+
+    // The database client is released before Redis I/O. PostgreSQL is already
+    // committed, so a cache failure must not fail or roll back the order.
+    if (this.cache.enabled) {
+      try {
+        await this.metrics.observeCache("product.invalidate", () => (
+          this.cache.delete(productCacheKeys(input.productId))
+        ));
+        this.metrics.recordCacheResult("product.invalidate", "invalidate");
+      } catch {
+        this.metrics.recordCacheResult("product.invalidate", "error");
+      }
+    }
+
+    return order;
   }
 
   async getById(id: string) {
