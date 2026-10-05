@@ -4,10 +4,12 @@ import { after, before, beforeEach, describe, it } from "node:test";
 import { Pool } from "pg";
 import request from "supertest";
 import type { Express } from "express";
+import { rateLimit } from "express-rate-limit";
 import { createApp } from "./app.js";
 import type { CacheStore } from "./cache/cache-store.js";
 import { env } from "./config/env.js";
 import { migrateDatabase } from "./db/migration-runner.js";
+import type { RateLimiters } from "./rate-limit/rate-limiter.js";
 
 const testInstanceId = "api-test-1";
 const schema = `test_${randomUUID().replaceAll("-", "")}`;
@@ -27,6 +29,31 @@ class TestCache implements CacheStore {
 }
 
 const testCache = new TestCache();
+
+function testRateLimiters(apiLimit: number, orderLimit: number): RateLimiters {
+  const policy = (limit: number, windowMs: number, name: string) => rateLimit({
+    windowMs,
+    limit,
+    identifier: name,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    handler: (_request, response) => {
+      response.setHeader("retry-after", String(Math.ceil(windowMs / 1_000)));
+      response.status(429).json({
+        error: "Too many requests",
+        retryAfterSeconds: Math.ceil(windowMs / 1_000),
+      });
+    },
+  });
+
+  return {
+    enabled: true,
+    api: policy(apiLimit, 1_000, "api"),
+    orders: policy(orderLimit, 10_000, "orders"),
+    isReady: () => true,
+    ping: async () => "PONG",
+  };
+}
 
 describe("ScaleLab API", () => {
   before(async () => {
@@ -153,6 +180,44 @@ describe("ScaleLab API", () => {
     assert.equal(response.headers["x-request-id"], "client-request-123");
   });
 
+  it("enforces an API quota without limiting health and metrics", async () => {
+    const limitedApp = createApp({
+      database: testPool,
+      instanceId: testInstanceId,
+      cache: testCache,
+      rateLimiters: testRateLimiters(2, 1),
+    });
+
+    assert.equal((await request(limitedApp).get("/health")).status, 200);
+    assert.equal((await request(limitedApp).get("/metrics")).status, 200);
+    assert.equal((await request(limitedApp).get("/api/products/1")).status, 200);
+    assert.equal((await request(limitedApp).get("/api/products/1")).status, 200);
+
+    const rejected = await request(limitedApp).get("/api/products/1");
+    assert.equal(rejected.status, 429);
+    assert.equal(rejected.body.error, "Too many requests");
+    assert.match(rejected.headers["x-request-id"], /^req-[0-9a-f-]{36}$/);
+    assert.equal(rejected.headers["x-instance-id"], testInstanceId);
+    assert.ok(rejected.headers.ratelimit);
+    assert.ok(rejected.headers["ratelimit-policy"]);
+    assert.equal(rejected.headers["retry-after"], "1");
+  });
+
+  it("applies a stricter policy to order creation", async () => {
+    const limitedApp = createApp({
+      database: testPool,
+      instanceId: testInstanceId,
+      cache: testCache,
+      rateLimiters: testRateLimiters(10, 1),
+    });
+    const order = { userId: "rate-limit-user", productId: 1, quantity: 1 };
+
+    assert.equal((await request(limitedApp).post("/api/orders").send(order)).status, 201);
+    const rejected = await request(limitedApp).post("/api/orders").send(order);
+    assert.equal(rejected.status, 429);
+    assert.equal(rejected.body.retryAfterSeconds, 10);
+  });
+
   it("exposes Prometheus HTTP, process and PostgreSQL pool metrics", async () => {
     await request(application).get("/api/products/1");
     const response = await request(application).get("/metrics");
@@ -176,6 +241,9 @@ describe("ScaleLab API", () => {
     assert.match(response.text, /scalelab_cache_operations_total/);
     assert.match(response.text, /scalelab_cache_operation_duration_seconds_bucket/);
     assert.match(response.text, /scalelab_redis_connected/);
+    assert.match(response.text, /scalelab_rate_limit_decisions_total/);
+    assert.match(response.text, /scalelab_rate_limit_store_duration_seconds/);
+    assert.match(response.text, /scalelab_rate_limit_redis_connected/);
     assert.match(response.text, /instance_id="api-test-1"/);
     assert.doesNotMatch(response.text, /requestId|userId/);
   });

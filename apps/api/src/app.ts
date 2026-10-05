@@ -9,12 +9,14 @@ import { requestContext } from "./middleware/request-context.js";
 import { createOrderRouter } from "./modules/orders/order.routes.js";
 import { createProductRouter } from "./modules/products/product.routes.js";
 import { createApiMetrics, type ApiMetrics } from "./observability/metrics.js";
+import { disabledRateLimiters, type RateLimiters } from "./rate-limit/rate-limiter.js";
 
 type AppDependencies = {
   database?: Pool;
   instanceId?: string;
   metrics?: ApiMetrics;
   cache?: CacheStore;
+  rateLimiters?: RateLimiters;
 };
 
 export function createApp(dependencies: AppDependencies = {}) {
@@ -22,15 +24,20 @@ export function createApp(dependencies: AppDependencies = {}) {
   const instanceId = dependencies.instanceId ?? env.instanceId;
   const cache = dependencies.cache ?? disabledCache;
   const metrics = dependencies.metrics ?? createApiMetrics(database, instanceId, () => cache.isReady());
+  const rateLimiters = dependencies.rateLimiters ?? disabledRateLimiters;
   const app = express();
 
   app.disable("x-powered-by");
+  // Nginx is the only trusted hop. Express can therefore use the client IP
+  // supplied by Nginx without treating arbitrary forwarding chains as trusted.
+  app.set("trust proxy", 1);
   app.use(requestContext(instanceId));
   app.use(metrics.middleware);
   app.use(cors({
     origin: env.clientOrigin,
-    exposedHeaders: ["x-request-id", "x-instance-id"],
+    exposedHeaders: ["x-request-id", "x-instance-id", "ratelimit", "ratelimit-policy", "retry-after"],
   }));
+  app.use("/api", rateLimiters.api);
   app.use(express.json({ limit: "100kb" }));
 
   app.get("/metrics", async (_request, response) => {
@@ -45,6 +52,7 @@ export function createApp(dependencies: AppDependencies = {}) {
       client = acquiredClient;
       await metrics.observeQuery("health.check", () => acquiredClient.query("SELECT 1"));
       let redis = "disabled";
+      let rateLimiter = "disabled";
       if (cache.enabled) {
         try {
           await cache.ping();
@@ -53,11 +61,20 @@ export function createApp(dependencies: AppDependencies = {}) {
           redis = "unhealthy";
         }
       }
+      if (rateLimiters.enabled) {
+        try {
+          await rateLimiters.ping();
+          rateLimiter = "healthy";
+        } catch {
+          rateLimiter = "unhealthy";
+        }
+      }
 
       response.json({
-        status: redis === "unhealthy" ? "degraded" : "ok",
+        status: redis === "unhealthy" || rateLimiter === "unhealthy" ? "degraded" : "ok",
         database: "healthy",
         redis,
+        rateLimiter,
         instanceId,
       });
     } catch {
@@ -65,6 +82,7 @@ export function createApp(dependencies: AppDependencies = {}) {
         status: "degraded",
         database: "unhealthy",
         redis: cache.isReady() ? "healthy" : cache.enabled ? "unhealthy" : "disabled",
+        rateLimiter: rateLimiters.isReady() ? "healthy" : rateLimiters.enabled ? "unhealthy" : "disabled",
         instanceId,
       });
     } finally {
@@ -73,7 +91,7 @@ export function createApp(dependencies: AppDependencies = {}) {
   });
 
   app.use("/api/products", createProductRouter(database, metrics, cache, env.productCacheTtlSeconds));
-  app.use("/api/orders", createOrderRouter(database, metrics, cache));
+  app.use("/api/orders", createOrderRouter(database, metrics, cache, rateLimiters.orders));
 
   app.use((_request, response) => {
     response.status(404).json({ error: "Route not found" });

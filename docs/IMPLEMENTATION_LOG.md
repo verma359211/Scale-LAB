@@ -437,3 +437,33 @@ The child process boundary is important because the single-test script returns k
 Run the default sequence with `pnpm load:suite`. Optional suite-wide settings are `-Duration`, `-IntervalSeconds`, `-PreAllocatedVUs`, and `-MaxVUs`. The stack must already be running, just as it must for `pnpm load:test`. No new load model or application behavior was introduced; the suite only orchestrates the existing read-only capacity workload.
 
 Verification performed a PowerShell parse check and did not execute the approximately fourteen-minute load suite. Runtime results will be produced when the suite is run against the complete Docker stack.
+
+## Distributed rate limiting — one quota across all API replicas
+
+### Summary headline
+
+Redis-backed API and order quotas now reject excessive client traffic before cache or database work.
+
+### Detailed body
+
+The API uses `express-rate-limit` with `rate-limit-redis`. The general policy allows 500 requests per second per client IP across `/api`; `POST /api/orders` additionally allows five attempts per ten seconds. Every API process creates its own middleware and Redis store adapter, but the stores use the shared key prefixes `scalelab:rate-limit:api:` and `scalelab:rate-limit:orders:`. Atomic Redis scripts therefore enforce one distributed quota instead of multiplying the allowance by the three API replicas.
+
+Nginx remains the only public proxy and now overwrites rather than appends `X-Forwarded-For`. Express trusts exactly one proxy hop, allowing its standard IP normalization to identify the actual Nginx client without trusting a caller-supplied forwarding chain. Client IPs exist only in expiring Redis keys; they are never Prometheus labels. `/health`, `/metrics`, and CORS preflight requests are excluded from quotas.
+
+Request IDs, HTTP metrics, and CORS run before the general limiter. Rejected requests therefore retain `x-request-id` and `x-instance-id`, expose standard `RateLimit` policy headers plus `Retry-After`, and return JSON with HTTP 429. General limiting occurs before JSON parsing and all route work. The order limiter runs on the order-creation route after the general policy.
+
+Each API has a second Redis connection dedicated to rate limiting, separating synchronous limiter decisions from cache command traffic. Store failures fail open so a Redis interruption does not automatically make the API unavailable. The first failure in a continuous outage is logged, while subsequent failures are represented by metrics instead of producing per-request terminal I/O. `/health` reports the separate rate-limiter connection state.
+
+Prometheus exposes `scalelab_rate_limit_decisions_total`, `scalelab_rate_limit_store_duration_seconds`, and `scalelab_rate_limit_redis_connected`. Labels are limited to the bounded policy, decision, outcome, and existing instance dimensions. Grafana adds limiter connection state, allowed/rejected/store-error rates, rejection percentage, Redis p95/p99 latency, and an explicit comparison between intentional 429 responses and actual 5xx failures.
+
+Configuration is provided through `RATE_LIMIT_ENABLED`, `API_RATE_LIMIT_WINDOW_MS`, `API_RATE_LIMIT_MAX_REQUESTS`, `ORDER_RATE_LIMIT_WINDOW_MS`, `ORDER_RATE_LIMIT_MAX_REQUESTS`, and `RATE_LIMIT_FAIL_OPEN`. The default Compose values enable the reviewed 500-per-second API policy and five-per-ten-seconds order policy. Capacity testing must deliberately recreate the APIs with `RATE_LIMIT_ENABLED=false`; ordinary and protection testing keep it enabled.
+
+`load-tests/rate-limit.js` is a focused 1,000-RPS, 30-second workload. It treats HTTP 200 and 429 as expected, verifies rate-limit headers, and separately fails on unexpected statuses. Run it with `pnpm load:rate-limit`. Existing capacity scripts and their traffic model were not changed.
+
+Important files are `apps/api/src/rate-limit/rate-limiter.ts`, `apps/api/src/app.ts`, `apps/api/src/server.ts`, `apps/api/src/config/env.ts`, `apps/api/src/observability/metrics.ts`, `infrastructure/nginx/nginx.conf`, the Grafana dashboard, `compose.yaml`, and `load-tests/rate-limit.js`. This milestone does not add authentication, user/API-key quotas, token bucket behavior, an edge gateway, or a second Redis deployment.
+
+Verification passed root typechecking and production builds, all 13 API integration tests, Compose validation, the Nginx configuration check, Grafana dashboard JSON validation, and Docker health checks for the complete rebuilt stack. `/health` reported PostgreSQL, cache Redis, and rate-limit Redis healthy. Prometheus reported all three limiter Redis connections ready.
+
+The dedicated 30-second workload delivered 30,001 requests at 1,000 RPS. The shared 500-RPS policy allowed exactly 15,000 and intentionally rejected 15,001; every response was either 200 or 429, all responses included the rate-limit header, k6 reported zero unexpected responses, and no VU expansion beyond the 500 preallocated workers was required. A non-mutating live order check sent six invalid order bodies: five reached validation and returned 400, while the sixth returned 429. Prometheus recorded five allowed and one rejected order-policy decision. These results confirm that the quotas are shared across the three API instances rather than multiplied per replica.
+
+During a controlled Redis stop, a product request still returned HTTP 200 through the PostgreSQL fallback and `/health` reported both Redis roles unhealthy with overall status `degraded`. After Redis restarted, both clients reconnected automatically and health returned to `ok`. This verifies the configured fail-open behavior and recovery path without modifying persistent product or order state.

@@ -10,6 +10,7 @@
     "stack:logs": "docker compose logs -f",
     "load:test": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-load-test.ps1",
     "load:suite": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-capacity-suite.ps1",
+    "load:rate-limit": "docker compose --profile tools run --rm k6 run --summary-export=/results/rate-limit-latest.json /scripts/rate-limit.js",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test"

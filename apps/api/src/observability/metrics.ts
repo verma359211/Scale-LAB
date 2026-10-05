@@ -24,6 +24,7 @@ export function createApiMetrics(
   database: Pool,
   instanceId: string,
   redisReady: () => boolean = () => false,
+  rateLimitRedisReady: () => boolean = () => false,
 ) {
   const registry = new Registry();
   registry.setDefaultLabels({ service: "scalelab-api", instance_id: instanceId });
@@ -107,12 +108,36 @@ export function createApiMetrics(
     registers: [registry],
   });
 
+  const rateLimitDecisions = new Counter({
+    name: "scalelab_rate_limit_decisions_total",
+    help: "Rate-limit decisions grouped by policy and bounded decision name.",
+    labelNames: ["policy", "decision"],
+    registers: [registry],
+  });
+
+  const rateLimitStoreDuration = new Histogram({
+    name: "scalelab_rate_limit_store_duration_seconds",
+    help: "Redis store command duration for distributed rate limiting.",
+    labelNames: ["policy", "outcome"],
+    buckets: [0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25],
+    registers: [registry],
+  });
+
   new Gauge({
     name: "scalelab_redis_connected",
     help: "Whether this API instance currently has a ready Redis connection.",
     registers: [registry],
     collect() {
       this.set(redisReady() ? 1 : 0);
+    },
+  });
+
+  new Gauge({
+    name: "scalelab_rate_limit_redis_connected",
+    help: "Whether this API instance currently has a ready rate-limit Redis connection.",
+    registers: [registry],
+    collect() {
+      this.set(rateLimitRedisReady() ? 1 : 0);
     },
   });
 
@@ -224,7 +249,34 @@ export function createApiMetrics(
     cacheOperations.inc({ operation, result });
   }
 
-  return { registry, middleware, observePoolAcquire, observeQuery, observeCache, recordCacheResult };
+  function recordRateLimitDecision(policy: string, decision: "allowed" | "rejected" | "store_error") {
+    rateLimitDecisions.inc({ policy, decision });
+  }
+
+  async function observeRateLimitStore<T>(policy: string, command: () => Promise<T>) {
+    const stopTimer = rateLimitStoreDuration.startTimer({ policy });
+
+    try {
+      const result = await command();
+      stopTimer({ outcome: "success" });
+      return result;
+    } catch (error) {
+      stopTimer({ outcome: "error" });
+      recordRateLimitDecision(policy, "store_error");
+      throw error;
+    }
+  }
+
+  return {
+    registry,
+    middleware,
+    observePoolAcquire,
+    observeQuery,
+    observeCache,
+    recordCacheResult,
+    recordRateLimitDecision,
+    observeRateLimitStore,
+  };
 }
 
 export type ApiMetrics = ReturnType<typeof createApiMetrics>;
