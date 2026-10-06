@@ -2,89 +2,119 @@
 
 ScaleLab is a small flash-sale system used to observe how an application behaves under load.
 
-The repository intentionally supports one runtime topology:
+The current milestone runs the application in local Kubernetes:
 
 ```text
-React web app :5174
-        |
-        v
-Nginx :3001
-        |
-        +----> api-1 ----+
-        +----> api-2 ----+----> Shared Redis
-        +----> api-3 ----+       |           |
-                         rate-limit       product cache
-                          counters            |
-                                             miss
-                                               v
-                                          PostgreSQL
+Browser / k6
+     |
+     v
+ingress-nginx (Layer 7)
+     |
+     v
+Kubernetes Service
+     |
+     +----> API pod 1 ----+
+     +----> API pod 2 ----+----> Redis ----> PostgreSQL
+     +----> API pod 3...   |
+              ^            |
+              +--- HPA ----+
 
-Prometheus :9090 ---> API and Nginx metrics
+Prometheus :9090 ---> API pods, Kubernetes and HPA metrics
 Grafana    :3002 ---> Prometheus
-k6                  ---> Nginx
 ```
 
-All runtime services run in Docker. The three APIs use the same compiled image and differ only by `INSTANCE_ID`. Nginx uses `least_conn`, each API has a PostgreSQL pool maximum of 20 connections, and every API uses the same Redis service for caching and distributed rate-limit state.
+The HPA starts with two API pods and can scale to six based on average CPU utilization. The earlier fixed three-instance Docker Compose topology remains in `compose.yaml` as the pre-Kubernetes baseline.
 
 ## Requirements
 
-- Docker Desktop with Docker Compose
+- Docker Desktop with Kubernetes enabled
+- `kubectl` using the `docker-desktop` context
+- Internet access on the first `k8s:up` so the pinned ingress-nginx controller can be installed
 - Node.js 20+ and pnpm 10+ for repository checks
 
-## Run the system
+## Run the Kubernetes system
 
 ```powershell
 pnpm install
-pnpm stack:up
+pnpm stack:down
+kubectl config use-context docker-desktop
+pnpm k8s:build
+pnpm k8s:up
+kubectl wait --for=condition=Ready pods --all -n scalelab --timeout=5m
 ```
+
+`stack:down` prevents the earlier Compose services from competing for ports 3001, 3002, 5174, and 9090. The first Kubernetes start downloads the container images and may take several minutes.
 
 Open:
 
-- Web: http://localhost:5174
-- API through Nginx: http://localhost:3001
-- Health: http://localhost:3001/health
+- Application through ingress-nginx: http://localhost
+- API through ingress-nginx: http://localhost/api/products
+- Health through ingress-nginx: http://localhost/health
+- Direct web Service for debugging: http://localhost:5174
+- Direct API Service for debugging: http://localhost:3001
+- Database viewer: http://localhost:8081
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3002 (`admin` / `admin`)
 
-The API containers apply pending migrations and seed products during startup. PostgreSQL, Prometheus, and Grafana use named volumes, so `pnpm stack:down` does not erase their data.
+Docker Desktop exposes `LoadBalancer` services on localhost. The API pods apply pending migrations and seed products during startup. PostgreSQL uses a Kubernetes persistent volume, and its migration advisory lock makes simultaneous pod startup safe.
+
+Adminer is a local development tool and is deliberately kept outside the public application Ingress. Sign in with PostgreSQL server `postgres`, username `scalelab`, password `scalelab`, and database `scalelab`. It provides a convenient view of the `products`, `orders`, and `schema_migrations` tables. Do not expose this development configuration publicly.
+
+Confirm that resource metrics and the HPA are working:
+
+```powershell
+kubectl top pods -n scalelab
+kubectl get hpa -n scalelab
+pnpm k8s:status
+```
 
 ## Commands
 
 ```powershell
-pnpm stack:up       # Build and start the complete Docker stack
-pnpm stack:down     # Stop the stack and preserve named volumes
-pnpm stack:logs     # Follow container logs
-pnpm load:test -- -TargetRps 1900 -Duration 4m -PreAllocatedVUs 1500 -MaxVUs 4000
-pnpm load:suite     # Run 2500, 3000, and 3500 RPS with 60-second recovery intervals
-pnpm load:rate-limit # Verify allowed traffic and intentional HTTP 429 responses
+pnpm k8s:build      # Build the local API and web images
+pnpm k8s:up         # Apply the complete local Kubernetes stack
+pnpm k8s:status     # Show pods, services and the HPA
+pnpm k8s:watch      # Watch pods appear/disappear and HPA decisions
+pnpm k8s:load       # Run the staged autoscaling workload
+pnpm k8s:load:stop  # Stop the in-cluster k6 Job
+pnpm k8s:down       # Remove the namespace and its local Kubernetes data
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
-The load-test command runs the single read-only capacity workload and writes a timestamped k6 summary under `docs/experiments/results/`. Change only the four command parameters when testing another load level. Grafana retains the detailed API, Nginx, process, query, and pool metrics.
+Run `pnpm k8s:watch` in one terminal and `pnpm k8s:load` in another. The read-only workload enters through ingress-nginx with normal HTTP keep-alive, then gradually moves through 300, 1,200, 2,200 and 3,000 RPS before cooling down. Its k6 summary and Kubernetes event list are saved under `docs/experiments/results/`. Grafana retains API, HPA, PostgreSQL, Redis and ingress time series.
 
-The load-suite command calls that same workload three times using a four-minute duration, 2,000 preallocated VUs, and a 6,000 VU maximum. It continues after a failed run so all three points are attempted, then prints a pass/fail table and returns a failing exit code if any point failed.
+`Ctrl+C` only detaches the local log stream because k6 runs as a Kubernetes Job. Use `pnpm k8s:load:stop` to terminate the Job and stop its traffic early.
 
-Rate limiting is enabled by default. The dedicated rate-limit workload sends 1,000 RPS for 30 seconds and treats both HTTP 200 and intentional HTTP 429 responses as expected. To measure unthrottled application capacity, recreate the API containers with the limiter disabled:
+The Kubernetes profile uses `DATABASE_POOL_MAX=10`, so six API pods can create at most 60 application connections. It starts with 250m CPU requested, 500m limited, 256 MiB memory requested, 512 MiB limited, and a 70% HPA CPU target. These are experiment inputs, not production recommendations.
+
+Rate limiting is deliberately disabled in the Kubernetes capacity profile so one k6 pod can drive enough accepted traffic to exercise the HPA. Redis caching remains enabled. Distributed rate limiting should be tested separately with multiple client pods; otherwise one source IP receives only one shared quota.
+
+## Previous fixed-instance baseline
+
+The Compose stack is preserved for reproducing the earlier three-instance/Nginx experiments:
 
 ```powershell
-$env:RATE_LIMIT_ENABLED = "false"
 pnpm stack:up
-pnpm load:test -- -TargetRps 3000 -Duration 4m -PreAllocatedVUs 2000 -MaxVUs 6000
-
-# Restore normal protection afterward.
-Remove-Item Env:RATE_LIMIT_ENABLED
-pnpm stack:up
+pnpm stack:down
 ```
+
+Do not run Compose and Kubernetes simultaneously because both publish the same local ports.
+
+`pnpm k8s:down` is a full local teardown: deleting the `scalelab` namespace also deletes its Kubernetes PostgreSQL volume. Ordinary pod restarts and HPA scaling preserve database data.
 
 ## Important files
 
 ```text
-compose.yaml                         complete runtime topology
+compose.yaml                         previous fixed-instance baseline
+infrastructure/kubernetes/           local Kubernetes topology and HPA
+infrastructure/kubernetes/ingress.yaml HTTP routes into the web and API Services
+infrastructure/kubernetes/adminer.yaml local PostgreSQL browser on port 8081
 infrastructure/nginx/nginx.conf      only Nginx configuration
 infrastructure/prometheus/           only Prometheus configuration
 infrastructure/grafana/              one provisioned dashboard
+scripts/run-kubernetes-load-test.ps1 Kubernetes k6 runner and result copy
 load-tests/capacity.js               unthrottled capacity workload
 load-tests/rate-limit.js             distributed limiter verification workload
 scripts/run-load-test.ps1            small load-test command wrapper
@@ -100,6 +130,8 @@ Historical reports remain because they explain how the current topology was sele
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/health` | Verify API, database, and instance identity |
+| `GET` | `/live` | Kubernetes process liveness |
+| `GET` | `/ready` | Kubernetes traffic readiness |
 | `GET` | `/metrics` | Prometheus application, process, and pool metrics |
 | `GET` | `/api/products` | List products and current stock |
 | `GET` | `/api/products/:id` | Get one product |
@@ -110,18 +142,17 @@ Every response includes `x-request-id` and `x-instance-id`. Successful `/metrics
 
 ## Configuration decisions
 
-- Nginx is the only public API entry point.
-- API container ports are not published to Windows.
-- Prometheus scrapes each API directly on the Docker network for per-instance metrics.
-- k6 calls `http://nginx:80` inside Docker.
-- PostgreSQL port `5433` is published only for local database inspection and integration tests.
-- The React build calls the public Nginx endpoint at `http://localhost:3001/api`.
-- Nginx access logs are disabled so successful-request I/O does not contaminate benchmarks.
+- ingress-nginx is the Layer 7 entry point. It keeps client connections independent from its changing set of Ready API backends.
+- The ScaleLab `Ingress` sends `/api` and `/health` to the API Service and `/` to the web Service.
+- Prometheus discovers and scrapes every API pod instead of relying on fixed instance names.
+- The k6 Job calls the ingress-nginx controller Service entirely inside the cluster and keeps HTTP connections open.
+- PostgreSQL and Redis are cluster-internal Services and expose no Windows ports.
+- Every pod receives its own pod name as `INSTANCE_ID` through the Downward API.
+- The API Deployment starts at two replicas and the CPU HPA may select two through six.
+- Each API requests 250m CPU; the 70% target therefore represents 175m average CPU per pod.
+- Kubernetes API pools are limited to 10 connections per pod.
 - Product reads use a 30-second cache-aside Redis entry.
 - A committed order invalidates the affected product and product-list cache keys.
 - Redis is disposable cache state and deliberately has no persistent volume.
-- The shared API quota is 500 requests per second per client IP.
-- `POST /api/orders` additionally allows 5 attempts per 10 seconds per client IP.
-- `/health`, `/metrics`, and CORS preflight traffic do not consume quota.
-- Limiter store failures fail open and are exposed through logs, metrics, and health state.
-- Nginx overwrites `X-Forwarded-For`; Express trusts exactly that one proxy hop.
+- Rate limiting is off only for this single-client capacity experiment; the Compose baseline retains the reviewed distributed policy.
+- Metrics Server uses insecure kubelet TLS only because this is a local Docker Desktop cluster.

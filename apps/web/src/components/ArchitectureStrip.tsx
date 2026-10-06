@@ -7,11 +7,13 @@ type ArchitectureStripProps = {
 export function ArchitectureStrip({ debug }: ArchitectureStripProps) {
   const nodes = [
     { eyebrow: "Traffic", title: "Browser", detail: "Incoming requests" },
+    { eyebrow: "Routing", title: "Kubernetes Service", detail: "Balances across ready pods" },
     {
       eyebrow: "Compute",
-      title: debug?.instanceId ?? "API-1",
+      title: debug?.instanceId ?? "API Pod",
       detail: debug ? `${debug.responseTimeMs}ms browser latency` : "Waiting for a request",
     },
+    { eyebrow: "Cache", title: "Redis", detail: "Shared product cache" },
     { eyebrow: "Persistence", title: "PostgreSQL", detail: "Pooled connections" },
   ];
 
@@ -21,7 +23,7 @@ export function ArchitectureStrip({ debug }: ArchitectureStripProps) {
         <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Live request path</h2>
         <span className="text-xs text-slate-600">Detailed metrics live in Grafana</span>
       </div>
-      <div className="grid items-center gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+      <div className="grid items-center gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr]">
         {nodes.map((node, index) => (
           <div className="contents" key={node.title}>
             <div className="rounded-xl border border-slate-800 bg-slate-950/70 px-4 py-3">

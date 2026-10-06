@@ -1,0 +1,177 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Current API Pods",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "refId": "A", "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"scalelab\",horizontalpodautoscaler=\"scalelab-api\"}" }],
+      "fieldConfig": { "defaults": { "decimals": 0 }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "HPA Desired Pods",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "refId": "A", "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"scalelab\",horizontalpodautoscaler=\"scalelab-api\"}" }],
+      "fieldConfig": { "defaults": { "decimals": 0 }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Ready API Pods",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "refId": "A", "expr": "sum(kube_pod_status_ready{namespace=\"scalelab\",pod=~\"scalelab-api-.*\",condition=\"true\"})" }],
+      "fieldConfig": { "defaults": { "decimals": 0 }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Incoming RPS",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "refId": "A", "expr": "sum(rate(scalelab_http_requests_total[30s]))" }],
+      "fieldConfig": { "defaults": { "decimals": 1, "unit": "reqps" }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "CPU per Pod (% of 250m request)",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "100 * sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"scalelab\",pod=~\"scalelab-api-.*\",container=\"api\"}[30s])) / 0.25", "legendFormat": "{{pod}}" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Requests/sec per Pod",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum by (instance_id) (rate(scalelab_http_requests_total[30s]))", "legendFormat": "{{instance_id}}" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "HTTP Latency",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_http_request_duration_seconds_sum[30s])) / clamp_min(sum(rate(scalelab_http_request_duration_seconds_count[30s])), 0.000001)", "legendFormat": "average" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket[30s])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket[30s])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "API Memory per Pod",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"scalelab\",pod=~\"scalelab-api-.*\",container=\"api\"})", "legendFormat": "{{pod}}" }],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "HPA Current vs Desired Replicas",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"scalelab\",horizontalpodautoscaler=\"scalelab-api\"}", "legendFormat": "current" },
+        { "refId": "B", "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"scalelab\",horizontalpodautoscaler=\"scalelab-api\"}", "legendFormat": "desired" }
+      ],
+      "fieldConfig": { "defaults": { "decimals": 0, "custom": { "drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "429 and 5xx Responses/sec",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_http_requests_total{status_code=\"429\"}[30s])) or vector(0)", "legendFormat": "429" },
+        { "refId": "B", "expr": "sum(rate(scalelab_http_requests_total{status_code=~\"5..\"}[30s])) or vector(0)", "legendFormat": "5xx" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Redis Cache Hit Ratio",
+      "gridPos": { "x": 0, "y": 28, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "100 * sum(rate(scalelab_cache_operations_total{result=\"hit\"}[30s])) / clamp_min(sum(rate(scalelab_cache_operations_total{result=~\"hit|miss\"}[30s])), 0.000001)", "legendFormat": "hit ratio" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "PostgreSQL Pool Connections",
+      "gridPos": { "x": 8, "y": 28, "w": 8, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "sum(scalelab_pg_pool_connections_total)", "legendFormat": "total" },
+        { "refId": "B", "expr": "sum(scalelab_pg_pool_connections_idle)", "legendFormat": "idle" },
+        { "refId": "C", "expr": "sum(scalelab_pg_pool_waiting_requests)", "legendFormat": "waiting" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "PostgreSQL Query p95",
+      "gridPos": { "x": 16, "y": 28, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(scalelab_pg_query_duration_seconds_bucket{outcome=\"success\"}[30s])))", "legendFormat": "{{operation}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Ingress Requests/sec",
+      "gridPos": { "x": 0, "y": 36, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum(rate(nginx_ingress_controller_requests{namespace=\"scalelab\"}[30s]))", "legendFormat": "ingress" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Ingress HTTP Latency",
+      "gridPos": { "x": 8, "y": 36, "w": 8, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=\"scalelab\"}[30s])))", "legendFormat": "p95" },
+        { "refId": "B", "expr": "histogram_quantile(0.99, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=\"scalelab\"}[30s])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Ingress Responses/sec by Status",
+      "gridPos": { "x": 16, "y": 36, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum by (status) (rate(nginx_ingress_controller_requests{namespace=\"scalelab\"}[30s]))", "legendFormat": "{{status}}" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    }
+  ],
+  "refresh": "3s",
+  "schemaVersion": 41,
+  "tags": ["scalelab", "kubernetes", "hpa"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "ScaleLab Kubernetes Autoscaling",
+  "uid": "scalelab-kubernetes",
+  "version": 2
+}

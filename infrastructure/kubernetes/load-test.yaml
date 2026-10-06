@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autoscale-load-test
+  namespace: scalelab
+data:
+  autoscale.js: |
+    import http from "k6/http";
+    import { check } from "k6";
+
+    const baseUrl = __ENV.BASE_URL || "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local";
+
+    export const options = {
+      discardResponseBodies: true,
+      // Keep normal HTTP connections open. ingress-nginx terminates the client
+      // connection and can route its HTTP requests across current Ready pods.
+      noConnectionReuse: false,
+      summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(99)"],
+      scenarios: {
+        autoscale: {
+          executor: "ramping-arrival-rate",
+          startRate: 100,
+          timeUnit: "1s",
+          preAllocatedVUs: 600,
+          maxVUs: 4000,
+          stages: [
+            { duration: "2m", target: 300 },
+            { duration: "3m", target: 1200 },
+            { duration: "3m", target: 2200 },
+            { duration: "3m", target: 3000 },
+            { duration: "3m", target: 300 },
+            { duration: "2m", target: 0 },
+          ],
+        },
+      },
+      thresholds: {
+        checks: ["rate>0.99"],
+        http_req_failed: ["rate<0.01"],
+      },
+    };
+
+    export default function () {
+      const productId = ((__VU + __ITER) % 3) + 1;
+      const response = http.get(`${baseUrl}/api/products/${productId}`);
+
+      check(response, {
+        "product detail succeeds": (result) => result.status === 200,
+      });
+    }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: autoscale-load-test
+  namespace: scalelab
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1200
+  template:
+    metadata:
+      labels:
+        app: autoscale-load-test
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:1.8.1
+          args:
+            - run
+            - --quiet
+            - --no-color
+            - --summary-export=/results/autoscale-summary.json
+            - /scripts/autoscale.js
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+            - name: results
+              mountPath: /results
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+        # Keep the shared result directory accessible after k6 exits. The
+        # PowerShell runner copies the summary and then tells this helper to exit.
+        - name: result-reader
+          image: busybox:1.37.0
+          command: ["sh", "-c"]
+          args:
+            - while [ ! -f /results/copied ]; do sleep 1; done
+          volumeMounts:
+            - name: results
+              mountPath: /results
+          resources:
+            requests:
+              cpu: 1m
+              memory: 4Mi
+            limits:
+              cpu: 10m
+              memory: 16Mi
+      volumes:
+        - name: script
+          configMap:
+            name: autoscale-load-test
+        - name: results
+          emptyDir: {}

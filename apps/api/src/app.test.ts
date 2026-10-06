@@ -161,6 +161,18 @@ describe("ScaleLab API", () => {
     assert.equal(response.headers["x-instance-id"], testInstanceId);
   });
 
+  it("exposes Kubernetes liveness and readiness", async () => {
+    const live = await request(application).get("/live");
+    assert.equal(live.status, 200);
+    assert.equal(live.body.status, "alive");
+    assert.equal(live.body.instanceId, testInstanceId);
+
+    const ready = await request(application).get("/ready");
+    assert.equal(ready.status, 200);
+    assert.equal(ready.body.status, "ready");
+    assert.equal(ready.body.instanceId, testInstanceId);
+  });
+
   it("serves repeated product reads from the cache", async () => {
     const first = await request(application).get("/api/products/1");
     assert.equal(first.body.data.stock, 25);

@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: scalelab
+  namespace: scalelab
+  annotations:
+    # Prometheus keeps request counts and latency; writing one access-log line
+    # per request would add avoidable stdout I/O during capacity experiments.
+    nginx.ingress.kubernetes.io/enable-access-log: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: scalelab-api
+                port:
+                  number: 3001
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: scalelab-api
+                port:
+                  number: 3001
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: scalelab-web
+                port:
+                  number: 80

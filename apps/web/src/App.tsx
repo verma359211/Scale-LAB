@@ -68,11 +68,11 @@ export default function App() {
       <div className="relative mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">
         <header className="border-b border-white/10 pb-9">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1.5 text-xs font-medium text-cyan-300">
-            <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]" /> ScaleLab · Milestone 2
+            <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]" /> ScaleLab · Kubernetes autoscaling
           </div>
           <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-6xl">A tiny store built to scale.</h1>
           <p className="mt-4 max-w-2xl leading-7 text-slate-400">
-            Place a real PostgreSQL-backed order and watch stock change. Later milestones will stress this same path.
+            Place a PostgreSQL-backed order and see which autoscaled API pod handled the request.
           </p>
         </header>
 

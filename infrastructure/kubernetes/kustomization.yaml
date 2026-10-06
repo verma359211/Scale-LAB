@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - metrics-server.yaml
+  - database.yaml
+  - adminer.yaml
+  - redis.yaml
+  - api.yaml
+  - hpa.yaml
+  - web.yaml
+  - ingress.yaml
+  - kube-state-metrics.yaml
+  - prometheus.yaml
+  - grafana.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: grafana-dashboard
+    namespace: scalelab
+    files:
+      - scalelab-kubernetes.json

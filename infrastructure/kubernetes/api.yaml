@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: scalelab
+data:
+  NODE_ENV: production
+  PORT: "3000"
+  CLIENT_ORIGIN: http://localhost:5174
+  DATABASE_POOL_MAX: "10"
+  REDIS_URL: redis://redis:6379
+  PRODUCT_CACHE_TTL_SECONDS: "30"
+  # The autoscaling workload isolates capacity from rate-limit policy. Enable
+  # this after the HPA experiment to test distributed protection separately.
+  RATE_LIMIT_ENABLED: "false"
+  API_RATE_LIMIT_WINDOW_MS: "1000"
+  API_RATE_LIMIT_MAX_REQUESTS: "500"
+  ORDER_RATE_LIMIT_WINDOW_MS: "10000"
+  ORDER_RATE_LIMIT_MAX_REQUESTS: "5"
+  RATE_LIMIT_FAIL_OPEN: "true"
+  SERVER_KEEP_ALIVE_TIMEOUT_MS: "65000"
+  SERVER_HEADERS_TIMEOUT_MS: "70000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scalelab-api
+  namespace: scalelab
+spec:
+  type: LoadBalancer
+  selector:
+    app: scalelab-api
+  ports:
+    - name: http
+      port: 3001
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scalelab-api
+  namespace: scalelab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: scalelab-api
+  template:
+    metadata:
+      labels:
+        app: scalelab-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "3000"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: api
+          image: scalelab-api:local
+          # Docker Desktop kind reaches locally built containerd images through
+          # its registry mirror when a pull is requested.
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: api-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: DATABASE_URL
+            - name: INSTANCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          startupProbe:
+            httpGet:
+              path: /live
+              port: http
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 2
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

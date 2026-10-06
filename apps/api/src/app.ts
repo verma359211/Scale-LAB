@@ -45,6 +45,23 @@ export function createApp(dependencies: AppDependencies = {}) {
     response.send(await metrics.registry.metrics());
   });
 
+  // Kubernetes uses liveness only to decide whether the Node process should
+  // be restarted. Dependency failures must not create a restart loop.
+  app.get("/live", (_request, response) => {
+    response.json({ status: "alive", instanceId });
+  });
+
+  // Readiness controls whether a pod receives traffic. PostgreSQL is required
+  // for correct responses, while Redis can safely fall back to PostgreSQL.
+  app.get("/ready", async (_request, response) => {
+    try {
+      await metrics.observeQuery("readiness.check", () => database.query("SELECT 1"));
+      response.json({ status: "ready", instanceId });
+    } catch {
+      response.status(503).json({ status: "not_ready", instanceId });
+    }
+  });
+
   app.get("/health", async (_request, response) => {
     let client: PoolClient | undefined;
     try {

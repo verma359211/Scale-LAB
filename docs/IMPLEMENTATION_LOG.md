@@ -467,3 +467,59 @@ Verification passed root typechecking and production builds, all 13 API integrat
 The dedicated 30-second workload delivered 30,001 requests at 1,000 RPS. The shared 500-RPS policy allowed exactly 15,000 and intentionally rejected 15,001; every response was either 200 or 429, all responses included the rate-limit header, k6 reported zero unexpected responses, and no VU expansion beyond the 500 preallocated workers was required. A non-mutating live order check sent six invalid order bodies: five reached validation and returned 400, while the sixth returned 429. Prometheus recorded five allowed and one rejected order-policy decision. These results confirm that the quotas are shared across the three API instances rather than multiplied per replica.
 
 During a controlled Redis stop, a product request still returned HTTP 200 through the PostgreSQL fallback and `/health` reported both Redis roles unhealthy with overall status `degraded`. After Redis restarted, both clients reconnected automatically and health returned to `ok`. This verifies the configured fail-open behavior and recovery path without modifying persistent product or order state.
+
+## Kubernetes autoscaling foundation — CPU-driven API replicas from two to six
+
+### Summary headline
+
+ScaleLab now has one readable local Kubernetes topology with an API Deployment, Service, CPU-based HPA, cluster-local dependencies, per-pod monitoring, and a staged autoscaling workload.
+
+### Detailed body
+
+`infrastructure/kubernetes/` contains the complete local topology. PostgreSQL runs as a single StatefulSet with a persistent volume, Redis runs as a single disposable Deployment, and the compiled API image runs as a Deployment behind the `scalelab-api` Service. The API begins with two pods. An `autoscaling/v2` HPA can scale it to six when average CPU utilization exceeds 70% of its 250m request. Each API pod is limited to 500m CPU and 512 MiB memory. These values deliberately create a visible local experiment and are not production defaults.
+
+The Kubernetes Downward API assigns each pod name to `INSTANCE_ID`. Existing response headers, health output, logs, and Prometheus labels therefore identify the exact pod without Kubernetes-specific logic in route handlers. Every pod uses a PostgreSQL pool maximum of 10, bounding the six-pod application total at 60 possible connections. Existing advisory-locked migrations remain safe when several pods start together.
+
+The API adds `/live` and `/ready`. Liveness checks only whether the Node process responds, preventing a shared dependency outage from restarting every pod. Readiness verifies PostgreSQL because it is required for correct application behavior. Redis is intentionally excluded from readiness: cache reads can fall back to PostgreSQL and the distributed limiter is designed to fail open. `/health` remains the detailed dependency report.
+
+Metrics Server supplies CPU data to the HPA and `kubectl top`. Its local Docker Desktop configuration uses insecure kubelet TLS and must not be copied into a production cluster. Kube State Metrics exposes HPA, Deployment, and pod state. Prometheus discovers API pods through annotations, scrapes each pod directly, reads kube-state metrics, and obtains container CPU/memory from kubelet cAdvisor. The Kubernetes Grafana dashboard shows current and desired replicas, ready pods, aggregate and per-pod RPS, per-pod CPU relative to the 250m request, memory, latency, 429/5xx responses, Redis hit ratio, PostgreSQL pool state, and query p95.
+
+The React architecture strip now represents Browser → Kubernetes Service → responding API Pod → Redis → PostgreSQL. It uses the existing response instance header to display the pod that handled the latest browser request. A separate observer service and event animation are intentionally postponed; Grafana and `kubectl get pods,hpa --watch` provide the first trustworthy scaling view without granting application pods access to the Kubernetes API.
+
+`infrastructure/kubernetes/load-test.yaml` defines one read-only k6 Job. It uses a ramping arrival rate that moves through 300, 1,200, 2,200, and 3,000 RPS, then returns toward idle. `pnpm k8s:load` recreates only that Job, follows its output, copies the raw k6 summary, and saves the namespace event list under `docs/experiments/results/`. `pnpm k8s:watch` shows pod and HPA changes in a second terminal.
+
+The Kubernetes capacity profile sets `RATE_LIMIT_ENABLED=false`. A single k6 pod has one client IP, so the normal 500-RPS distributed quota would intentionally reject traffic before the autoscaling capacity experiment could exercise the API. Limiter behavior remains covered by the separate Compose milestone. A future Kubernetes protection experiment can use several k6 client pods and keep the limiter enabled.
+
+Important files are `infrastructure/kubernetes/*.yaml`, `infrastructure/kubernetes/scalelab-kubernetes.json`, `scripts/run-kubernetes-load-test.ps1`, `apps/api/src/app.ts`, and `apps/web/src/components/ArchitectureStrip.tsx`. Root commands are `pnpm k8s:build`, `pnpm k8s:up`, `pnpm k8s:status`, `pnpm k8s:watch`, `pnpm k8s:load`, and `pnpm k8s:down`.
+
+Static verification rendered 38 Kubernetes resources through Kustomize, parsed the dashboard JSON and PowerShell runner, passed application typechecking, passed all 14 API integration tests, completed both production builds, and successfully built the local API and web container images.
+
+Live verification then ran on Docker Desktop Kubernetes 1.34.3 with one kind node. Every application, data, and monitoring pod became Ready without restarts. Docker Desktop kind required `IfNotPresent` rather than `Never` so its internal registry mirror could transfer the locally built API and web images into the node. The API Service distributed twelve independent health connections across both starting pods, the three seed products were available, and `/health` reported PostgreSQL and Redis healthy with the limiter intentionally disabled.
+
+Metrics Server reported pod CPU and made the metrics API available. The HPA settled at two current and two desired replicas with idle CPU around 4–5% of the 250m request. Prometheus successfully scraped both API pods, kube-state-metrics, and kubelet cAdvisor after correcting the pod IP/port relabel expression. Grafana provisioned the `ScaleLab Kubernetes Autoscaling` dashboard. Prometheus contained HPA current/desired replica values, per-container resource metrics, PostgreSQL pool metrics, and Redis cache operations; recent API logs contained no errors. The staged autoscaling workload has not been run yet, so no scale-up capacity result is claimed.
+
+This milestone intentionally does not add an ingress controller, Helm, a service mesh, custom-metric autoscaling, node autoscaling, PostgreSQL HA, Redis clustering, or a general Kubernetes operator. The Service is sufficient for the single public API, and the HPA scales pods only within Docker Desktop's fixed host resources.
+
+The first staged run exposed an important Layer 4 behavior: HPA added three Ready pods, but k6 reused the TCP connections it had established through the Service while only two API pods existed. Those connections remained mapped to their original endpoints. Live metrics showed the two original pods handling roughly 744 and 721 RPS near their 500m CPU limits, while each new pod received only the approximately 0.4 RPS generated by health probes. The Service EndpointSlice correctly contained all five Ready pod addresses.
+
+The next diagnostic run therefore sets the official k6 `noConnectionReuse` option. This changes only the load generator and forces Kubernetes to select an endpoint for each new connection. Result filenames include `no-reuse` to keep this artificial connection-churn experiment separate from normal keep-alive capacity results. A later ingress experiment will restore connection reuse and evaluate request-level Layer 7 balancing.
+
+### Layer 7 ingress comparison
+
+The no-reuse diagnostic confirmed that all six pods receive traffic when the Service sees new TCP connections. ScaleLab now installs the pinned ingress-nginx controller `controller-v1.15.1`, applies one readable `Ingress`, and sends the in-cluster k6 workload through that controller. `/api` and `/health` route to the API Service while `/` routes to the web Service.
+
+k6 connection reuse is enabled again. ingress-nginx terminates the persistent client connection and performs upstream HTTP routing against Kubernetes' current Ready endpoints, allowing an HPA-created pod to join without requiring k6 to create one TCP connection per request. Prometheus now scrapes controller metrics, and the Kubernetes Grafana dashboard adds ingress RPS, latency and status panels.
+
+The k6 Job also has a tiny `result-reader` sidecar sharing its result volume. k6 can finish while the sidecar remains alive long enough for the PowerShell runner to copy the JSON summary; the runner then signals the helper to exit. This fixes the previous `kubectl cp` failure against a completed container without adding persistent load-test storage.
+
+Benchmark logging is intentionally quiet. k6 uses `--quiet` to suppress its continuously redrawn progress display while retaining the final summary and threshold results. The ScaleLab Ingress disables per-request access logs because Prometheus already records request volume, status and latency without writing millions of lines to the controller's stdout. Controller errors, lifecycle logs, k6 failures, the final summary and Kubernetes events remain available.
+
+The first ingress run exposed a Windows-specific result copy issue: `kubectl cp` treats a colon as the separator for a remote file, so an absolute `C:\...` destination made both arguments look remote. The runner now changes to the repository directory, uses a relative destination for `kubectl cp`, verifies the native exit code, and only then releases the result-reader sidecar. A failed copy therefore remains recoverable instead of silently discarding the raw summary.
+
+## Local PostgreSQL viewer
+
+### Adminer provides a small, isolated view into development data
+
+ScaleLab now runs the official `adminer:6.1.1-standalone` image as one small Kubernetes Deployment. Its `LoadBalancer` Service is available on local port 8081 and defaults the database server field to the internal PostgreSQL Service name, `postgres`. Developers can inspect products, orders, indexes, and migration history without installing a desktop SQL client.
+
+Adminer is not part of the customer request path and is not routed through ingress-nginx. The configuration is intentionally for local learning only: it uses the repository's known development credentials and must not be exposed publicly. Removing the `scalelab` namespace removes Adminer together with the rest of the local stack.
