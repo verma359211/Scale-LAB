@@ -3,7 +3,8 @@ import express, { type ErrorRequestHandler } from "express";
 import type { Pool, PoolClient } from "pg";
 import { disabledCache, type CacheStore } from "./cache/cache-store.js";
 import { env } from "./config/env.js";
-import { pool as defaultPool } from "./db/pool.js";
+import { pools as defaultPools } from "./db/pool.js";
+import { ShardRouter } from "./db/shard-router.js";
 import { ApiError } from "./lib/api-error.js";
 import { requestContext } from "./middleware/request-context.js";
 import { createOrderRouter } from "./modules/orders/order.routes.js";
@@ -13,6 +14,7 @@ import { disabledRateLimiters, type RateLimiters } from "./rate-limit/rate-limit
 
 type AppDependencies = {
   database?: Pool;
+  shards?: ShardRouter;
   instanceId?: string;
   metrics?: ApiMetrics;
   cache?: CacheStore;
@@ -20,10 +22,11 @@ type AppDependencies = {
 };
 
 export function createApp(dependencies: AppDependencies = {}) {
-  const database = dependencies.database ?? defaultPool;
+  const shards = dependencies.shards ?? new ShardRouter(dependencies.database ? [dependencies.database] : defaultPools);
+  const databases = shards.pools;
   const instanceId = dependencies.instanceId ?? env.instanceId;
   const cache = dependencies.cache ?? disabledCache;
-  const metrics = dependencies.metrics ?? createApiMetrics(database, instanceId, () => cache.isReady());
+  const metrics = dependencies.metrics ?? createApiMetrics(databases, instanceId, () => cache.isReady());
   const rateLimiters = dependencies.rateLimiters ?? disabledRateLimiters;
   const app = express();
 
@@ -55,7 +58,7 @@ export function createApp(dependencies: AppDependencies = {}) {
   // for correct responses, while Redis can safely fall back to PostgreSQL.
   app.get("/ready", async (_request, response) => {
     try {
-      await metrics.observeQuery("readiness.check", () => database.query("SELECT 1"));
+      await Promise.all(databases.map((database) => metrics.observeQuery("readiness.check", () => database.query("SELECT 1"))));
       response.json({ status: "ready", instanceId });
     } catch {
       response.status(503).json({ status: "not_ready", instanceId });
@@ -63,11 +66,13 @@ export function createApp(dependencies: AppDependencies = {}) {
   });
 
   app.get("/health", async (_request, response) => {
-    let client: PoolClient | undefined;
+    const clients: PoolClient[] = [];
     try {
-      const acquiredClient = await metrics.observePoolAcquire(() => database.connect());
-      client = acquiredClient;
-      await metrics.observeQuery("health.check", () => acquiredClient.query("SELECT 1"));
+      for (const database of databases) {
+        const client = await metrics.observePoolAcquire(() => database.connect());
+        clients.push(client);
+        await metrics.observeQuery("health.check", () => client.query("SELECT 1"));
+      }
       let redis = "disabled";
       let rateLimiter = "disabled";
       if (cache.enabled) {
@@ -90,6 +95,7 @@ export function createApp(dependencies: AppDependencies = {}) {
       response.json({
         status: redis === "unhealthy" || rateLimiter === "unhealthy" ? "degraded" : "ok",
         database: "healthy",
+        databaseShards: databases.length,
         redis,
         rateLimiter,
         instanceId,
@@ -103,12 +109,12 @@ export function createApp(dependencies: AppDependencies = {}) {
         instanceId,
       });
     } finally {
-      client?.release();
+      clients.forEach((client) => client.release());
     }
   });
 
-  app.use("/api/products", createProductRouter(database, metrics, cache, env.productCacheTtlSeconds));
-  app.use("/api/orders", createOrderRouter(database, metrics, cache, rateLimiters.orders));
+  app.use("/api/products", createProductRouter(shards, metrics, cache, env.productCacheTtlSeconds));
+  app.use("/api/orders", createOrderRouter(shards, metrics, cache, rateLimiters.orders));
 
   app.use((_request, response) => {
     response.status(404).json({ error: "Route not found" });
@@ -138,9 +144,9 @@ export function createApp(dependencies: AppDependencies = {}) {
       message: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
       pool: {
-        total: database.totalCount,
-        idle: database.idleCount,
-        waiting: database.waitingCount,
+        total: databases.reduce((total, database) => total + database.totalCount, 0),
+        idle: databases.reduce((total, database) => total + database.idleCount, 0),
+        waiting: databases.reduce((total, database) => total + database.waitingCount, 0),
       },
     }));
     response.status(500).json({ error: "Internal server error" });

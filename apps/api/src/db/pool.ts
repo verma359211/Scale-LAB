@@ -10,4 +10,5 @@ export function createPool(connectionString = env.databaseUrl) {
   });
 }
 
-export const pool = createPool();
+export const pools = env.databaseShardUrls.map(createPool);
+export const pool = pools[0];

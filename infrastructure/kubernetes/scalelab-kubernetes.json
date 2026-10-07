@@ -163,6 +163,109 @@
       "targets": [{ "refId": "A", "expr": "sum by (status) (rate(nginx_ingress_controller_requests{namespace=\"scalelab\"}[30s]))", "legendFormat": "{{status}}" }],
       "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "Orders/sec by Status",
+      "gridPos": { "x": 0, "y": 44, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum by (status_code) (rate(scalelab_http_requests_total{method=\"POST\",route=\"/api/orders\"}[30s]))", "legendFormat": "HTTP {{status_code}}" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Order HTTP Latency",
+      "gridPos": { "x": 8, "y": 44, "w": 8, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(scalelab_http_request_duration_seconds_sum{method=\"POST\",route=\"/api/orders\"}[30s])) / clamp_min(sum(rate(scalelab_http_request_duration_seconds_count{method=\"POST\",route=\"/api/orders\"}[30s])), 0.000001)", "legendFormat": "average" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{method=\"POST\",route=\"/api/orders\"}[30s])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(scalelab_http_request_duration_seconds_bucket{method=\"POST\",route=\"/api/orders\"}[30s])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "Order SQL p95 by Operation",
+      "gridPos": { "x": 16, "y": 44, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(scalelab_pg_query_duration_seconds_bucket{operation=~\"order..*\",outcome=\"success\"}[30s])))", "legendFormat": "{{operation}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Pool Wait and Acquire p95",
+      "gridPos": { "x": 0, "y": 52, "w": 8, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "sum(scalelab_pg_pool_waiting_requests)", "legendFormat": "waiting requests" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(scalelab_pg_pool_acquire_duration_seconds_bucket{outcome=\"success\"}[30s])))", "legendFormat": "acquire p95 (seconds)" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "PostgreSQL Transactions/sec",
+      "gridPos": { "x": 8, "y": 52, "w": 8, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "sum by (instance) (rate(pg_stat_database_xact_commit{datname=\"scalelab\"}[30s]))", "legendFormat": "{{instance}} commits" },
+        { "refId": "B", "expr": "sum by (instance) (rate(pg_stat_database_xact_rollback{datname=\"scalelab\"}[30s]))", "legendFormat": "{{instance}} rollbacks" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "PostgreSQL Connections",
+      "gridPos": { "x": 16, "y": 52, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "pg_stat_database_numbackends{datname=\"scalelab\"}", "legendFormat": "{{instance}}" }],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "PostgreSQL Locks",
+      "gridPos": { "x": 0, "y": 60, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum by (instance, mode) (pg_locks_count{datname=\"scalelab\"})", "legendFormat": "{{instance}} {{mode}}" }],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "PostgreSQL Rows Changed/sec",
+      "gridPos": { "x": 8, "y": 60, "w": 8, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "sum by (instance) (rate(pg_stat_database_tup_inserted{datname=\"scalelab\"}[30s]))", "legendFormat": "{{instance}} inserted" },
+        { "refId": "B", "expr": "sum by (instance) (rate(pg_stat_database_tup_updated{datname=\"scalelab\"}[30s]))", "legendFormat": "{{instance}} updated" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 25,
+      "type": "timeseries",
+      "title": "PostgreSQL CPU",
+      "gridPos": { "x": 16, "y": 60, "w": 4, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"scalelab\",pod=~\"postgres-0|postgres-shard-1-0\",container=\"postgres\"}[30s]))", "legendFormat": "{{pod}}" }],
+      "fieldConfig": { "defaults": { "unit": "cores", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
+    },
+    {
+      "id": 26,
+      "type": "timeseries",
+      "title": "PostgreSQL Memory",
+      "gridPos": { "x": 20, "y": 60, "w": 4, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"scalelab\",pod=~\"postgres-0|postgres-shard-1-0\",container=\"postgres\"})", "legendFormat": "{{pod}}" }],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
     }
   ],
   "refresh": "3s",
@@ -173,5 +276,5 @@
   "timezone": "browser",
   "title": "ScaleLab Kubernetes Autoscaling",
   "uid": "scalelab-kubernetes",
-  "version": 2
+  "version": 4
 }

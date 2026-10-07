@@ -21,11 +21,12 @@ function isPoolTimeout(error: unknown) {
 }
 
 export function createApiMetrics(
-  database: Pool,
+  database: Pool | Pool[],
   instanceId: string,
   redisReady: () => boolean = () => false,
   rateLimitRedisReady: () => boolean = () => false,
 ) {
+  const databases = Array.isArray(database) ? database : [database];
   const registry = new Registry();
   registry.setDefaultLabels({ service: "scalelab-api", instance_id: instanceId });
 
@@ -144,27 +145,30 @@ export function createApiMetrics(
   new Gauge({
     name: "scalelab_pg_pool_connections_total",
     help: "Total PostgreSQL clients currently managed by the pg pool.",
+    labelNames: ["shard"],
     registers: [registry],
     collect() {
-      this.set(database.totalCount);
+      databases.forEach((current, index) => this.set({ shard: String(index) }, current.totalCount));
     },
   });
 
   new Gauge({
     name: "scalelab_pg_pool_connections_idle",
     help: "Idle PostgreSQL clients currently available in the pg pool.",
+    labelNames: ["shard"],
     registers: [registry],
     collect() {
-      this.set(database.idleCount);
+      databases.forEach((current, index) => this.set({ shard: String(index) }, current.idleCount));
     },
   });
 
   new Gauge({
     name: "scalelab_pg_pool_waiting_requests",
     help: "Requests waiting for a PostgreSQL client from the pg pool.",
+    labelNames: ["shard"],
     registers: [registry],
     collect() {
-      this.set(database.waitingCount);
+      databases.forEach((current, index) => this.set({ shard: String(index) }, current.waitingCount));
     },
   });
 

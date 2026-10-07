@@ -1,4 +1,4 @@
-import type { Pool } from "pg";
+import type { ShardRouter } from "../../db/shard-router.js";
 import type { ApiMetrics } from "../../observability/metrics.js";
 
 export type Product = {
@@ -32,26 +32,31 @@ function mapProduct(row: ProductRow): Product {
 
 export class ProductRepository {
   constructor(
-    private readonly database: Pool,
+    private readonly shards: ShardRouter,
     private readonly metrics: ApiMetrics,
   ) {}
 
   async list() {
-    const client = await this.metrics.observePoolAcquire(() => this.database.connect());
-    try {
+    const products = await Promise.all(this.shards.pools.map(async (database) => {
+      const client = await this.metrics.observePoolAcquire(() => database.connect());
+      try {
       const result = await this.metrics.observeQuery("product.list", () => client.query<ProductRow>(`
         SELECT id, name, description, price, stock, created_at
         FROM products
+        WHERE is_benchmark = FALSE
         ORDER BY id
       `));
       return result.rows.map(mapProduct);
-    } finally {
-      client.release();
-    }
+      } finally {
+        client.release();
+      }
+    }));
+    return products.flat().sort((left, right) => left.id - right.id);
   }
 
   async getById(id: number) {
-    const client = await this.metrics.observePoolAcquire(() => this.database.connect());
+    const database = this.shards.forProduct(id);
+    const client = await this.metrics.observePoolAcquire(() => database.connect());
     try {
       const result = await this.metrics.observeQuery("product.get", () => client.query<ProductRow>(`
         SELECT id, name, description, price, stock, created_at

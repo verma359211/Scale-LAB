@@ -3,7 +3,8 @@ import { createRedisCache } from "./cache/cache-store.js";
 import { rateLimitRedisClient, redisClient } from "./cache/redis-client.js";
 import { env } from "./config/env.js";
 import { migrateDatabase } from "./db/migration-runner.js";
-import { pool } from "./db/pool.js";
+import { pools } from "./db/pool.js";
+import { ShardRouter } from "./db/shard-router.js";
 import { createApiMetrics } from "./observability/metrics.js";
 import { createRateLimiters } from "./rate-limit/rate-limiter.js";
 
@@ -16,15 +17,20 @@ function errorFields(error: unknown) {
   };
 }
 
-pool.on("error", (error) => {
-  console.error(JSON.stringify({
-    timestamp: new Date().toISOString(),
-    level: "error",
-    event: "database_pool_error",
-    instanceId: env.instanceId,
-    ...errorFields(error),
-    pool: { total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount },
-  }));
+const shards = new ShardRouter(pools);
+
+pools.forEach((pool, shardIndex) => {
+  pool.on("error", (error) => {
+    console.error(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: "error",
+      event: "database_pool_error",
+      instanceId: env.instanceId,
+      shardIndex,
+      ...errorFields(error),
+      pool: { total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount },
+    }));
+  });
 });
 
 process.on("warning", (warning) => {
@@ -52,7 +58,7 @@ process.on("uncaughtExceptionMonitor", (error, origin) => {
 async function waitForDatabase(attempts = 30) {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      await pool.query("SELECT 1");
+      await Promise.all(pools.map((pool) => pool.query("SELECT 1")));
       return;
     } catch (error) {
       if (attempt === attempts) throw error;
@@ -62,11 +68,11 @@ async function waitForDatabase(attempts = 30) {
 }
 
 await waitForDatabase();
-await migrateDatabase(pool);
+await Promise.all(pools.map((pool, index) => migrateDatabase(pool, undefined, { index, count: pools.length })));
 await Promise.all([redisClient.connect(), rateLimitRedisClient.connect()]);
 const cache = createRedisCache(redisClient);
 const metrics = createApiMetrics(
-  pool,
+  pools,
   env.instanceId,
   () => cache.isReady(),
   () => rateLimitRedisClient.isReady,
@@ -81,7 +87,7 @@ const rateLimiters = createRateLimiters(rateLimitRedisClient, metrics, {
   orderMaxRequests: env.orderRateLimitMaxRequests,
 });
 
-const server = createApp({ cache, metrics, rateLimiters }).listen(env.port, () => {
+const server = createApp({ cache, metrics, rateLimiters, shards }).listen(env.port, () => {
   console.log(JSON.stringify({
     timestamp: new Date().toISOString(),
     event: "api_started",
@@ -108,7 +114,7 @@ server.on("error", (error) => {
 function shutdown(signal: string) {
   console.log(JSON.stringify({ timestamp: new Date().toISOString(), event: "api_stopping", signal, instanceId: env.instanceId }));
   server.close(() => {
-    void Promise.allSettled([pool.end(), redisClient.quit(), rateLimitRedisClient.quit()])
+    void Promise.allSettled([...pools.map((pool) => pool.end()), redisClient.quit(), rateLimitRedisClient.quit()])
       .finally(() => process.exit(0));
   });
 }

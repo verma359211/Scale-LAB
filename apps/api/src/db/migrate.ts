@@ -1,9 +1,23 @@
 import { migrateDatabase } from "./migration-runner.js";
-import { pool } from "./pool.js";
+import { pools } from "./pool.js";
 
 try {
-  await migrateDatabase(pool);
-  console.log(JSON.stringify({ timestamp: new Date().toISOString(), event: "database_migrated" }));
+  await Promise.all(
+    pools.map((pool, shardIndex) =>
+      migrateDatabase(pool, undefined, {
+        index: shardIndex,
+        count: pools.length,
+      }),
+    ),
+  );
+
+  console.log(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      event: "database_migrated",
+      databaseShards: pools.length,
+    }),
+  );
 } finally {
-  await pool.end();
+  await Promise.allSettled(pools.map((pool) => pool.end()));
 }

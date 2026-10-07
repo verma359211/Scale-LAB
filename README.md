@@ -2,6 +2,8 @@
 
 ScaleLab is a small flash-sale system used to observe how an application behaves under load.
 
+Major completed, next and deferred milestones are tracked in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
 The current milestone runs the application in local Kubernetes:
 
 ```text
@@ -14,8 +16,10 @@ ingress-nginx (Layer 7)
 Kubernetes Service
      |
      +----> API pod 1 ----+
-     +----> API pod 2 ----+----> Redis ----> PostgreSQL
-     +----> API pod 3...   |
+     +----> API pod 2 ----+----> Redis
+     +----> API pod 3...   |        |
+              ^            |        +----> PostgreSQL shard 0
+              +--- HPA ----+        +----> PostgreSQL shard 1
               ^            |
               +--- HPA ----+
 
@@ -58,7 +62,7 @@ Open:
 
 Docker Desktop exposes `LoadBalancer` services on localhost. The API pods apply pending migrations and seed products during startup. PostgreSQL uses a Kubernetes persistent volume, and its migration advisory lock makes simultaneous pod startup safe.
 
-Adminer is a local development tool and is deliberately kept outside the public application Ingress. Sign in with PostgreSQL server `postgres`, username `scalelab`, password `scalelab`, and database `scalelab`. It provides a convenient view of the `products`, `orders`, and `schema_migrations` tables. Do not expose this development configuration publicly.
+Adminer is a local development tool and is deliberately kept outside the public application Ingress. Sign in with PostgreSQL server `postgres` for shard 0 or `postgres-shard-1` for shard 1, username `scalelab`, password `scalelab`, and database `scalelab`. Do not expose this development configuration publicly.
 
 Confirm that resource metrics and the HPA are working:
 
@@ -77,6 +81,10 @@ pnpm k8s:status     # Show pods, services and the HPA
 pnpm k8s:watch      # Watch pods appear/disappear and HPA decisions
 pnpm k8s:load       # Run the staged autoscaling workload
 pnpm k8s:load:stop  # Stop the in-cluster k6 Job
+pnpm k8s:write:hot          # Write test: every order locks one product
+pnpm k8s:write:distributed  # Write test: orders spread across 100 products
+pnpm k8s:write:reset        # Remove benchmark orders and restore their stock
+pnpm k8s:write:stop         # Stop the write-test Job
 pnpm k8s:down       # Remove the namespace and its local Kubernetes data
 pnpm typecheck
 pnpm test
@@ -86,6 +94,22 @@ pnpm build
 Run `pnpm k8s:watch` in one terminal and `pnpm k8s:load` in another. The read-only workload enters through ingress-nginx with normal HTTP keep-alive, then gradually moves through 300, 1,200, 2,200 and 3,000 RPS before cooling down. Its k6 summary and Kubernetes event list are saved under `docs/experiments/results/`. Grafana retains API, HPA, PostgreSQL, Redis and ingress time series.
 
 `Ctrl+C` only detaches the local log stream because k6 runs as a Kubernetes Job. Use `pnpm k8s:load:stop` to terminate the Job and stop its traffic early.
+
+## Write-load experiments
+
+The write tests call the real `POST /api/orders` transaction. They use 100 reserved products (IDs 10001–10100) that are hidden from the customer product list, so experiments do not consume normal storefront stock.
+
+```powershell
+# Every request competes for product 10001's row lock.
+pnpm k8s:write:hot -- -TargetRps 200 -Duration 4m
+
+# The same work is spread over 100 product rows.
+pnpm k8s:write:distributed -- -TargetRps 200 -Duration 4m
+```
+
+Both commands reset benchmark orders, stock and Redis before starting, then save the k6 summary and Kubernetes events under `docs/experiments/results/`. Parameters also include `-PreAllocatedVUs` and `-MaxVUs`. Start conservatively because one write creates an order row, updates stock, and commits a PostgreSQL transaction. Use `pnpm k8s:write:reset` after manual experiments if needed.
+
+The Grafana dashboard includes order throughput/latency, individual order SQL operations, pool waiting/acquisition, database transactions, connections, locks, changed rows, and PostgreSQL container resources. `postgres-exporter` supplies database-internal metrics; the existing API instrumentation supplies transaction-path timing.
 
 The Kubernetes profile uses `DATABASE_POOL_MAX=10`, so six API pods can create at most 60 application connections. It starts with 250m CPU requested, 500m limited, 256 MiB memory requested, 512 MiB limited, and a 70% HPA CPU target. These are experiment inputs, not production recommendations.
 
@@ -147,12 +171,16 @@ Every response includes `x-request-id` and `x-instance-id`. Successful `/metrics
 - Prometheus discovers and scrapes every API pod instead of relying on fixed instance names.
 - The k6 Job calls the ingress-nginx controller Service entirely inside the cluster and keeps HTTP connections open.
 - PostgreSQL and Redis are cluster-internal Services and expose no Windows ports.
+- Products and their orders are colocated by `productId % 2`: even IDs use shard 0 and odd IDs use shard 1.
+- Product lists scatter to both shards and merge by ID. Product reads and order writes route directly; UUID-only order reads scatter to both shards.
+- PostgreSQL exporter is cluster-internal and exposes database metrics only to Prometheus.
 - Every pod receives its own pod name as `INSTANCE_ID` through the Downward API.
 - The API Deployment starts at two replicas and the CPU HPA may select two through six.
 - Each API requests 250m CPU; the 70% target therefore represents 175m average CPU per pod.
 - Kubernetes API pools are limited to 10 connections per pod.
 - Product reads use a 30-second cache-aside Redis entry.
 - A committed order invalidates the affected product and product-list cache keys.
+- Order stock is reserved with one conditional atomic PostgreSQL `UPDATE`; a failed reservation performs a fallback read only to distinguish missing products from insufficient stock.
 - Redis is disposable cache state and deliberately has no persistent volume.
 - Rate limiting is off only for this single-client capacity experiment; the Compose baseline retains the reviewed distributed policy.
 - Metrics Server uses insecure kubelet TLS only because this is a local Docker Desktop cluster.

@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: write-load-test
+  namespace: scalelab
+data:
+  write.js: |
+    import http from "k6/http";
+    import { check } from "k6";
+
+    const baseUrl = __ENV.BASE_URL || "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local";
+    const mode = __ENV.WRITE_MODE || "hot";
+
+    export const options = {
+      discardResponseBodies: true,
+      noConnectionReuse: false,
+      summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(99)"],
+      scenarios: {
+        writeCapacity: {
+          executor: "constant-arrival-rate",
+          rate: Number(__ENV.TARGET_RPS || 200),
+          timeUnit: "1s",
+          duration: __ENV.DURATION || "4m",
+          preAllocatedVUs: Number(__ENV.PRE_VUS || 300),
+          maxVUs: Number(__ENV.MAX_VUS || 1500),
+        },
+      },
+      thresholds: {
+        checks: ["rate>0.99"],
+        http_req_failed: ["rate<0.01"],
+      },
+    };
+
+    export default function () {
+      // hot: every transaction locks one row. distributed: writes are spread
+      // over 100 rows, exposing database capacity without one artificial lock.
+      const productId = mode === "distributed"
+        ? 10001 + ((__VU + __ITER) % 100)
+        : 10001;
+
+      const response = http.post(`${baseUrl}/api/orders`, JSON.stringify({
+        userId: `${mode}-${__VU}-${__ITER}`,
+        productId,
+        quantity: 1,
+      }), {
+        headers: { "Content-Type": "application/json" },
+        tags: { write_mode: mode },
+      });
+
+      check(response, {
+        "order created": (result) => result.status === 201,
+      });
+    }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: write-load-test
+  namespace: scalelab
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1200
+  template:
+    metadata:
+      labels:
+        app: write-load-test
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:1.8.1
+          args:
+            - run
+            - --quiet
+            - --no-color
+            - --summary-export=/results/write-summary.json
+            - /scripts/write.js
+          env:
+            - name: WRITE_MODE
+              value: "__WRITE_MODE__"
+            - name: TARGET_RPS
+              value: "__TARGET_RPS__"
+            - name: DURATION
+              value: "__DURATION__"
+            - name: PRE_VUS
+              value: "__PRE_VUS__"
+            - name: MAX_VUS
+              value: "__MAX_VUS__"
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+            - name: results
+              mountPath: /results
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+        - name: result-reader
+          image: busybox:1.37.0
+          command: ["sh", "-c"]
+          args:
+            - while [ ! -f /results/copied ]; do sleep 1; done
+          volumeMounts:
+            - name: results
+              mountPath: /results
+          resources:
+            requests:
+              cpu: 1m
+              memory: 4Mi
+            limits:
+              cpu: 10m
+              memory: 16Mi
+      volumes:
+        - name: script
+          configMap:
+            name: write-load-test
+        - name: results
+          emptyDir: {}

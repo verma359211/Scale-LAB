@@ -9,6 +9,7 @@ import { createApp } from "./app.js";
 import type { CacheStore } from "./cache/cache-store.js";
 import { env } from "./config/env.js";
 import { migrateDatabase } from "./db/migration-runner.js";
+import { ShardRouter } from "./db/shard-router.js";
 import type { RateLimiters } from "./rate-limit/rate-limiter.js";
 
 const testInstanceId = "api-test-1";
@@ -76,6 +77,7 @@ describe("ScaleLab API", () => {
         WHEN 2 THEN 40
         WHEN 3 THEN 12
       END
+      WHERE id IN (1, 2, 3)
     `);
   });
 
@@ -90,6 +92,13 @@ describe("ScaleLab API", () => {
     assert.equal(response.status, 200);
     assert.equal(response.body.data.length, 3);
     assert.equal(response.body.data[0].name, "ScaleLab Mechanical Keyboard");
+    assert.equal(response.body.data.some((product: { id: number }) => product.id >= 10001), false);
+  });
+
+  it("routes products deterministically by product ID", () => {
+    const router = new ShardRouter([testPool, adminPool]);
+    assert.equal(router.forProduct(2), testPool);
+    assert.equal(router.forProduct(3), adminPool);
   });
 
   it("returns a product by ID", async () => {
@@ -141,6 +150,21 @@ describe("ScaleLab API", () => {
     assert.equal(response.body.details.availableStock, 12);
   });
 
+  it("does not oversell when orders compete for the final unit", async () => {
+    await testPool.query("UPDATE products SET stock = 1 WHERE id = 3");
+
+    const responses = await Promise.all([
+      request(application).post("/api/orders").send({ userId: "buyer-a", productId: 3, quantity: 1 }),
+      request(application).post("/api/orders").send({ userId: "buyer-b", productId: 3, quantity: 1 }),
+    ]);
+
+    assert.deepEqual(responses.map((response) => response.status).sort(), [201, 409]);
+    const product = await testPool.query<{ stock: number }>("SELECT stock FROM products WHERE id = 3");
+    const orders = await testPool.query<{ count: string }>("SELECT COUNT(*) AS count FROM orders WHERE product_id = 3");
+    assert.equal(product.rows[0].stock, 0);
+    assert.equal(Number(orders.rows[0].count), 1);
+  });
+
   it("rejects invalid order input", async () => {
     const response = await request(application).post("/api/orders").send({
       userId: "",
@@ -156,6 +180,7 @@ describe("ScaleLab API", () => {
     assert.equal(response.status, 200);
     assert.equal(response.body.status, "ok");
     assert.equal(response.body.database, "healthy");
+    assert.equal(response.body.databaseShards, 1);
     assert.equal(response.body.redis, "healthy");
     assert.equal(response.body.instanceId, testInstanceId);
     assert.equal(response.headers["x-instance-id"], testInstanceId);

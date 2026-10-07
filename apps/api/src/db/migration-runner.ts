@@ -5,11 +5,17 @@ import type { Pool } from "pg";
 
 const MIGRATION_LOCK_ID = 1_947_202;
 
-export async function migrateDatabase(database: Pool, migrationsDirectory = path.resolve(process.cwd(), "db", "migrations")) {
+export async function migrateDatabase(
+  database: Pool,
+  migrationsDirectory = path.resolve(process.cwd(), "db", "migrations"),
+  shard = { index: 0, count: 1 },
+) {
   const client = await database.connect();
 
   try {
     await client.query("SELECT pg_advisory_lock($1)", [MIGRATION_LOCK_ID]);
+    await client.query("SELECT set_config('scalelab.shard_index', $1, false)", [String(shard.index)]);
+    await client.query("SELECT set_config('scalelab.shard_count', $1, false)", [String(shard.count)]);
     await client.query(`
       CREATE TABLE IF NOT EXISTS schema_migrations (
         filename TEXT PRIMARY KEY,

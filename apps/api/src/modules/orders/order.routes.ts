@@ -1,20 +1,20 @@
 import { Router } from "express";
 import type { RequestHandler } from "express";
-import type { Pool } from "pg";
 import type { CacheStore } from "../../cache/cache-store.js";
+import type { ShardRouter } from "../../db/shard-router.js";
 import { ApiError } from "../../lib/api-error.js";
 import type { ApiMetrics } from "../../observability/metrics.js";
 import { createOrderSchema, orderIdSchema } from "./order.schema.js";
 import { OrderService } from "./order.service.js";
 
 export function createOrderRouter(
-  database: Pool,
+  shards: ShardRouter,
   metrics: ApiMetrics,
   cache: CacheStore,
   orderRateLimiter: RequestHandler,
 ) {
   const router = Router();
-  const orders = new OrderService(database, metrics, cache);
+  const orders = new OrderService(shards, metrics, cache);
 
   router.post("/", orderRateLimiter, async (request, response) => {
     const parsed = createOrderSchema.safeParse(request.body);

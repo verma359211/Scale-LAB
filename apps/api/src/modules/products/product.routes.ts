@@ -1,7 +1,7 @@
 import { Router } from "express";
-import type { Pool } from "pg";
 import { z } from "zod";
 import type { CacheStore } from "../../cache/cache-store.js";
+import type { ShardRouter } from "../../db/shard-router.js";
 import { ApiError } from "../../lib/api-error.js";
 import type { ApiMetrics } from "../../observability/metrics.js";
 import { ProductRepository } from "./product.repository.js";
@@ -10,14 +10,14 @@ import { ProductService } from "./product.service.js";
 const productIdSchema = z.coerce.number().int().positive();
 
 export function createProductRouter(
-  database: Pool,
+  shards: ShardRouter,
   metrics: ApiMetrics,
   cache: CacheStore,
   cacheTtlSeconds: number,
 ) {
   const router = Router();
   const products = new ProductService(
-    new ProductRepository(database, metrics),
+    new ProductRepository(shards, metrics),
     cache,
     metrics,
     cacheTtlSeconds,

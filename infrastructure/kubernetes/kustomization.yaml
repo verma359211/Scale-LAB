@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - metrics-server.yaml
   - database.yaml
+  - postgres-exporter.yaml
   - adminer.yaml
   - redis.yaml
   - api.yaml

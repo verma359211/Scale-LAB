@@ -9,6 +9,9 @@ stringData:
   POSTGRES_USER: scalelab
   POSTGRES_PASSWORD: scalelab
   DATABASE_URL: postgresql://scalelab:scalelab@postgres:5432/scalelab
+  DATABASE_SHARD_URLS: postgresql://scalelab:scalelab@postgres:5432/scalelab,postgresql://scalelab:scalelab@postgres-shard-1:5432/scalelab
+  POSTGRES_EXPORTER_URL: postgresql://scalelab:scalelab@postgres:5432/scalelab?sslmode=disable
+  POSTGRES_SHARD_1_EXPORTER_URL: postgresql://scalelab:scalelab@postgres-shard-1:5432/scalelab?sslmode=disable
 ---
 apiVersion: v1
 kind: Service
@@ -38,6 +41,68 @@ spec:
     metadata:
       labels:
         app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "scalelab", "-d", "scalelab"]
+            periodSeconds: 3
+            timeoutSeconds: 2
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-shard-1
+  namespace: scalelab
+spec:
+  selector:
+    app: postgres-shard-1
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-shard-1
+  namespace: scalelab
+spec:
+  serviceName: postgres-shard-1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-shard-1
+  template:
+    metadata:
+      labels:
+        app: postgres-shard-1
     spec:
       containers:
         - name: postgres

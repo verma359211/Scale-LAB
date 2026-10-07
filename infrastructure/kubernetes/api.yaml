@@ -57,7 +57,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: api
-          image: scalelab-api:local
+          image: scalelab-api:sharded-v1
           # Docker Desktop kind reaches locally built containerd images through
           # its registry mirror when a pull is requested.
           imagePullPolicy: IfNotPresent
@@ -73,6 +73,11 @@ spec:
                 secretKeyRef:
                   name: postgres
                   key: DATABASE_URL
+            - name: DATABASE_SHARD_URLS
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: DATABASE_SHARD_URLS
             - name: INSTANCE_ID
               valueFrom:
                 fieldRef:

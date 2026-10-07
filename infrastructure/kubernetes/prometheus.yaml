@@ -63,6 +63,12 @@ data:
         static_configs:
           - targets: ["kube-state-metrics:8080"]
 
+      - job_name: postgres
+        static_configs:
+          - targets:
+              - postgres-exporter-shard-0:9187
+              - postgres-exporter-shard-1:9187
+
       - job_name: ingress-nginx
         kubernetes_sd_configs:
           - role: pod

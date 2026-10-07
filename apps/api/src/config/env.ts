@@ -17,6 +17,10 @@ export const env = {
   port: positiveInteger(process.env.PORT, 3001, "PORT"),
   clientOrigin: process.env.CLIENT_ORIGIN ?? "http://localhost:5174",
   databaseUrl: process.env.DATABASE_URL ?? "postgresql://scalelab:scalelab@localhost:5433/scalelab",
+  databaseShardUrls: (process.env.DATABASE_SHARD_URLS ?? process.env.DATABASE_URL ?? "postgresql://scalelab:scalelab@localhost:5433/scalelab")
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean),
   databasePoolMax: positiveInteger(process.env.DATABASE_POOL_MAX, 10, "DATABASE_POOL_MAX"),
   redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
   productCacheTtlSeconds: positiveInteger(process.env.PRODUCT_CACHE_TTL_SECONDS, 30, "PRODUCT_CACHE_TTL_SECONDS"),

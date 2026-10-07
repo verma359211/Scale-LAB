@@ -523,3 +523,58 @@ The first ingress run exposed a Windows-specific result copy issue: `kubectl cp`
 ScaleLab now runs the official `adminer:6.1.1-standalone` image as one small Kubernetes Deployment. Its `LoadBalancer` Service is available on local port 8081 and defaults the database server field to the internal PostgreSQL Service name, `postgres`. Developers can inspect products, orders, indexes, and migration history without installing a desktop SQL client.
 
 Adminer is not part of the customer request path and is not routed through ingress-nginx. The configuration is intentionally for local learning only: it uses the repository's known development credentials and must not be exposed publicly. Removing the `scalelab` namespace removes Adminer together with the rest of the local stack.
+## Write-heavy PostgreSQL baseline foundation
+
+### Added repeatable hot-row and distributed-row order tests
+
+ScaleLab now has a focused write-testing path without changing order behavior. Migration `002_write_benchmark_products.sql` adds 100 high-stock benchmark products and marks them with `is_benchmark`. The normal product list excludes these rows, while `POST /api/orders` can address them directly. The reset script deletes only orders for benchmark products, restores their stock, and clears disposable Redis state. Customer products and orders are not reset.
+
+`infrastructure/kubernetes/write-load-test.yaml` defines one k6 workload with two modes. `hot` sends every order to product 10001, intentionally measuring row-lock serialization. `distributed` spreads orders over products 10001–10100, measuring broader PostgreSQL write capacity with less single-row contention. Both use constant arrival rate, one order per iteration, normal HTTP reuse, quiet k6 output, and raw summary export. `scripts/run-kubernetes-write-test.ps1` applies parameters, resets state, runs the Job, copies results, and records namespace events.
+
+Commands are `pnpm k8s:write:hot`, `pnpm k8s:write:distributed`, `pnpm k8s:write:reset`, and `pnpm k8s:write:stop`. Both test commands accept `-TargetRps`, `-Duration`, `-PreAllocatedVUs`, and `-MaxVUs` after `--`.
+
+### Added PostgreSQL-internal observability
+
+A small `postgres-exporter` Deployment reads PostgreSQL statistics through a cluster-only Service. Prometheus scrapes it every three seconds. The Kubernetes Grafana dashboard now adds write-specific HTTP latency and throughput, transaction operation latency, pool pressure, commits/rollbacks, backend connections, locks, changed rows, and PostgreSQL container CPU/memory.
+
+The existing `SELECT ... FOR UPDATE` order transaction is intentionally unchanged. This milestone establishes its baseline before testing an atomic conditional stock update. Read replicas, partitioning, sharding, queues, and database proxies are intentionally postponed until a measured bottleneck supports them.
+
+Important files are `apps/api/db/migrations/002_write_benchmark_products.sql`, `load-tests/reset-write-test.sql`, `infrastructure/kubernetes/write-load-test.yaml`, `scripts/run-kubernetes-write-test.ps1`, `scripts/reset-kubernetes-write-test.ps1`, `infrastructure/kubernetes/postgres-exporter.yaml`, and `infrastructure/kubernetes/scalelab-kubernetes.json`.
+
+Verification covers JSON/YAML rendering, TypeScript typecheck, integration tests, production builds, Kubernetes rollout, exporter scrape health, reserved product isolation, and reset behavior. Actual throughput numbers belong in the experiment report and are not invented here.
+
+## Atomic stock reservation
+
+### Removed the separate pessimistic locking read from successful orders
+
+The original order transaction executed `SELECT ... FOR UPDATE` and then a separate `UPDATE`. Hot-product testing proved that this held database connections while many transactions waited for the same row and ultimately exhausted the API pools.
+
+`OrderService.create` now reserves stock with one conditional statement: `UPDATE products SET stock = stock - quantity WHERE id = productId AND stock >= quantity RETURNING id, price, stock`. PostgreSQL evaluates and locks this update atomically, so stock cannot become negative and concurrent requests cannot oversell. The transaction remains open for the order insert and commits both changes together.
+
+The normal successful path drops from five database round trips (`BEGIN`, locking read, update, insert, `COMMIT`) to four (`BEGIN`, conditional update, insert, `COMMIT`). When no row is returned, one failure-only `SELECT` preserves the existing distinction between HTTP 404 product-not-found and HTTP 409 insufficient-stock responses.
+
+The integration suite now includes two simultaneous orders competing for the final unit. Verification confirms one `201`, one `409`, zero remaining stock, and exactly one stored order. Typecheck, all 15 API integration tests, and production builds pass. The Kubernetes API image uses the explicit `scalelab-api:atomic-stock` milestone tag so Docker Desktop does not reuse the earlier cached image.
+
+## Roadmap checkpoint before external deployment
+
+### Deferred advanced hot-product designs without losing the decisions
+
+`docs/ROADMAP.md` is now the canonical milestone list. Inventory buckets, Redis atomic inventory reservations and queue-based order processing are explicitly deferred until after an external deployment baseline. The roadmap records the problem each approach solves, its added complexity and the condition for revisiting it.
+
+The next milestone is external deployment: registry images, a real cluster, database and Redis placement, secrets, ingress/DNS/TLS, safe migrations, observability and a non-local baseline. Provider-specific files are intentionally postponed until the cloud, region, budget and domain requirements are selected.
+
+## Product-based PostgreSQL sharding
+
+### Split products and their orders across two physical PostgreSQL instances
+
+The API now creates one pool per URL in `DATABASE_SHARD_URLS` and routes by `productId % shardCount`. A product and every order that changes its stock therefore stay on the same database, preserving the existing atomic stock-update and order-insert transaction without distributed transactions.
+
+The Kubernetes profile runs `postgres` as shard 0 and `postgres-shard-1` as shard 1, each with its own StatefulSet and persistent volume. Even product IDs belong to shard 0; odd IDs belong to shard 1. Migration `003_assign_products_to_shards.sql` uses shard session settings supplied by the migration runner to retain only the rows owned by each fresh shard.
+
+`GET /api/products` queries both shards concurrently and merges the results. `GET /api/products/:id` and `POST /api/orders` route directly from the product ID. Because the public order UUID contains no shard key, `GET /api/orders/:id` performs a two-shard scatter lookup; a future directory or shard-bearing ID would be needed at large shard counts.
+
+Prometheus scrapes one exporter per shard. Pool gauges carry a bounded `shard` label, and Grafana separates PostgreSQL transactions, connections, locks, row changes, CPU and memory by shard. The benchmark reset operates on both shards.
+
+Live verification found 51 even-ID products on shard 0 and 52 odd-ID products on shard 1. Orders for products 10002 and 10001 were stored only on shard 0 and shard 1 respectively, then fetched successfully through the public API and removed by the reset. Both exporters were healthy, `/health` reported two shards, typecheck/build passed, and all 16 integration tests passed.
+
+This topology scales workloads containing many products. It intentionally does not claim to improve the single-product hot-row test: product 10001 always routes to shard 1 and remains one serialized inventory row.
