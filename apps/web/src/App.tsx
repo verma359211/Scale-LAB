@@ -5,7 +5,11 @@ import { api, ApiClientError } from "./lib/api";
 import type { Order, Product, RequestDebug } from "./types";
 
 function generateUserId() {
-  return `user-${crypto.randomUUID().slice(0, 8)}`;
+  const suffix = typeof globalThis.crypto?.randomUUID === "function"
+    ? globalThis.crypto.randomUUID().slice(0, 8)
+    : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`.slice(-8);
+
+  return `user-${suffix}`;
 }
 
 export default function App() {
