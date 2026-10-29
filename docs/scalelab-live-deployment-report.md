@@ -67,6 +67,13 @@ in-memory workflow restart limitations remain. Raw smoke evidence and screenshot
 are ignored in `docs/experiments/results/visitor-*`; no benchmark claim beyond
 the actual small smoke measurements is made.
 
+Implementation commit `393d23374eba6f6bf0b033569f2ed08074e85505` was pushed to
+`main` at `https://github.com/verma359211/Scale-LAB.git` without force. This first
+commit includes the existing uncommitted foundation required by the dashboard.
+The staged review excludes secrets, private backups and ignored raw results.
+One additional mocked API benchmark-reset test passed (62 executed tests total).
+This documentation follow-up records actual completion and requires no deployment.
+
 ## Execution checklist
 
 - [x] Read deployment guide, finalization plan and implementation log; preserve dirty tree.

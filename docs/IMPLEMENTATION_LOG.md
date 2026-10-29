@@ -1065,3 +1065,14 @@ The checklist, private rollback snapshot and final live results are recorded in
 heavy loads, forced controller failure and live write cleanup are outside this
 read-only release verification. Public-control abuse and in-memory workflow state
 remain known limitations; persisted lease recovery protects HPA settings separately.
+
+Live visitor verification passed: normal 50-RPS/30s run `3cb3c401` completed
+1,501 requests with zero failures; dashboard warm-start 50-RPS/60s run `5ebc10ad`
+completed 3,001 with zero failures. Five actual Ready pods preceded k6; restoration
+and final endedAt followed exit. Final HPA min2/max6/target70%, Ready/current/desired
+two, no lease, no active cleanup/test/container. Store/HTTPS and real 5/10-minute
+telemetry work. See the deployment report for exact timestamps, digests and rollback.
+The implementation commit `393d23374eba6f6bf0b033569f2ed08074e85505` was pushed
+successfully to GitHub main without force. A documentation-only follow-up records
+completion. Additional mocked API reset test passed; total executed relevant tests
+62. Full DB integration, live mixed cleanup and full presets were not rerun.
