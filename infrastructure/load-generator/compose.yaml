@@ -1,0 +1,28 @@
+services:
+  controller:
+    container_name: scalelab-loadgen-controller
+    image: ${LOADGEN_CONTROLLER_IMAGE:-verma17/scalelab-loadgen-controller:civo-v4}
+    environment:
+      PORT: "4100"
+      SCALELAB_TARGET_URL: https://scalelab.chandanverma.space
+      LOADGEN_CONTROL_TOKEN: ${LOADGEN_CONTROL_TOKEN:?Set LOADGEN_CONTROL_TOKEN in .env}
+      K6_IMAGE: grafana/k6:1.8.1
+      # The host Docker daemon uses this path when it starts the k6 container.
+      LOAD_TESTS_DIR: ${LOAD_TESTS_HOST_DIR}
+      RUN_COOLDOWN_SECONDS: "30"
+      K6_PREALLOCATED_VUS: ${K6_PREALLOCATED_VUS:-500}
+      K6_MAX_VUS: ${K6_MAX_VUS:-4000}
+      K6_VU_BUDGET: ${K6_VU_BUDGET:-4000}
+      K6_CPUS: ${K6_CPUS:-2}
+      K6_MEMORY: ${K6_MEMORY:-2g}
+      K6_PIDS_LIMIT: ${K6_PIDS_LIMIT:-256}
+    ports:
+      # Bind only to the VM's Civo private address, never its public interface.
+      - "192.168.1.8:4100:4100"
+    volumes:
+      # Required so the controller can launch the fixed grafana/k6 image.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${LOAD_TESTS_HOST_DIR}:/load-tests:ro
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

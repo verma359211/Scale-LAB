@@ -578,3 +578,490 @@ Prometheus scrapes one exporter per shard. Pool gauges carry a bounded `shard` l
 Live verification found 51 even-ID products on shard 0 and 52 odd-ID products on shard 1. Orders for products 10002 and 10001 were stored only on shard 0 and shard 1 respectively, then fetched successfully through the public API and removed by the reset. Both exporters were healthy, `/health` reported two shards, typecheck/build passed, and all 16 integration tests passed.
 
 This topology scales workloads containing many products. It intentionally does not claim to improve the single-product hot-row test: product 10001 always routes to shard 1 and remains one serialized inventory row.
+
+# Mixed read/write load testing
+
+## Summary
+
+Added one configurable k6 workload that combines realistic product reads with
+isolated benchmark order writes.
+
+## Details
+
+- `load-tests/mixed-load.js` uses `constant-arrival-rate` and defaults to a
+  70% read / 30% write distribution.
+- Reads rotate across customer products 1–3. Writes rotate across benchmark
+  products 10001–10100 with quantity one, preserving normal storefront stock.
+- The script validates that the configured read and write percentages are in
+  range and total 100 before the scenario starts.
+- Existing network-error, timeout, HTTP 5xx, check and HTTP-failure diagnostics
+  were reused through a shared response helper.
+- Separate counters and latency trends distinguish reads, writes, successful
+  orders, unexpected order failures and expected insufficient-stock outcomes.
+- HTTP 409 is declared as an expected k6 response for writes and is tracked
+  separately; it does not count as a network or HTTP transport failure.
+- The existing benchmark reset remains the supported cleanup path. It deletes
+  only benchmark orders, restores benchmark stock and clears Redis.
+
+No application, frontend, Docker, Kubernetes or cloud deployment behavior was
+changed. Verification uses syntax checks and `k6 inspect`; no load test is run
+as part of implementation.
+
+# Presentable ScaleLab storefront
+
+## Summary
+
+Turned the existing flash-sale screen into a polished product and architecture
+showcase without changing its backend contract.
+
+## Details
+
+- Reworked the page into a responsive storefront with a concise project hero,
+  improved catalog cards, stable skeletons, empty/error states, and accessible
+  disabled and focus states.
+- Order feedback now distinguishes in-progress, confirmed, insufficient-stock,
+  validation, and API-error states. Confirmations show the real order, request,
+  latency, and API Pod values returned to the browser.
+- Added a twelve-entry activity feed containing only events the frontend can
+  observe: product fetches, order requests/results, and inventory refreshes.
+- Expanded the request path into Browser, cloud load balancer, ingress,
+  Kubernetes Service, API Pods, Redis, and PostgreSQL shards.
+- Added a compact implemented-capabilities section so visitors can understand
+  the system-design project without first reading its repository documentation.
+- Kept the existing React, Vite, Tailwind, API client, and product/order behavior;
+  no dependency, backend, infrastructure, authentication, dashboard, or fake
+  telemetry was added.
+
+The frontend typecheck and production build pass. The project does not define a
+frontend lint command or browser-test suite.
+
+# ScaleLab control and monitoring dashboard
+
+## Summary
+
+Added a separate, light-mode ScaleLab dashboard with real Prometheus telemetry
+and bounded control of an external k6 load generator.
+
+## Details
+
+The React application now has two independent pages. `/store` (and `/`) keeps
+the existing catalog and order demonstration, while `/scalelab` provides the
+control and monitoring experience. A small shared navigation is the only common
+page chrome. The frontend image now uses Nginx with an SPA fallback so both
+routes work when opened directly. The entire frontend uses a neutral light-mode
+visual system with accessible focus, loading, empty and error states.
+
+The dashboard initially loads fifteen minutes of history and then polls a
+summary every three seconds. It shows request rate, p95/p99 latency, HTTP 5xx
+rate, ready and desired API Pods, API CPU relative to its 250m request, Redis
+cache hit ratio, PostgreSQL query p95, active requests and ingress traffic.
+Responsive SVG charts avoid a new chart dependency. The same summary data feeds
+a compact live topology, so values are never invented when telemetry is absent.
+
+`apps/lab-controller` is a one-replica Express/TypeScript control-plane service.
+It exposes only fixed summary and time-series responses; the browser cannot send
+PromQL. Its run endpoints validate an allowlisted test type, bounded target RPS,
+bounded duration and the mixed read/write split before forwarding the normalized
+request to the private load-generator controller.
+
+`apps/loadgen-controller` runs on the existing external Civo VM. It maps the four
+public names (`static`, `mixed`, `ramp`, `spike`) to repository k6 scripts and
+starts Docker with `spawn`, an argument array and `shell: false`. The public
+request cannot supply a command, script path, target URL, Docker option or
+environment variable. Only one run may execute at once, completed runs have a
+thirty-second cooldown, target rate is capped at 5,000 RPS and duration is capped
+at ten minutes. State and genuine lifecycle events remain in memory, which is an
+intentional showcase limitation.
+
+Important files include `apps/web/src/pages/ScaleLabPage.tsx`,
+`apps/web/src/components/LoadTestPanel.tsx`, `apps/lab-controller`,
+`apps/loadgen-controller`, `infrastructure/load-generator/compose.yaml`,
+`infrastructure/kubernetes/civo/lab-controller.yaml`, and the prepared
+`/lab-api` route in `infrastructure/kubernetes/civo/ingress-api.yaml`.
+
+Configuration uses `PROMETHEUS_URL`, `LOADGEN_CONTROLLER_URL` and
+`UPSTREAM_TIMEOUT_MS` in the Kubernetes controller. The VM controller uses
+`SCALELAB_TARGET_URL`, `K6_IMAGE`, `LOAD_TESTS_DIR`, and
+`RUN_COOLDOWN_SECONDS`. The frontend can override
+`VITE_API_URL` and `VITE_LAB_API_URL` at build time.
+
+Verification completed: all four TypeScript projects typecheck and build; all
+16 ecommerce API integration tests and both controller safety suites pass; all
+three production Docker images build; both
+controller images return healthy `/live` responses; the Nginx frontend image
+serves direct `/store` and `/scalelab` routes; and the Civo manifests pass a
+client-side Kubernetes dry run. No load test was started and no Civo resource was
+changed. The read-only live check found six fixed API replicas and no HPA object,
+so `civo/hpa.yaml` must be applied during the later deployment to restore the
+intended two-to-six Pod autoscaling behavior.
+
+# Image-based load-generator deployment
+
+## Summary
+
+Removed the full ScaleLab repository and VM-side compilation requirement from
+the external load-generator controller deployment.
+
+## Details
+
+`infrastructure/load-generator/compose.yaml` now pulls the immutable
+`verma17/scalelab-loadgen-controller:civo-v1` image instead of building from a
+repository checkout. The VM only supplies its existing
+`/home/civo/scalelab-loadtest` directory, the Compose file and a one-line `.env`
+file. The tests are mounted read-only, port 4100 remains bound only to
+`192.168.1.8`, and the controller retains the Docker socket solely to launch
+the fixed `grafana/k6` image. The allowlisted scripts, fixed target, bounded
+inputs, single-run lock and `shell: false` execution remain unchanged.
+
+Build, publish and VM startup instructions are recorded in
+`infrastructure/load-generator/README.md`. No cloud or VM deployment was run.
+
+# Real k6 results and benchmark cleanup
+
+## Summary
+
+Captured genuine k6 terminal summaries and added automatic, shard-aware cleanup
+for write-capable benchmark runs.
+
+## Details
+
+The load-generator controller now pipes both stdout and stderr from its fixed
+Docker invocation. ANSI sequences are removed and each stream retains only its
+newest 128 KB, which preserves the final k6 summary without unbounded memory
+growth. `GET /runs/current/result` serves the completed result separately from
+the frequently-polled compact run state. A conservative parser extracts cards
+for requests, achieved RPS, failure rate, p95, p99, dropped iterations and test
+duration only when the corresponding real output lines exist; raw output
+remains authoritative.
+
+The ecommerce API now has a token-protected
+`POST /internal/benchmark/reset` operation. It is intentionally absent from
+ingress and is reachable by the lab controller over the API ClusterIP. Every
+configured PostgreSQL shard receives its own transaction that deletes orders
+only when their product is flagged `is_benchmark` and is in the fixed
+10001–10100 range, then restores those same products to 10,000,000 stock. The
+operation is idempotent and never targets Store products 1–3.
+
+The one-replica lab controller coordinates cleanup in memory. Mixed runs with a
+positive write percentage are monitored server-side after start; static, ramp,
+spike and read-only mixed runs do not reset. Once k6 reaches a terminal state,
+the controller reports `resetting`, invokes the internal reset, and exposes
+completed or failed cleanup state and confirmed lifecycle events. Cleanup does
+not depend on the browser remaining open. A lab-controller restart during a run
+remains the documented recovery limitation, so a fixed manual reset endpoint
+and confirmed secondary dashboard action are also available.
+
+The ScaleLab page retains all live Prometheus cards, charts, topology and custom
+load controls. Completed runs gain summary cards and a collapsible, scrollable,
+copyable terminal panel containing the real k6 output. The run result is fetched
+only after terminal cleanup state and is not embedded in the three-second
+current-run response.
+
+Cloud configuration now expects a shared `benchmark-reset` Secret, referenced
+by both the API and lab-controller Deployments. Prepared immutable image tags
+are `scalelab-api:civo-v2`, `scalelab-lab-controller:civo-v2`,
+`scalelab-loadgen-controller:civo-v2`, and `scalelab-web:civo-v5`. No image was
+pushed and no VM or Kubernetes resource was changed.
+
+Verification covers bounded output, ANSI removal, terminal result availability,
+command isolation, result proxying, write versus read cleanup decisions,
+cleanup failure visibility, fixed manual reset, two-shard transaction dispatch,
+benchmark-only deletion/restoration, normal Store preservation and idempotency.
+Workspace typecheck, all 32 automated tests, production builds and diff checks
+pass. The web package intentionally still has no browser-test framework.
+
+## Write-run completion ordering
+
+Cleanup-required runs now defer their public terminal state, final `endedAt`,
+and successful completion event until benchmark reset succeeds. The lab
+controller filters the load generator's earlier k6-level `Test completed`
+event, reports `resetting` with `endedAt: null`, then emits `Benchmark data
+reset` followed by `Test completed`. Cleanup failure produces a failed workflow
+without a misleading completion event. Read-only runs retain their direct k6
+exit-to-completion lifecycle.
+
+# Dashboard metric correctness and recruiter-facing polish
+
+## Summary
+
+Made ScaleLab telemetry distinguish real zeroes from unavailable data and made
+the experiment story understandable without changing workload or infrastructure
+behavior.
+
+## Details
+
+The lab controller now scopes ingress throughput to the observed Civo labels
+`namespace="scalelab"`, `ingress="scalelab-api"`, and
+`service="scalelab-api"`. Redis hit ratio and HTTP error-rate queries no longer
+clamp an absent denominator into a fabricated zero. They return no sample when
+there was no relevant traffic, which the web UI displays as `--` with a neutral
+explanation. A separate average CPU-millicore metric complements the existing
+percentage-of-request metric; the latter remains the HPA-relevant value.
+
+The dashboard now introduces ScaleLab as a distributed-systems performance lab,
+shows target versus current/final RPS, derives a compact system-state explanation
+only from run state and live metrics, and makes ready Pods, desired Pods, CPU,
+and the 70% HPA target visible together. A short “what happens during a test”
+sequence explains the traffic path. The topology explicitly separates the
+external k6 generator, benchmark request path, Prometheus monitoring, and lab
+controller. Rolling 30-second windows and unavailable/no-traffic states are
+labelled directly.
+
+Completed results retain raw k6 output and add a concise configuration/result
+summary. The load-generator parser also extracts only three explicitly named
+mixed-workload counters: reads, writes, and successful orders. Write-capable
+runs display confirmed cleanup totals from both shards or the safe cleanup
+failure reason. The Grafana dashboard uses the same corrected Redis and ingress
+queries and adds a visible 70% CPU reference series.
+
+Important files include `apps/lab-controller/src/prometheus.ts`,
+`apps/web/src/pages/ScaleLabPage.tsx`,
+`apps/web/src/lib/system-state.ts`, the ScaleLab presentation components,
+`apps/loadgen-controller/src/runner.ts`, and
+`infrastructure/kubernetes/scalelab-kubernetes.json`. Polling remains centralized
+in the mounted ScaleLab page at three-second intervals. Load-test limits,
+scripts, cleanup behavior, HPA configuration, resources, data stores, and ingress
+tuning were intentionally unchanged.
+
+Verification used three normal product reads—not sustained traffic—to confirm
+the live ingress, Redis, CPU-millicore, and error-rate PromQL against Civo. It
+returned an API ingress series, a real cache ratio, average CPU millicores, and a
+real zero error rate. Unit tests cover ingress label scope, zero-denominator
+semantics, unavailable samples, mixed k6 parsing, and system-state claims.
+Desktop, 768px tablet, and 390px mobile layouts were inspected from a production
+build; the tablet summary breakpoint was tightened after visual review. No load
+test was run and nothing was deployed. Workspace typecheck, all 40 automated
+tests, all four production builds, dashboard JSON parsing, and `git diff
+--check` pass. The API integration suite used only temporary local PostgreSQL
+and Redis containers, which were stopped after the test.
+
+# Single-operator test control
+
+## Summary
+
+Removed the public dashboard operator-token step while retaining the private
+controller-to-load-generator and controller-to-API authentication boundaries.
+
+## Details
+
+ScaleLab is currently operated by one developer during interactive capacity
+investigation, so entering a browser-side operator token before every start,
+stop, or benchmark reset added friction without improving the active workflow.
+The public lab-controller routes now directly start, stop, and reset the
+bounded workloads exposed by the dashboard. The server-side request schema,
+one-active-test guard, RPS/duration/VU ceilings, fixed workload allowlist,
+benchmark-only data isolation, automatic cleanup, and lifecycle coordination
+are unchanged.
+
+This does not weaken the internal boundaries. The lab controller still requires
+`LOADGEN_CONTROL_TOKEN` to call the private load-generator controller, whose
+target remains fixed to `https://scalelab.chandanverma.space`. The API's
+`BENCHMARK_RESET_TOKEN` remains required for the internal reset operation. The
+removed `LAB_CONTROL_TOKEN` is no longer referenced by the Civo lab-controller
+Deployment, so it does not need to be present in the `lab-controller-control`
+Secret for this phase. This is deliberately a temporary single-operator choice;
+user accounts or external-facing test authorization should be introduced before
+sharing write-capable control access with untrusted users.
+
+Verification covers public dashboard start, stop, and reset dispatch, existing
+input validation, and the existing cleanup lifecycle tests. No deployment or
+load test was run.
+
+# Final dashboard experience and bounded pod preparation
+
+## Summary
+
+Made the dashboard the root product, added server-defined demonstration scenarios,
+real shared five/ten-minute telemetry and recoverable HPA pod preparation, and
+replaced the artificial 5,000-RPS cap with explicit generator resource budgets.
+
+## Details
+
+The existing Store remains at `/store`; `/scalelab` resolves to the same dashboard
+as `/`. Navigation, browser title and description identify ScaleLab as the main
+product. The existing Nginx SPA fallback and production ingress/API/TLS routing
+are unchanged. `K6ResultPanel.tsx` defaults its detailed output disclosure to
+closed, retains copy/scroll/error behavior, and can display the private generator's
+bounded output snapshot during a run. Final read/write/order counts and automatic
+cleanup still use genuine k6 results and confirmed reset responses.
+
+`TelemetryPanels.tsx` queries full Prometheus histories every six seconds, with
+five minutes selected initially and a shared ten-minute option. Aggregate and
+per-pod series use the same start/end and three-second evaluation step. The
+lab-controller preserves all pod-labelled series instead of discarding all but
+the first. Per-pod CPU uses actual Kubernetes CPU requests and the `pod` label;
+request rates use the existing `api_instance` discovery label. New panels show
+total CPU millicores, per-pod traffic/CPU, pool waiters and successful order
+responses/sec. Missing samples are not replaced with zero; chart gaps and
+terminated pod histories remain visible. Rate/quantile calculations retain their
+30-second rolling windows. Short server caches share query work among visitors.
+
+`apps/lab-controller/src/presets.ts` is the authoritative scenario definition
+returned to the browser and resolved again at start. The default autoscaling
+scenario ramps to 4,000 RPS over 10 minutes, spike uses a four-minute burst profile,
+and throughput uses four-minute 70/30 mixed traffic at 4,000 target RPS. Warm-up
+guidance and target versus achieved throughput are explicit. Existing custom
+workloads, duration, read/write and new VU settings live in collapsed Advanced
+Mode. Preset mapping and strict schemas prevent arbitrary command/target/env input.
+
+Both controller schemas now accept integer target rates above 5,000 without
+clamping. The VM exposes `K6_PREALLOCATED_VUS`, `K6_MAX_VUS`, `K6_VU_BUDGET`,
+`K6_CPUS`, `K6_MEMORY` and `K6_PIDS_LIMIT`; defaults are 500/4,000 VUs with a
+4,000-VU budget, 2 CPU cores, 2g memory and 256 PIDs. RPS does not silently choose
+or reduce VUs. Over-budget requests fail explicitly; actual resource settings
+appear in run state. Docker applies those child-container budgets, while duration
+and watchdogs bound execution. Run/stop errors do not imply the process exited.
+The fixed HTTPS target, private VM binding, script allowlist, shell-free spawn,
+internal token and one-active-test/cooldown rules remain enforced.
+
+`warmup.ts` temporarily sets the existing HPA minimum to up to five, bounded by
+its maximum and never above six. It persists original minimum and a nonrenewable
+15-minute lease in an HPA annotation, checks actual Deployment readiness and
+restores on readiness timeout (3m), explicit restore, or run completion. Repeated
+clicks are idempotent. Optimistic resourceVersion checks and serial control
+mutations prevent conflicting updates; operator edits are preserved. A one-minute
+`warmup-recovery` CronJob restores expired/unready leases if the controller is
+unavailable. Separate name-scoped Kubernetes Roles allow only HPA get/patch and
+Deployment readiness get; no broad admin or generic scaling API is exposed.
+
+Public control remains an intentional demo tradeoff: a stranger can still consume
+cloud resources or interrupt a run. Browser-origin checks, global reset/preparation
+cooldowns and `PUBLIC_CONTROLS_ENABLED=false` reduce accidental/continuous use,
+but are not visitor authentication. Pausing controls still permits stop and
+restore. No operator secret is reintroduced in the browser. The existing
+`LOADGEN_CONTROL_TOKEN` and `BENCHMARK_RESET_TOKEN` boundaries remain unchanged.
+
+Important sources are the web dashboard components and API client, both controller
+schemas/configuration, `prometheus.ts`, `test-controls.ts`, `warmup.ts`,
+`kubernetes.ts`, and Civo `lab-controller.yaml`, `warmup-rbac.yaml`, and
+`warmup-recovery.yaml`. The persistent audit/checklist is
+`docs/scalelab-finalization-plan.md`; exact release/configuration instructions and
+public-access limitations are in `docs/scalelab-finalization-deployment.md`.
+
+Local verification: controller and web unit/HTTP/render tests, workspace
+typecheck and production builds, offline YAML parsing and k6 JavaScript syntax
+checks. Browser preview was inspected at desktop, 768px and 390px, including
+root/Store/alias refresh, collapsed sections, time-window switching, and backing
+service failure states. Kubernetes warm-up tests use fake providers; they are
+not evidence of a live cluster rollout. Live HPA/RBAC/recovery, real metric label
+availability and external VM execution remain pending approved deployment.
+Docker Desktop's daemon was unavailable, so no Docker image builds or database
+integration suite were run. API code was not changed. No image was published,
+cloud configuration changed, load test executed, or Git commit created.
+
+The pre-existing in-memory run/cleanup restart limitation remains documented;
+persistent warm-up recovery does not claim to recover arbitrary interrupted runs.
+
+# Finalization production rollout — 2026-10-29
+
+## Summary
+
+Deployed the reviewed dashboard/controllers to Civo and verified real telemetry,
+bounded pod preparation/restoration, a small read-only smoke test and dashboard stop.
+
+## Details
+
+Release `finalization-v1-20261029-55889ae2` built and published three immutable
+linux/amd64 images for web, lab-controller and loadgen-controller. Live baseline
+was web civo-v8, lab civo-v6 and VM loadgen civo-v4. Private rollback snapshots
+were captured before changes. VM Compose/scripts were backed up, copied and
+hash-checked; approved resource settings were added while preserving the existing
+service token and mode-600 environment file. Private port binding and fixed HTTPS
+target remain unchanged. Kubernetes scoped RBAC/recovery resources were applied
+first, then lab-controller revision 7 and frontend revision 9. The API remains
+civo-v2, revision 3; no data/monitoring/ingress component was rebuilt or changed.
+
+Production `/`, `/store`, `/scalelab`, product API and health return successfully.
+Browser checks confirmed the Store's three products, dashboard scenarios,
+collapsed custom/output sections, above-5,000 input without execution, running
+Start/Stop states, retained console and ten-minute selection. Real range queries
+returned 101/201 aggregate points over five/ten minutes at 3s steps. Per-pod CPU
+and traffic series use real source labels; zero orders/errors/waiters were
+distinguished from absent cache traffic. Two very short-lived warm-up pods had
+only one cAdvisor sample, so no false CPU rate was manufactured for them.
+
+Warm-up raised HPA minimum 2→5 and five actual API pods became Ready. Explicit
+restore cleared the lease, restored minimum 2 and replicas settled back at two.
+The recovery CronJob is unsuspended and has successful scheduled Jobs. Permissions
+allow get/patch of the one HPA and deny another HPA/Secrets. Deliberate controller
+crash/lease-expiry recovery was not performed, following the approved test scope.
+
+Read-only smoke `8e35bda1` ran at 50 target RPS for 30 seconds: 1,501 requests,
+50.02176 achieved RPS, zero HTTP failures, 5.42ms average, 6.75ms p95 and 7.64ms
+p99. A separate small read run `8f2db0ce` was stopped via the dashboard; it retained
+964 successful requests, `stopped=true` and a confirmed Test stopped event.
+k6 exit 105 is the expected termination result for that intentional stop.
+Neither test created orders or required benchmark reset. No high-load or full
+preset benchmark was run, and no new capacity claim is made.
+
+All application/data/monitoring workloads remain Ready. API health reports two
+healthy database shards and Redis; Prometheus readiness and Grafana database
+health return 200. Final safety checks show HPA min 2/max 6/current 2/desired 2,
+no lease, no active test/pending cleanup and no orphaned k6 container. Public
+controls remain enabled as authorized; public cost/abuse and in-memory run-state
+limitations remain. No rollback was needed and no commit was made.
+
+All 51 controller/frontend tests and workspace typecheck passed after deployment;
+three image builds compiled successfully. Full digests, observed image IDs,
+rollback paths/commands and pending verification are in
+`docs/scalelab-live-deployment-report.md`. Raw smoke/stop results remain under
+`docs/experiments/results/`. Database integration and live write-cleanup tests
+were not repeated during this read-only release verification.
+
+# Visitor presets and integrated optional warm-start — 2026-10-29
+
+## Summary
+
+Move pod preparation into Advanced Options and make the server own the complete
+prepare -> Ready -> k6 -> benchmark cleanup -> HPA restore -> completion workflow.
+Shorten visitor presets without changing generator budgets or the application.
+
+## Details
+
+`apps/lab-controller/src/app.ts` accepts optional boolean `warmStart` on preset
+and custom starts, strips it before strict workload validation/forwarding, and
+serves workflow state through TestControls. Preset workload overrides remain
+invalid. `test-controls.ts` returns a preparation state promptly and continues
+server-side after browser disconnect; actual readiness from the existing PodWarmup
+lease gates k6. Stop cancels preparation, releases the lease and never dispatches
+an unready workload. Overlapping start/reset/prepare/restore operations are rejected.
+Preparation failures preserve their reason and endedAt follows rollback. A stop
+arriving during generator acceptance is forwarded after the handoff; failed stop
+requests retain the real accepted run rather than claiming it disappeared.
+
+`warmup.ts` serializes local readiness/recovery/restore calls to prevent stale
+resource-version writes. Existing persisted original minimum, target up to five,
+three-minute readiness timeout, 15-minute nonrenewable lease, manual-edit protection,
+scoped RBAC and independent recovery worker remain. `run-coordinator.ts` retains
+cleanup semantics and withholds final success/endedAt until restoration succeeds;
+restore failure is visible as a failed workflow with lease recovery pending.
+
+The frontend removes standalone Warm Up buttons. Collapsed Advanced Options has
+independent unchecked warm-start and custom-workload checkboxes, so presets remain
+selected when options open. Recovery restore remains inside options. Active state
+includes preparation/restoration, with cancellation, actual Ready/desired replicas,
+30s rolling traffic, offered peak, workload duration and workflow elapsed time.
+Raw k6 output remains collapsed and all existing custom fields/telemetry remain.
+
+Authoritative presets in `presets.ts`: autoscaling ramp 150s with five 29.2s
+plateaus plus four 1s transitions (1,000/1,600/2,400/3,200/4,000 RPS); spike 75s
+(400 RPS 18s, 1s transition, 4,000 RPS 36s, 1s transition, 400 RPS 19s); mixed
+4,000 target RPS for 90s, 70% reads/30% isolated benchmark writes. Existing HPA
+sampling and pod readiness need several windows, hence the longest 150s choice
+for autoscaling. Actual scale-up is observed, not promised. No verified achieved
+10,000-RPS claim is made; custom larger targets remain supported within budgets.
+
+Local verification: 38 lab-controller, 15 generator and 8 web tests pass (61 total),
+including ordering, cancellation/handoff race, readiness failure/timeout, recovery,
+restoration/endedAt, cleanup, preset duration sums, UI defaults and >5,000 RPS.
+Workspace typecheck/build pass. Local browser verified initially collapsed options
+and unchecked controls; its backing controllers are unavailable, so full interaction
+is verified separately against production. No ecommerce API change in this phase.
+
+Deployment release is `visitor-v1-20261029-4b7d92c1`, only web/lab-controller plus
+the compatible recovery image. VM generator and k6 scripts do not need deployment.
+The checklist, private rollback snapshot and final live results are recorded in
+`docs/scalelab-visitor-polish-plan.md` and the live deployment report. Full presets,
+heavy loads, forced controller failure and live write cleanup are outside this
+read-only release verification. Public-control abuse and in-memory workflow state
+remain known limitations; persisted lease recovery protects HPA settings separately.

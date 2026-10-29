@@ -13,6 +13,7 @@ import { ShardRouter } from "./db/shard-router.js";
 import type { RateLimiters } from "./rate-limit/rate-limiter.js";
 
 const testInstanceId = "api-test-1";
+const benchmarkResetToken = "test-benchmark-reset-token";
 const schema = `test_${randomUUID().replaceAll("-", "")}`;
 const adminPool = new Pool({ connectionString: env.databaseUrl });
 let testPool: Pool;
@@ -64,7 +65,12 @@ describe("ScaleLab API", () => {
       options: `-c search_path=${schema}`,
     });
     await migrateDatabase(testPool);
-    application = createApp({ database: testPool, instanceId: testInstanceId, cache: testCache });
+    application = createApp({
+      database: testPool,
+      instanceId: testInstanceId,
+      cache: testCache,
+      benchmarkResetToken,
+    });
   });
 
   beforeEach(async () => {
@@ -163,6 +169,47 @@ describe("ScaleLab API", () => {
     const orders = await testPool.query<{ count: string }>("SELECT COUNT(*) AS count FROM orders WHERE product_id = 3");
     assert.equal(product.rows[0].stock, 0);
     assert.equal(Number(orders.rows[0].count), 1);
+  });
+
+  it("resets only benchmark orders and inventory and is idempotent", async () => {
+    const normalOrder = await request(application).post("/api/orders").send({
+      userId: "store-customer",
+      productId: 1,
+      quantity: 1,
+    });
+    const benchmarkOrder = await request(application).post("/api/orders").send({
+      userId: "load-test-user",
+      productId: 10001,
+      quantity: 3,
+    });
+    assert.equal(normalOrder.status, 201);
+    assert.equal(benchmarkOrder.status, 201);
+
+    const unauthorized = await request(application).post("/internal/benchmark/reset");
+    assert.equal(unauthorized.status, 401);
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const reset = await request(application)
+        .post("/internal/benchmark/reset")
+        .set("authorization", `Bearer ${benchmarkResetToken}`);
+      assert.equal(reset.status, 200);
+      assert.equal(reset.body.status, "completed");
+    }
+
+    const benchmark = await testPool.query<{ stock: number }>("SELECT stock FROM products WHERE id = 10001");
+    const benchmarkOrders = await testPool.query<{ count: string }>(
+      "SELECT COUNT(*) AS count FROM orders WHERE product_id BETWEEN 10001 AND 10100",
+    );
+    const normal = await testPool.query<{ stock: number }>("SELECT stock FROM products WHERE id = 1");
+    const normalOrders = await testPool.query<{ count: string }>(
+      "SELECT COUNT(*) AS count FROM orders WHERE id = $1",
+      [normalOrder.body.data.id],
+    );
+
+    assert.equal(benchmark.rows[0].stock, 10_000_000);
+    assert.equal(Number(benchmarkOrders.rows[0].count), 0);
+    assert.equal(normal.rows[0].stock, 24);
+    assert.equal(Number(normalOrders.rows[0].count), 1);
   });
 
   it("rejects invalid order input", async () => {

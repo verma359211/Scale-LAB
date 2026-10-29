@@ -57,7 +57,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: api
-          image: verma17/scalelab-api:civo-v1
+          image: verma17/scalelab-api:civo-v2
           # Docker Desktop kind reaches locally built containerd images through
           # its registry mirror when a pull is requested.
           imagePullPolicy: IfNotPresent
@@ -82,6 +82,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: BENCHMARK_RESET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: benchmark-reset
+                  key: token
           startupProbe:
             httpGet:
               path: /live

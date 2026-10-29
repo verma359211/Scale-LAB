@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: warmup-recovery
+  namespace: scalelab
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 45
+      template:
+        spec:
+          serviceAccountName: warmup-recovery
+          restartPolicy: Never
+          containers:
+            - name: recovery
+              # Same immutable release as the lab-controller Deployment.
+              image: verma17/scalelab-lab-controller:visitor-v1-20261029-4b7d92c1
+              command: [node, dist/recover-warmup.js]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi

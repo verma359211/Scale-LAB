@@ -113,6 +113,30 @@ The Grafana dashboard includes order throughput/latency, individual order SQL op
 
 The Kubernetes profile uses `DATABASE_POOL_MAX=10`, so six API pods can create at most 60 application connections. It starts with 250m CPU requested, 500m limited, 256 MiB memory requested, 512 MiB limited, and a 70% HPA CPU target. These are experiment inputs, not production recommendations.
 
+## Mixed read/write workload
+
+`load-tests/mixed-load.js` sends a configurable blend of product reads and
+order writes. It defaults to 70% `GET /api/products/:id` and 30%
+`POST /api/orders`. Writes rotate across benchmark products 10001–10100, so
+the three customer-facing products are not consumed by a load test.
+
+Reset benchmark data before a Kubernetes/Civo run with:
+
+```powershell
+pnpm k8s:write:reset
+```
+
+The reset deletes only orders for benchmark products, restores their stock to
+10,000,000 on both shards, and clears the disposable Redis cache. The command
+uses the active `kubectl` context, so confirm that context before running it.
+
+For the single-database Compose stack, reset the same isolated data with:
+
+```powershell
+Get-Content -Raw load-tests\reset-write-test.sql | docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U scalelab -d scalelab
+docker compose exec -T redis redis-cli FLUSHDB
+```
+
 Rate limiting is deliberately disabled in the Kubernetes capacity profile so one k6 pod can drive enough accepted traffic to exercise the HPA. Redis caching remains enabled. Distributed rate limiting should be tested separately with multiple client pods; otherwise one source IP receives only one shared quota.
 
 ## Previous fixed-instance baseline
@@ -150,6 +174,16 @@ docs/experiments/                     historical experiment reports
 Historical reports remain because they explain how the current topology was selected. Their alternative runtime configurations and helper scripts are intentionally not retained as supported paths.
 
 ## API
+
+The cloud portfolio dashboard is the root page; `/store` is the companion
+ecommerce app and `/scalelab` remains a dashboard alias. For the finalized
+scenario controls, 5/10-minute telemetry, explicit generator budgets and safe
+temporary pod preparation, see [the finalization deployment guide](docs/scalelab-finalization-deployment.md)
+and [verification plan](docs/scalelab-finalization-plan.md).
+
+Public test controls can spend cloud resources. Disable new test/warm-up/reset
+operations with `PUBLIC_CONTROLS_ENABLED=false` when unattended. Stop and restore
+remain available. The private generator and API reset tokens are still required.
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |

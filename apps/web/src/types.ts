@@ -22,3 +22,11 @@ export type RequestDebug = {
   instanceId: string | null;
   responseTimeMs: number;
 };
+
+export type ActivityEvent = {
+  id: number;
+  timestamp: string;
+  message: string;
+  detail?: string;
+  tone: "neutral" | "success" | "error";
+};

@@ -5,10 +5,19 @@ metadata:
   namespace: scalelab
   annotations:
     nginx.ingress.kubernetes.io/enable-access-log: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: nginx
+
+  tls:
+    - hosts:
+        - scalelab.chandanverma.space
+      secretName: scalelab-tls
+
   rules:
-    - http:
+    - host: scalelab.chandanverma.space
+      http:
         paths:
           - path: /api
             pathType: Prefix
@@ -25,6 +34,14 @@ spec:
                 name: scalelab-api
                 port:
                   number: 3001
+
+          - path: /lab-api
+            pathType: Prefix
+            backend:
+              service:
+                name: lab-controller
+                port:
+                  number: 4000
 
           - path: /
             pathType: Prefix

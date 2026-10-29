@@ -13,28 +13,32 @@ export const standardThresholds = {
   http_req_failed: ["rate<0.01"],
 };
 
+export function recordResponseDiagnostics(response) {
+  if (response.status >= 500) {
+    http5xx.add(1);
+  }
+
+  if (response.status !== 0) return;
+
+  const error = String(response.error || "").toLowerCase();
+  const timedOut = error.includes("timeout")
+    || error.includes("timed out")
+    || error.includes("deadline exceeded");
+
+  if (timedOut) {
+    requestTimeouts.add(1);
+  } else {
+    networkErrors.add(1);
+  }
+}
+
 export function runProductRead(baseUrl) {
   const productId = ((__VU + __ITER) % 3) + 1;
   const response = http.get(`${baseUrl}/api/products/${productId}`, {
     tags: { endpoint: "product-detail" },
   });
 
-  if (response.status >= 500) {
-    http5xx.add(1);
-  }
-
-  if (response.status === 0) {
-    const error = String(response.error || "").toLowerCase();
-    const timedOut = error.includes("timeout")
-      || error.includes("timed out")
-      || error.includes("deadline exceeded");
-
-    if (timedOut) {
-      requestTimeouts.add(1);
-    } else {
-      networkErrors.add(1);
-    }
-  }
+  recordResponseDiagnostics(response);
 
   check(response, {
     "product detail succeeds": (result) => result.status === 200,

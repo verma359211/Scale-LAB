@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import type { Pool, PoolClient } from "pg";
+import { createBenchmarkResetRouter } from "./benchmark/benchmark-reset.routes.js";
 import { disabledCache, type CacheStore } from "./cache/cache-store.js";
 import { env } from "./config/env.js";
 import { pools as defaultPools } from "./db/pool.js";
@@ -19,6 +20,7 @@ type AppDependencies = {
   metrics?: ApiMetrics;
   cache?: CacheStore;
   rateLimiters?: RateLimiters;
+  benchmarkResetToken?: string;
 };
 
 export function createApp(dependencies: AppDependencies = {}) {
@@ -28,6 +30,7 @@ export function createApp(dependencies: AppDependencies = {}) {
   const cache = dependencies.cache ?? disabledCache;
   const metrics = dependencies.metrics ?? createApiMetrics(databases, instanceId, () => cache.isReady());
   const rateLimiters = dependencies.rateLimiters ?? disabledRateLimiters;
+  const benchmarkResetToken = dependencies.benchmarkResetToken ?? env.benchmarkResetToken;
   const app = express();
 
   app.disable("x-powered-by");
@@ -112,6 +115,10 @@ export function createApp(dependencies: AppDependencies = {}) {
       clients.forEach((client) => client.release());
     }
   });
+
+  // This path is intentionally absent from ingress. It is available only over
+  // the API ClusterIP and requires the token shared with lab-controller.
+  app.use("/internal/benchmark", createBenchmarkResetRouter(shards, metrics, cache, benchmarkResetToken));
 
   app.use("/api/products", createProductRouter(shards, metrics, cache, env.productCacheTtlSeconds));
   app.use("/api/orders", createOrderRouter(shards, metrics, cache, rateLimiters.orders));

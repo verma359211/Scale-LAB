@@ -44,7 +44,10 @@
       "type": "timeseries",
       "title": "CPU per Pod (% of 250m request)",
       "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
-      "targets": [{ "refId": "A", "expr": "100 * sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"scalelab\",pod=~\"scalelab-api-.*\",container=\"api\"}[30s])) / 0.25", "legendFormat": "{{pod}}" }],
+      "targets": [
+        { "refId": "A", "expr": "100 * sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"scalelab\",pod=~\"scalelab-api-.*\",container=\"api\"}[30s])) / 0.25", "legendFormat": "{{pod}}" },
+        { "refId": "B", "expr": "vector(70)", "legendFormat": "HPA target" }
+      ],
       "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
     },
@@ -108,7 +111,7 @@
       "type": "timeseries",
       "title": "Redis Cache Hit Ratio",
       "gridPos": { "x": 0, "y": 28, "w": 8, "h": 8 },
-      "targets": [{ "refId": "A", "expr": "100 * sum(rate(scalelab_cache_operations_total{result=\"hit\"}[30s])) / clamp_min(sum(rate(scalelab_cache_operations_total{result=~\"hit|miss\"}[30s])), 0.000001)", "legendFormat": "hit ratio" }],
+      "targets": [{ "refId": "A", "expr": "100 * (sum(rate(scalelab_cache_operations_total{result=\"hit\"}[30s])) or vector(0)) / sum(rate(scalelab_cache_operations_total{result=~\"hit|miss\"}[30s])) and sum(rate(scalelab_cache_operations_total{result=~\"hit|miss\"}[30s])) > 0", "legendFormat": "hit ratio" }],
       "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
     },
@@ -137,9 +140,9 @@
     {
       "id": 14,
       "type": "timeseries",
-      "title": "Ingress Requests/sec",
+      "title": "API Ingress Requests/sec",
       "gridPos": { "x": 0, "y": 36, "w": 8, "h": 8 },
-      "targets": [{ "refId": "A", "expr": "sum(rate(nginx_ingress_controller_requests{namespace=\"scalelab\"}[30s]))", "legendFormat": "ingress" }],
+      "targets": [{ "refId": "A", "expr": "sum(rate(nginx_ingress_controller_requests{namespace=\"scalelab\",ingress=\"scalelab-api\",service=\"scalelab-api\"}[30s]))", "legendFormat": "API ingress" }],
       "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
     },
@@ -149,8 +152,8 @@
       "title": "Ingress HTTP Latency",
       "gridPos": { "x": 8, "y": 36, "w": 8, "h": 8 },
       "targets": [
-        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=\"scalelab\"}[30s])))", "legendFormat": "p95" },
-        { "refId": "B", "expr": "histogram_quantile(0.99, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=\"scalelab\"}[30s])))", "legendFormat": "p99" }
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=\"scalelab\",ingress=\"scalelab-api\",service=\"scalelab-api\"}[30s])))", "legendFormat": "p95" },
+        { "refId": "B", "expr": "histogram_quantile(0.99, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=\"scalelab\",ingress=\"scalelab-api\",service=\"scalelab-api\"}[30s])))", "legendFormat": "p99" }
       ],
       "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
@@ -160,7 +163,7 @@
       "type": "timeseries",
       "title": "Ingress Responses/sec by Status",
       "gridPos": { "x": 16, "y": 36, "w": 8, "h": 8 },
-      "targets": [{ "refId": "A", "expr": "sum by (status) (rate(nginx_ingress_controller_requests{namespace=\"scalelab\"}[30s]))", "legendFormat": "{{status}}" }],
+      "targets": [{ "refId": "A", "expr": "sum by (status) (rate(nginx_ingress_controller_requests{namespace=\"scalelab\",ingress=\"scalelab-api\",service=\"scalelab-api\"}[30s]))", "legendFormat": "{{status}}" }],
       "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } }
     },
@@ -276,5 +279,5 @@
   "timezone": "browser",
   "title": "ScaleLab Kubernetes Autoscaling",
   "uid": "scalelab-kubernetes",
-  "version": 4
+  "version": 5
 }

@@ -30,6 +30,7 @@ export const env = {
   orderRateLimitWindowMs: positiveInteger(process.env.ORDER_RATE_LIMIT_WINDOW_MS, 10_000, "ORDER_RATE_LIMIT_WINDOW_MS"),
   orderRateLimitMaxRequests: positiveInteger(process.env.ORDER_RATE_LIMIT_MAX_REQUESTS, 5, "ORDER_RATE_LIMIT_MAX_REQUESTS"),
   rateLimitFailOpen: booleanValue(process.env.RATE_LIMIT_FAIL_OPEN, true, "RATE_LIMIT_FAIL_OPEN"),
+  benchmarkResetToken: process.env.BENCHMARK_RESET_TOKEN?.trim() ?? "",
   instanceId: process.env.INSTANCE_ID?.trim() || "api-1",
   keepAliveTimeoutMs: positiveInteger(process.env.SERVER_KEEP_ALIVE_TIMEOUT_MS, 5_000, "SERVER_KEEP_ALIVE_TIMEOUT_MS"),
   headersTimeoutMs: positiveInteger(process.env.SERVER_HEADERS_TIMEOUT_MS, 60_000, "SERVER_HEADERS_TIMEOUT_MS"),

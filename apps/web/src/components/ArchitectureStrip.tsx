@@ -6,35 +6,40 @@ type ArchitectureStripProps = {
 
 export function ArchitectureStrip({ debug }: ArchitectureStripProps) {
   const nodes = [
-    { eyebrow: "Traffic", title: "Browser", detail: "Incoming requests" },
-    { eyebrow: "Routing", title: "Kubernetes Service", detail: "Balances across ready pods" },
+    { short: "01", title: "Browser", detail: "Sends product and order requests." },
+    { short: "02", title: "Cloud load balancer", detail: "Receives public traffic." },
+    { short: "03", title: "Ingress", detail: "Routes HTTP traffic into the cluster." },
+    { short: "04", title: "Kubernetes Service", detail: "Targets healthy, ready API Pods." },
     {
-      eyebrow: "Compute",
-      title: debug?.instanceId ?? "API Pod",
-      detail: debug ? `${debug.responseTimeMs}ms browser latency` : "Waiting for a request",
+      short: "05",
+      title: debug?.instanceId ?? "API Pods",
+      detail: debug ? "Handled the last visible request." : "Horizontally scalable Node.js instances.",
     },
-    { eyebrow: "Cache", title: "Redis", detail: "Shared product cache" },
-    { eyebrow: "Persistence", title: "PostgreSQL", detail: "Pooled connections" },
+    { short: "06", title: "Redis", detail: "Caches frequent product reads." },
+    { short: "07", title: "PostgreSQL shards", detail: "Distribute persistent product data." },
   ];
 
   return (
-    <section aria-label="Current system architecture" className="mt-8 rounded-2xl border border-white/10 bg-slate-900/40 p-5">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Live request path</h2>
-        <span className="text-xs text-slate-600">Detailed metrics live in Grafana</span>
+    <div className="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <p className="text-sm font-medium text-slate-700">Live request path</p>
+        <span className="hidden font-mono text-xs text-slate-400 sm:block">Last pod: {debug?.instanceId ?? "waiting for request"}</span>
       </div>
-      <div className="grid items-center gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr]">
+      <ol className="grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         {nodes.map((node, index) => (
-          <div className="contents" key={node.title}>
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 px-4 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-400/70">{node.eyebrow}</p>
-              <p className="mt-1 font-semibold text-white">{node.title}</p>
-              <p className="mt-1 text-xs text-slate-500">{node.detail}</p>
+          <li key={node.short} className="relative min-h-36 border-b border-slate-200 p-4 sm:border-r xl:border-b-0">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-blue-600">{node.short}</span>
+              {index < nodes.length - 1 && <span aria-hidden="true" className="text-slate-300">→</span>}
             </div>
-            {index < nodes.length - 1 && <span aria-hidden="true" className="text-center text-cyan-400/50">↓</span>}
-          </div>
+            <p className="mt-5 break-words text-sm font-semibold text-slate-950">{node.title}</p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">{node.detail}</p>
+          </li>
         ))}
-      </div>
-    </section>
+      </ol>
+      <p className="border-t border-slate-200 bg-slate-50 px-5 py-3 text-xs text-slate-500">
+        Redis serves cache hits directly; cache misses continue to the owning PostgreSQL shard.
+      </p>
+    </div>
   );
 }
