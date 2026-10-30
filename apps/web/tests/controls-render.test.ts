@@ -15,10 +15,10 @@ it("keeps detailed output collapsed while retaining console text and visible fai
   assert.doesNotMatch(html, /<details[^>]*\bopen/);
 });
 
-it("defaults to server-defined scenario cards with custom controls collapsed and no RPS ceiling", () => {
+it("defaults to server-defined scenarios with custom controls collapsed and no RPS ceiling", () => {
   const noop = async () => {};
   const html = renderToStaticMarkup(createElement(LoadTestPanel, {
-    run: null, warmup: null, warmupError: null, actionPending: false, actionError: null, resetNotice: null,
+    run: null, warmup: null, warmupError: null, statusKnown: true, actionPending: false, actionError: null, resetNotice: null,
     onStart: noop, onStop: noop, onReset: noop, onRestore: noop,
     configuration: { controlsEnabled: true, generator: null, presets: [{ id: "autoscaling", name: "Watch Kubernetes Autoscaling", description: "Scale API pods", observe: "Readiness", profile: "4,000 RPS", warmup: "Use normal baseline", configuration: { type: "ramp", targetRps: 4000, duration: "10m" } }] },
   }));

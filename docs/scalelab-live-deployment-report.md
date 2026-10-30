@@ -1,4 +1,63 @@
-# ScaleLab finalization deployment — 2026-10-29
+# ScaleLab deployment history
+
+## Approved UX redesign — deployed 2026-10-30
+
+Frontend-only release: `verma17/scalelab-web:ux-redesign-v1-20261030-a7e94c12`.
+The tag was absent before publication. Docker Hub push and remote inspection
+confirmed index digest `sha256:2cdd08a3fa92d7dcf35c723f408aace2a8fd27d8982a9c2ab7f234a5e9b88e8a`;
+the linux/amd64 manifest is `sha256:c710d5b64758eb7d5a1a72fc14e65ed5bb489520a5421052b292448c2f4150ac`.
+Only the existing web Dockerfile was built; no other image was rebuilt/published.
+
+Preflight confirmed `main`, origin `https://github.com/verma359211/Scale-LAB.git`,
+and matching local/remote baseline `263f36aad907a878662769911b0245d1c2b27fd2`.
+Docker Desktop needed starting; saved Docker Hub authentication then succeeded.
+The initial approval-service usage-limit failure caused no deployment.
+
+Rollback baseline: web revision **10**, image
+`verma17/scalelab-web:visitor-v1-20261029-4b7d92c1`.
+A private snapshot is outside Git at
+`C:/Users/verma/Desktop/.scalelab-deployment-backups/ux-redesign-v1-20261030-a7e94c12/baseline.json`.
+Server-side dry-run comparison confirmed the frontend image was the only Deployment
+spec change. Only the Deployment document from `infrastructure/kubernetes/civo/web.yaml`
+was applied, using explicit kubeconfig and context `scalelab`, namespace `scalelab`.
+The existing Service was not reapplied.
+
+Rollout succeeded at revision **11**. Pod `scalelab-web-5f945587f-wf4vz` is Running,
+1/1 Ready, zero restarts; its imageID matches the published index digest.
+API and lab-controller Deployment specs, HPA spec, and warmup-recovery CronJob
+spec were compared with the baseline and are unchanged. HPA remains min2/max6,
+CPU target70%. No VM configuration or load-generator operation was changed.
+Both PostgreSQL shards and Redis remain healthy through the API health response.
+
+Final release checks: all **16 frontend tests**, workspace typecheck, frontend
+production build, and diff validation passed. The prior implementation verification
+also passed 38 lab-controller, 15 load-generator, and one mocked API reset test;
+those backend tests were not rerun for this frontend-only release.
+
+HTTPS `/`, `/store`, `/scalelab`, `/health`, `/api/products`, configuration/current-run
+and both history ranges return 200. Browser verified refreshed Store and alias,
+three actual Store products, primary CTA, preset selection, initially collapsed
+Advanced Options, accessible unchecked warm-start/custom controls, detailed metrics,
+collapsed raw output, actual two-pod CPU/RPS histories, and real idle metrics.
+Missing cache samples remain missing rather than becoming zero. No console warnings
+or errors were captured. At 1366x768 and 390x844 there is no horizontal overflow;
+CTA top is respectively 478px and 511px. Production screenshots are outside Git in
+`C:/Users/verma/Desktop/scalelab-ux-review/production-desktop.png` and `production-mobile.png`.
+
+No test start, stop, reset, warm-up, checkout, or HPA mutation was performed.
+Live lifecycle/load generation is intentionally not reverified by this UI release;
+existing automated coverage remains. No rollback was needed. The approved source,
+tests, UX docs and web image reference are the only intended release commit scope.
+
+Frontend-only rollback, if needed (not executed):
+
+```powershell
+kubectl --kubeconfig "$HOME\Downloads\civo-scalelab-kubeconfig" --context scalelab -n scalelab set image deployment/scalelab-web web=verma17/scalelab-web:visitor-v1-20261029-4b7d92c1
+kubectl --kubeconfig "$HOME\Downloads\civo-scalelab-kubeconfig" --context scalelab -n scalelab rollout status deployment/scalelab-web --timeout=180s
+```
+
+Also restore that image line in the repository manifest after a rollback.
+The following sections are historical releases, not current frontend references.
 
 ## Visitor experience follow-up — deployed 2026-10-29
 

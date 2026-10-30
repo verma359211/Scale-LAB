@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: verma17/scalelab-web:visitor-v1-20261029-4b7d92c1
+          image: verma17/scalelab-web:ux-redesign-v1-20261030-a7e94c12
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

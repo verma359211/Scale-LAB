@@ -1076,3 +1076,81 @@ The implementation commit `393d23374eba6f6bf0b033569f2ed08074e85505` was pushed
 successfully to GitHub main without force. A documentation-only follow-up records
 completion. Additional mocked API reset test passed; total executed relevant tests
 62. Full DB integration, live mixed cleanup and full presets were not rerun.
+
+## 2026-10-30 - Make the ScaleLab experiment and live scaling view easier to understand
+
+Reworked the frontend into a compact experiment launcher beside live traffic, CPU,
+and Ready/desired pod information. Previous measured results follow immediately;
+detailed metrics, run details, and explanations remain available in expandable
+sections. The goal is to make the first experiment understandable without removing
+the existing engineering controls or telemetry. Store routes and business behavior
+are unchanged. No backend, infrastructure, load-test, or dependency changes were made.
+
+The main changes are in `apps/web/src/pages/ScaleLabPage.tsx`, `LoadTestPanel.tsx`,
+`LiveScalingPanel.tsx`, `ExperimentOutcome.tsx`, `DetailSection.tsx`, and the existing
+chart/activity components. `useTelemetryHistory.ts` shares the existing history
+poll between the overview and detailed charts. `experiment-presentation.ts` keeps
+result and lifecycle presentation readable and tested. Styling and navigation
+changes are confined to the frontend.
+
+Unknown or stale telemetry is explicitly labeled rather than replaced with zero.
+Replica observations use the actual workload window and do not claim a causal HPA
+event from incomplete data. Start/reset remain unavailable until current-run state
+is known. Preparing, running, stopping, cleanup, and restoration remain distinct;
+cleanup is not presented as a completed experiment. All presets, custom controls,
+warm-start options, duration/VU safeguards, stop/cancel, and reset behavior remain.
+
+Before/after screenshots at 1440x900, 1366x768, and 390x844 were inspected and refined.
+At laptop size the primary action moved from y=871 to y=478, and the live telemetry
+section moved from y=1582 to y=222. The default document is about 70% shorter on
+laptop and 73% shorter on mobile. Detailed content is preserved behind disclosures.
+Keyboard disclosure behavior, visible focus, labels, contrast, small-screen overflow,
+and the real read-only telemetry preview were checked. Isolated browser fixtures
+covered active, preparing, stopped, failed, cleanup, unavailable, and empty states;
+these fixtures are UI verification, not performance measurements.
+
+Verification passed: 16 frontend tests, 38 lab-controller tests, 15 load-generator
+controller tests, and one mocked API benchmark-reset test (70 total). Commands:
+
+```powershell
+pnpm --filter @system-design/web test
+pnpm --filter @system-design/lab-controller test
+pnpm --filter @system-design/loadgen-controller test
+pnpm --filter @system-design/api exec tsx --test src/benchmark/benchmark-reset.service.test.ts
+pnpm typecheck
+pnpm --filter @system-design/web build
+git diff --check
+```
+
+The production frontend build passed (292.58 kB JS / 88.82 kB gzip; 36.29 kB CSS /
+8.31 kB gzip). These are bundle measurements, not Core Web Vitals. No live load
+test, live checkout/reset, or full database integration suite was run for this UI
+change. A full screen-reader/device audit and recruiter usability study remain
+outside this verification. The temporary isolated UI fixture server was stopped.
+
+`docs/scalelab-ux-redesign-plan.md` contains the audit, design alternatives, exact
+measurements, screenshot locations, limitations, and web-only release/rollback
+steps. Review images are under `C:/Users/verma/Desktop/scalelab-ux-review` outside
+the repository. Only the web image needs rebuilding after visual approval; no new
+environment variables are required. Nothing was committed, pushed, or deployed.
+Deployment and any live mutation smoke test remain gated on user visual approval.
+
+## 2026-10-30 - Release the visually approved dashboard redesign
+
+After explicit visual/release approval, built and pushed only the linux/amd64 web
+image `verma17/scalelab-web:ux-redesign-v1-20261030-a7e94c12`. Updated only the web
+image reference in `infrastructure/kubernetes/civo/web.yaml`; deployed its Deployment
+document with explicit Civo kubeconfig/context. Revision 11 rolled out successfully,
+with a Ready pod and zero restarts. Revision 10 and its visitor-v1 image remain the
+rollback baseline. Exact digests and rollback instructions are recorded in
+`docs/scalelab-live-deployment-report.md`.
+
+Reran 16 frontend tests, workspace typechecks, frontend production build and diff
+validation successfully. Read-only production browser checks verified dashboard,
+Store/alias refresh, presets, collapsed controls/output, 5/10-minute telemetry,
+per-pod charts, and responsive layouts. No browser errors were captured. API,
+lab-controller, HPA and recovery specifications remain unchanged; no VM deployment,
+benchmark, order, reset, warm-up, or HPA mutation was performed. No new configuration
+variables or dependencies were introduced. Live load/lifecycle tests remain outside
+this release verification. Approved frontend/tests/docs and the web image tag are
+prepared for the authorized GitHub commit and push.

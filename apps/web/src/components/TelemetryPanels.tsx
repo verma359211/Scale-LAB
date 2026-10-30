@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef } from "react";
 import type { MetricKey, MetricsTimeseries } from "../lab-types";
-import { labApi } from "../lib/lab-api";
 import { podColor } from "../lib/chart-data";
 import { TimeSeriesChart } from "./TimeSeriesChart";
 
@@ -8,30 +7,8 @@ const number = (value: number) => value.toFixed(value >= 100 ? 0 : 1);
 const ms = (value: number) => `${number(value)}ms`;
 const percent = (value: number) => `${number(value)}%`;
 
-export function TelemetryPanels({ children }: { children?: ReactNode }) {
-  const [windowMinutes, setWindowMinutes] = useState<5 | 10>(5);
-  const [history, setHistory] = useState<{ window: number; data: MetricsTimeseries } | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export function TelemetryPanels({ data, windowMinutes }: { data: MetricsTimeseries | null; windowMinutes: 5 | 10 }) {
   const podColors = useRef(new Map<string, string>());
-
-  useEffect(() => {
-    let active = true;
-    let timer: number | undefined;
-    const controller = new AbortController();
-    async function refresh() {
-      try {
-        const data = await labApi.timeseries(windowMinutes, controller.signal);
-        if (active) { setHistory({ window: windowMinutes, data }); setError(null); }
-      } catch (cause) {
-        if (active) setError(cause instanceof Error ? cause.message : "Metric history unavailable");
-      }
-      if (active) timer = window.setTimeout(() => void refresh(), 6_000);
-    }
-    void refresh();
-    return () => { active = false; controller.abort(); if (timer) window.clearTimeout(timer); };
-  }, [windowMinutes]);
-
-  const data = history?.window === windowMinutes ? history.data : null;
   const range = data ? { start: Date.parse(data.start), end: Date.parse(data.end) } : undefined;
   const series = (key: MetricKey, label: string, color: string) => ({ label, color, points: data?.series[key] ?? [] });
   const pods = (key: "cpuPercent" | "requestRps") => (data?.perPod[key] ?? []).map(({ pod, points }) => {
@@ -43,12 +20,8 @@ export function TelemetryPanels({ children }: { children?: ReactNode }) {
     <section aria-labelledby="telemetry-title" className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><h2 id="telemetry-title" className="text-lg font-semibold">Live Telemetry · Autoscaling Overview</h2><p className="mt-1 text-sm text-slate-500">Traffic → CPU → desired replicas → ready pods → redistributed traffic. Rates and quantiles use a rolling 30s window.</p></div>
-        <div role="group" aria-label="Telemetry history window" className="flex rounded-lg border border-slate-200 bg-white p-1">
-          {([5, 10] as const).map((value) => <button key={value} type="button" aria-pressed={windowMinutes === value} onClick={() => setWindowMinutes(value)} className={`rounded-md px-3 py-2 text-sm ${value === windowMinutes ? "bg-slate-900 text-white" : "text-slate-600"}`}>Last {value} min</button>)}
-        </div>
       </div>
-      {error && <p role="alert" className="text-sm text-amber-700">{error}. Previous samples are retained; their timestamps show their age.</p>}
-      {!data && !error && <p className="text-sm text-slate-500">Loading {windowMinutes}-minute history…</p>}
+      {!data && <p className="text-sm text-slate-500">Waiting for {windowMinutes}-minute history…</p>}
       <div className="grid gap-4 lg:grid-cols-2">
         <TimeSeriesChart title="Incoming RPS" description="Public API traffic at ingress" series={[series("ingressRps", "Incoming", "#2563eb")]} formatValue={number} timeRange={range} />
         <TimeSeriesChart title="Ready vs Desired API Replicas" description="HPA requests capacity; readiness confirms it can serve" series={[series("apiPodCount", "Ready", "#059669"), series("desiredPodCount", "Desired", "#9333ea")]} formatValue={number} timeRange={range} />
@@ -58,7 +31,6 @@ export function TelemetryPanels({ children }: { children?: ReactNode }) {
         <TimeSeriesChart title="API CPU · All Pods" description="Total CPU in millicores; 1,000m equals one core" series={[series("apiCpuTotalMillicores", "CPU (m)", "#ea580c")]} formatValue={(value) => `${number(value)}m`} timeRange={range} />
       </div>
     </section>
-    {children}
     <section aria-labelledby="backend-health-title" className="space-y-4">
       <h2 id="backend-health-title" className="text-lg font-semibold">Backend Health</h2>
       <p className="text-sm text-slate-500">Same {windowMinutes}-minute history as the autoscaling charts.</p>
