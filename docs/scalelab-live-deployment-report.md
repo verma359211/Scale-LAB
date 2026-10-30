@@ -57,6 +57,14 @@ kubectl --kubeconfig "$HOME\Downloads\civo-scalelab-kubeconfig" --context scalel
 ```
 
 Also restore that image line in the repository manifest after a rollback.
+GitHub release commit: `1497af65821fae609cf18ae0c9e9ef055e9d1480`
+(`feat: redesign ScaleLab interactive dashboard UX`) on `main`:
+https://github.com/verma359211/Scale-LAB/commit/1497af65821fae609cf18ae0c9e9ef055e9d1480
+Push succeeded without force; remote `refs/heads/main` matched the local commit.
+A documentation-only follow-up records this confirmation. Working tree was clean
+after the release push. No credentials, environment files, kubeconfigs or private
+snapshots were staged; staged diff validation and sensitive-pattern review passed.
+
 The following sections are historical releases, not current frontend references.
 
 ## Visitor experience follow-up — deployed 2026-10-29

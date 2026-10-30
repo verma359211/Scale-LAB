@@ -66,7 +66,7 @@ Use real read-only telemetry for screenshots. Use explicit isolated test fixture
 - [x] Apply web Deployment with explicit Civo kubeconfig/context; wait for rollout
 - [x] Verify `/`, `/scalelab`, `/store`, GET telemetry and existing API routing
 - [ ] Optional separately approved small start/stop smoke; no heavy visual-QA workload
-- [ ] Commit/push only after approval; keep previous web image available for rollback
+- [x] Commit/push only after approval; keep previous web image available for rollback
 
 Backend, Kubernetes, secrets, HPA, databases, cache and k6 workloads are outside this redesign.
 
