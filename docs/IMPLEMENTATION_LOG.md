@@ -1158,3 +1158,34 @@ prepared for the authorized GitHub commit and push.
 Release commit `1497af65821fae609cf18ae0c9e9ef055e9d1480` was pushed successfully
 to GitHub `main` without force; remote and local hashes matched. A documentation-only
 follow-up records the completed release checklist and push confirmation.
+
+## 2026-10-31 - Recover Prometheus from a full metrics volume
+
+All dashboard metric families became unavailable because Prometheus could not
+write new samples: WAL writes failed with `no space left on device`. The existing
+5Gi PVC was full; retained blocks plus approximately 1Gi of WAL consumed its usable
+filesystem. Application health remained good.
+
+With user approval to remove older metric history, changed only Prometheus retention
+in `infrastructure/kubernetes/civo/prometheus.yaml` from 7d/4GB to 2d/2GB. The proposed
+10Gi expansion was not applied and was removed from the local manifest. The PVC stays
+5Gi. Applied only the Prometheus Deployment document using the explicit Civo kubeconfig,
+context and namespace. No images or application code changed.
+
+Prometheus's own retention cleanup removed obsolete blocks; no manual filesystem
+deletion or PVC recreation was needed. Disk usage fell from 100% to 46%, leaving
+2.3Gi available. Startup detected a truncated head chunk from the full-disk condition,
+automatically removed the damaged mmap files and replayed WAL. Metrics missed while
+ingestion was failing cannot be reconstructed; older retained history is intentionally
+pruned by the new policy. Retention is a block-based policy, not a hard filesystem
+quota; future disk monitoring remains useful. Diff validation passes. Application
+tests/build are not applicable to this retention-only configuration change.
+
+Recovery verification: Prometheus rollout succeeded, pod 1/1 Ready with zero restarts,
+all 12 scrape targets up and no new WAL write errors. After compaction/checkpoint,
+disk usage fell further to 29% with 3.0Gi available. Public summary/history endpoints
+again return actual traffic, latency, two Ready/desired pods, database/pool metrics,
+CPU (2.28% at verification), and two per-pod CPU/RPS series. Redis hit ratio remains
+unavailable at idle, as expected without recent cache traffic. Graph history will
+retain the ingestion outage gap. No application data was reset. Changes remain local
+and deployed; no Git commit or push was requested for this repair.
