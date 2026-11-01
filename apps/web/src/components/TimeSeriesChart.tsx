@@ -1,8 +1,11 @@
 import type { MetricPoint } from "../lab-types";
 import { splitMetricGaps } from "../lib/chart-data";
+import { ChartLoader } from "./ChartLoader";
 
 type ChartSeries = { label: string; color: string; points: MetricPoint[] };
 type Props = {
+  className?: string;
+  loading?: boolean;
   title: string;
   description: string;
   series: ChartSeries[];
@@ -13,7 +16,7 @@ type Props = {
   stepped?: boolean;
 };
 
-export function TimeSeriesChart({ title, description, series, formatValue, referenceLines = [], timeRange, compact = false, stepped = false }: Props) {
+export function TimeSeriesChart({ className = "", loading = false, title, description, series, formatValue, referenceLines = [], timeRange, compact = false, stepped = false }: Props) {
   const points = series.flatMap((entry) => entry.points);
   const minTime = timeRange?.start ?? (points.length ? Math.min(...points.map((point) => point.timestamp)) : 0);
   const maxTime = timeRange?.end ?? (points.length ? Math.max(...points.map((point) => point.timestamp)) : 1);
@@ -28,7 +31,7 @@ export function TimeSeriesChart({ title, description, series, formatValue, refer
   const y = (value: number) => top + (1 - value / maxValue) * (height - top - bottom);
 
   return (
-    <article className={compact ? "min-w-0 rounded-lg border border-slate-200 bg-white p-3" : "min-w-0 rounded-xl border border-slate-200 bg-white p-4"}>
+    <article tabIndex={0} className={`${compact ? "min-w-0 rounded-lg border border-slate-200 bg-white p-3" : "min-w-0 rounded-xl border border-slate-200 bg-white p-4"} ${className}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-950">{title}</h3>
@@ -46,7 +49,7 @@ export function TimeSeriesChart({ title, description, series, formatValue, refer
         </div>
       </div>
 
-      {points.length === 0 ? (
+      {loading ? <ChartLoader aspectRatio={`${width}/${height}`} /> : points.length === 0 ? (
         <div style={{ aspectRatio: `${width}/${height}` }} className="mt-3 grid place-items-center rounded-lg border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-600">
           No metric samples yet
         </div>

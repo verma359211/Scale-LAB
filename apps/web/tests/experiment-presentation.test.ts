@@ -6,6 +6,7 @@ import { isRunActive, readableDuration, replicaObservation, runLabel } from "../
 import { LoadTestPanel } from "../src/components/LoadTestPanel.tsx";
 import { LiveScalingPanel } from "../src/components/LiveScalingPanel.tsx";
 import { ExperimentOutcome } from "../src/components/ExperimentOutcome.tsx";
+import { HeroRunResult } from "../src/components/HeroRunResult.tsx";
 import type { RunState } from "../src/lab-types.ts";
 
 const run = (status: RunState["status"]): RunState => ({
@@ -14,6 +15,31 @@ const run = (status: RunState["status"]): RunState => ({
   failureReason: null, events: [],
 });
 const noop = async () => {};
+
+it("holds the hero result until cleanup and restoration finish", () => {
+  for (const status of ["running", "stopping", "resetting", "restoring"] as const) {
+    assert.equal(renderToStaticMarkup(createElement(HeroRunResult, { run: run(status), result: null, error: null, onNewExperiment: () => {} })), "");
+  }
+});
+
+it("shows stopped hero results with measured values and collapsed raw output", () => {
+  const html = renderToStaticMarkup(createElement(HeroRunResult, { run: run("completed"), result: { runId: "example", available: true, stopped: true, summary: { achievedRps: 200, completedRequests: 12000 }, stdout: "Measured output" }, error: null, onNewExperiment: () => {} }));
+  assert.match(html, /Experiment stopped/);
+  assert.match(html, /12,000/);
+  assert.match(html, /Measured output/);
+  assert.match(html, /New experiment/);
+  assert.doesNotMatch(html, /<details[^>]*\bopen/);
+});
+
+it("ignores stale hero results and preserves cleanup failures", () => {
+  const state = run("failed");
+  state.cleanup = { required: true, status: "failed", failureReason: "Reset unavailable" };
+  const html = renderToStaticMarkup(createElement(HeroRunResult, { run: state, result: { runId: "older", available: true, summary: { achievedRps: 99999 } }, error: null, onNewExperiment: () => {} }));
+  assert.match(html, /result-failed/);
+  assert.match(html, /Cleanup failed: Reset unavailable/);
+  assert.match(html, /Waiting for the final k6 summary/);
+  assert.doesNotMatch(html, /99,999/);
+});
 const controls = {
   run: null, configuration: { controlsEnabled: true, generator: null, presets: [{ id: "autoscaling", name: "Watch Kubernetes Autoscaling", description: "Increase traffic", observe: "Ready pods", profile: "Ramp", warmup: "Normal baseline", configuration: { type: "ramp" as const, targetRps: 4000, duration: "150s" } }] },
   statusKnown: true, warmup: null, warmupError: null, actionPending: false, actionError: null, resetNotice: null,
@@ -31,6 +57,27 @@ it("shows stop in place of start when arriving during somebody else's run", () =
   assert.match(html, /shared experiment is in progress/);
   assert.match(html, /Stop experiment/);
   assert.doesNotMatch(html, /class="start-experiment"/);
+});
+
+it("makes advanced fields directly editable without a custom-mode checkbox", () => {
+  const html = renderToStaticMarkup(createElement(LoadTestPanel, { ...controls, editorial: true }));
+  assert.doesNotMatch(html, /Customize workload/);
+  assert.doesNotMatch(html, /<fieldset disabled/);
+  assert.match(html, /role="switch"/);
+  assert.match(html, /class="warm-feedback" aria-live="polite"/);
+  assert.match(html, /Tune your experiment/);
+  assert.match(html, /value="ramp" selected/);
+  assert.match(html, /value="150s" selected/);
+});
+
+it("hides advanced controls during a run and keeps live details distinct from requested load", () => {
+  const html = renderToStaticMarkup(createElement(LoadTestPanel, { ...controls, editorial: true, run: run("running") }));
+  assert.doesNotMatch(html, /Advanced Options|advanced-options/);
+  assert.match(html, /Live response/);
+  assert.match(html, /includes shared traffic/);
+  assert.match(html, /Incoming requests/);
+  assert.match(html, /<dd>—<\/dd>/);
+  assert.match(html, /Stop experiment/);
 });
 
 it("keeps preparation, stopping, cleanup and restoration distinct from completion", () => {
@@ -79,6 +126,28 @@ it("separates past results from live values and ignores another run's summary", 
   assert.match(html, /No measured k6 summary available/);
   assert.match(html, /scaling cannot be confirmed/);
   assert.doesNotMatch(html, /99,999/);
+});
+
+it("keeps stopped and cleanup-failed result strips distinct from successful completion", () => {
+  const stopped = renderToStaticMarkup(createElement(ExperimentOutcome, { run: run("completed"), result: { runId: "example", available: true, stopped: true }, data: null, error: null }));
+  assert.match(stopped, /outcome-stopped/);
+  const state = run("failed");
+  state.cleanup = { required: true, status: "failed", failureReason: "Reset unavailable" };
+  const failed = renderToStaticMarkup(createElement(ExperimentOutcome, { run: state, result: null, data: null, error: null }));
+  assert.match(failed, /outcome-failed/);
+  assert.match(failed, /role="alert"[^>]*>Cleanup failed: Reset unavailable/);
+});
+
+it("keeps previous results in a closed concise disclosure with all six measured values", () => {
+  const html = renderToStaticMarkup(createElement(ExperimentOutcome, { run: run("completed"), result: { runId: "example", available: true, summary: { achievedRps: 200, completedRequests: 12000, failureRate: 0, p95: "12ms", p99: "24ms", droppedIterations: 3 } }, data: null, error: null }));
+  assert.match(html, /<details class="outcome-disclosure">/);
+  assert.doesNotMatch(html, /<details[^>]*\bopen/);
+  assert.match(html, /Results/);
+  assert.match(html, /12,000/);
+  assert.match(html, /Dropped iterations/);
+  assert.match(html, /12ms/);
+  assert.match(html, /24ms/);
+  assert.doesNotMatch(html, /View previous result/);
 });
 
 it("uses real preset durations in readable form", () => {

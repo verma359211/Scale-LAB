@@ -1189,3 +1189,347 @@ CPU (2.28% at verification), and two per-pod CPU/RPS series. Redis hit ratio rem
 unavailable at idle, as expected without recent cache traffic. Graph history will
 retain the ingestion outage gap. No application data was reset. Changes remain local
 and deployed; no Git commit or push was requested for this repair.
+
+## 2026-10-31 - Separate test setup from compact live results
+
+Committed and pushed the preceding Prometheus repair as `0a38934` before starting
+this local UI iteration, as requested. The dashboard's first section now contains
+only scenario selection, actions, Advanced Options, and a plain-language three-step
+visual explaining send traffic, watch the response, and explore results. Moved live
+telemetry below the previous experiment summary. The primary graphs show traffic,
+Ready/desired servers, and p95 response time; View more metrics preserves all existing
+detailed charts. Previous-result values are smaller, with interpretation available
+under About this result. Failure/cleanup alerts remain visible. Run Details and How
+It Works use compact disclosures; expanded run details use two columns on desktop.
+
+Changes are confined to ScaleLabPage, LiveScalingPanel, ExperimentOutcome and scoped
+dashboard CSS. No dependencies or environment variables were introduced. Existing
+control methods, safeguards, presets, history windows, and metric calculations remain.
+The instructional visual is explanatory, not simulated traffic or telemetry.
+
+Verification: 16 frontend tests pass, workspace typecheck passes, production web build
+passes and diff validation passes. Local Vite preview is on `http://127.0.0.1:4175/`,
+using a localhost port-forward for genuine read-only telemetry. Browser checked preset
+switching, warm controls, all expanded diagnostic headings, and desktop/mobile overflow
+(none at 1366px and 390px). No browser warnings/errors were recorded. Three primary
+charts render, zero graphs occur in the launcher, and the desktop prior-result section
+is 132px high. Review screenshots are outside Git in
+`C:/Users/verma/Desktop/scalelab-ux-review/simple-local-desktop.png` and
+`simple-local-mobile.png`. No test/reset/order/warm-up was started. This UI iteration
+has not been deployed, committed, or pushed; local visual review comes first.
+
+## 2026-10-31 - Build the reference-led editorial hero locally
+
+Used the supplied `scalelab-direction-1.png` as the visual reference: warm off-white,
+dark serif headline with italic emphasis, rust primary action, numbered experiment
+rows, thin rules, and a roughly 30/70 controls-to-telemetry composition. New
+`ExperimentHero.tsx` presents actual traffic, Ready/desired capacity, CPU and 5xx rate.
+`TrafficCapacityChart.tsx` combines ingress requests/sec and Ready server count on
+explicit independent axes. Traffic is a rust line with subtle area fill; servers
+are a green dashed step trace. Both use existing real history, share its selected
+5/10-minute window, preserve scrape gaps, and never generate example telemetry.
+Container sizing keeps chart labels readable on mobile. Line crossings have no
+cross-unit meaning; the accessible chart description explains the separate scales.
+
+`LoadTestPanel.tsx` gains an editorial presentation while retaining the same control
+handlers, validation, current workflow status, stop/cancel, reset, restore, warm-start
+and custom options. Selected descriptions, target rates and watch guidance remain
+inside Advanced Options. `AppShell.tsx` uses reference-style navigation only for the
+lab; Store navigation remains unchanged. `ScaleLabPage.tsx` replaces only the previous
+intro/setup block with this hero. Styles are scoped in `styles.css`; no dependencies,
+backend changes, deployment or load tests are introduced.
+
+Content reconciliation: the former three-step instructional card is replaced by the
+new headline, explanation and scenario flow. The previous tech-stack tagline is no
+longer in the hero; architecture/technology explanations and source link remain below
+and in About this project. Previous outcomes, separate latency/traffic/capacity plots,
+all additional metrics, run details/raw output, architecture and Store remain below
+the hero for a later design pass. Reference-only fake pod identities, sample CPU
+values, illustrative session numbers and unverified Cluster Online label are omitted.
+No working control or metric capability was removed. System Georgia and Arial stacks
+approximate the reference fonts without requiring an unprovided font asset.
+
+Verification: 19 frontend tests pass, including new empty/zero/gap/dual-axis chart
+coverage; workspace typecheck, production build and diff validation pass. Local browser
+verified presets, Advanced Options/warm/custom controls, shared 10-minute history,
+real idle traffic/two Ready servers, and no console warnings/errors. No horizontal
+overflow at 1600px or 390px; mobile SVG adapts to a 335px drawing width. Screenshots:
+`C:/Users/verma/Desktop/scalelab-ux-review/direction-hero-desktop.png` and
+`direction-hero-mobile.png` (outside Git). Preview remains at localhost:4175.
+No start/stop/reset/order or warm-up action was issued. Changes remain local for review.
+
+## 2026-10-31 - Add the editorial monitoring dashboard
+
+Replaced the separate live-overview block and expandable metrics container with one
+visible monitoring surface below the previous experiment. The control room uses the
+hero's warm palette, thin rules, serif title and muted rust/green/ochre chart colors.
+Ten compact metric tiles include all previous values plus active requests and pool
+waiters. All eleven historical graph families remain: per-pod CPU/traffic, response
+latency, ingress traffic, Ready/desired replicas, total API CPU, 5xx, pool queue,
+successful orders, database latency and Redis hit ratio. Layout uses three larger
+top panels and eight smaller panels in a responsive bento grid. Monitoring navigation
+jumps directly to this section. Run Details and How It Works remain below.
+
+Changes are in ScaleLabPage.tsx, TelemetryPanels.tsx, AppShell.tsx and scoped styles.
+Existing shared history and summary polling are reused; no extra subscriptions,
+dependencies, API changes or configuration variables. Dashboard/hero 5/10-minute
+controls stay synchronized. Missing samples retain gaps and unavailable states;
+reference CPU target and unit explanations remain visible. Old LiveScalingPanel
+is no longer mounted; its metrics/graphs are covered by the hero/dashboard.
+
+Verification: 19 frontend tests, workspace typecheck, production build and diff check
+pass. Browser verified actual telemetry, 10 tiles, 11 panels, shared 10-minute selection,
+and no overflow at 1600px/390px. Desktop dashboard height is approximately 849px;
+mobile stacks panels rather than shrinking text to fit a screen. No console warnings
+or errors captured. No workload, reset, warm-up or order was initiated. Changes remain
+local at localhost:4175 for review and are not deployed or pushed.
+
+## 2026-10-31 - Open up monitoring and make pod graphs readable
+
+Removed the monitoring container border/background and dense tile strip. Compute,
+experience and data are now open groups, with unboxed snapshot values beside the
+relevant graphs. Increased chart area, spacing, padding and text sizes. All eleven
+graph families and earlier snapshot metrics remain, with query p95/orders snapshots
+also alongside the data charts. Summary/history polling and controls are unchanged.
+
+TelemetryPanels keeps a session-local identity registry: actual pod names map to
+Pod 1, Pod 2, etc. Names and colors stay consistent between CPU and traffic charts
+and across polls/window changes; a new pod gets a new number. These are display
+aliases, not Kubernetes identities, and numbering may change after a page refresh.
+The underlying samples still belong to their real pod series. Added renderer tests
+for friendly identities, different chart input order and unavailable/empty states.
+
+Graph cards enlarge 2.5% with a light shadow on pointer hover or keyboard focus,
+without changing grid layout. Shared TimeSeriesChart cards are keyboard focusable.
+Touch does not require hover; reduced-motion users retain highlighting without scale.
+Changes are in TelemetryPanels, TimeSeriesChart, ScaleLabPage, scoped CSS and tests.
+No backend, telemetry source, deployment, dependencies or environment changes.
+
+Verified 21 frontend tests, workspace typecheck, production build and diff validation.
+Browser confirmed transparent/no-border outer section, all 11 charts, friendly Pod
+labels, no horizontal overflow at 1600px/390px, and one-column mobile charts. Hover
+computed transform is scale(1.025), with unchanged section height before/after.
+Browser console has no errors/warnings. Genuine history was observed via the existing
+read-only local telemetry connection; no workload or other mutation was initiated.
+Screenshots are outside Git at `C:/Users/verma/Desktop/scalelab-ux-review/monitoring-open-desktop.png`
+and `monitoring-open-mobile.png`. Changes remain local for review at localhost:4175.
+
+## 2026-10-31 - Keep hero setup, running and advanced states in one footprint
+
+The editorial hero's left column now has a fixed 730px desktop / 750px mobile height.
+Running shrinks the headline, removes repeated watch guidance and shortens lifecycle
+copy while retaining elapsed workflow, actual requested workload, stop/cancel and
+cleanup/restoration distinctions. Advanced replaces the preset list inside that same
+column, shrinks the headline to 28px and removes introductory copy. Start/Stop remains
+at the bottom; longer settings scroll internally instead of growing the hero. The
+left column is modestly wider. CSS :has() responds to existing native-details and
+data-active state; no duplicate application workflow state was introduced.
+
+Advanced inputs now use warm backgrounds, thin square borders and rust accents.
+Workload fills one row, rate/duration and VU pairs share rows; mixed percentages remain
+available. Supporting explanations/resources live under Scenario & resource limits;
+validation errors and warm-up warnings remain visible. Advanced closes when a workflow
+becomes active, without discarding custom settings. Changes are in ExperimentHero,
+LoadTestPanel and scoped CSS. Existing control methods and validation remain intact.
+
+Verified 21 frontend tests, workspace typecheck, production build and diff validation.
+Isolated localhost:4180 fixture (no forwarding/Docker/k6) verified desktop setup,
+advanced mixed and running all have identical 802px total hero height and 730px left
+column. Mobile advanced/setup both retain 750px left height with no horizontal overflow.
+Fixture-only Start/Stop and reset confirmed workflow transitions and reachability of
+controls inside the scrollable settings. An initial details-content clipping issue was
+corrected by scrolling the native details element itself. Fixture server was stopped
+after QA. No live workload/reset/order/warm-up was triggered. Local review remains at
+localhost:4175; no deployment, commit or push in this iteration.
+
+## 2026-10-31 - Unify monitoring as an interleaved bento grid
+
+Replaced the three scattered monitoring groups with one shared grid of eleven graph
+cards and fourteen small square snapshot tiles. Values are distributed beside related
+plots: pod counts/CPU between the per-pod graphs, latency beside response time, pool
+and query values beside database graphs, cache and order values alongside data panels.
+Thin warm borders and subtle tile colors associate related signals without an outer
+box or grey container. All graph families, short stable Pod labels, snapshot values,
+hover/focus expansion and the shared time-window controls remain.
+
+TelemetryPanels uses named grid areas for a cohesive desktop composition. Scoped CSS
+sets rows equal to column width so metric tiles are square. Tablet/mobile return to
+document-order responsive placement. TimeSeriesChart accepts an optional className
+to assign its grid area; data, rates, chart math and polling are unchanged. Updated
+the rendering test to assert all fourteen metric tiles and unavailable graph states.
+
+Verification: 21 frontend tests, workspace typecheck, production build and diff check
+pass. Local browser confirmed 11 charts / 14 metrics, synchronized ten-minute hero
+selection, no console errors/warnings, and no overflow at 1600px/390px. Desktop tiles
+are 111.8px square and the whole monitoring section is about 1369px tall, versus the
+previous 2064px open-group layout. Mobile tiles are 161.5px square. Screenshots outside
+Git: `C:/Users/verma/Desktop/scalelab-ux-review/monitoring-unified-desktop.png` and
+`monitoring-unified-mobile.png`. No workloads or mutations started; no deployment,
+commit or push. Local review remains at localhost:4175/#detailed-metrics.
+
+## 2026-10-31 - Simplify advanced controls and enrich running feedback
+
+Removed the Customize workload checkbox. Advanced fields are enabled directly and
+initially reflect the selected server-defined preset. Opening Advanced and toggling
+warm pods preserve preset execution; editing any workload field copies the preset
+into custom state and applies the edit. Durations include the actual preset value.
+Presets can still reset custom mode. All server constraints and existing requests
+remain. Warm pods uses a labeled, right-aligned accessible switch; native selects
+have rust-accent styling. Supporting warning/status text has a reserved 70px region
+so it does not move fields or the action button. Renamed the return action Basic
+settings and made the collapsed Advanced Options entry visually prominent.
+
+Advanced controls are not rendered during active workflows. Editorial running mode
+shows actual Ready/desired counts, ingress RPS, p95 and 5xx, plus the latest reported
+event, with shared-system/window context. Missing metrics stay unavailable. Added a
+metrics prop to LoadTestPanel from existing summary polling; no extra requests or
+backend changes. Files: LoadTestPanel, ScaleLabPage, scoped CSS, and presentation tests.
+
+Verification: 23 frontend tests pass; workspace typecheck, production build and diff
+validation pass. Isolated fixture verified direct mixed editing produces the correct
+100-RPS/1m/70:30 payload, no custom checkbox, hidden Advanced during a run, and live
+running details. Warm switch before/after document positions were identical: fields
+499.69px, action 806.67px, hero height 802px. Mobile retains 750px left height without
+horizontal overflow. Fixture server stopped after QA; no live load or mutation started.
+Changes remain local for review, not committed, pushed or deployed.
+
+## 2026-10-31 - Compose Advanced as a coherent editorial form
+
+Rearranged the Advanced panel into three numbered groups: traffic profile,
+generator capacity, and starting capacity. Warm pods follows the workload/VU inputs,
+with a fixed feedback area. Resource notes and benchmark reset share a utility row;
+reset feedback also reserves space. Advanced uses a serif title and values, consistent
+sans labels, warm input surfaces, rust select indicators, and a muted green switch
+surface. Restore, reset, disclosures and validation/error treatments use the same
+palette. Changes are limited to LoadTestPanel markup and scoped CSS; configuration
+semantics, guards and requests are unchanged. Long mixed/expanded-help states still
+scroll within the fixed hero footprint and keep Start visible.
+
+Verified 23 frontend tests, workspace typecheck, production build and diff validation.
+Local browser confirms the desktop default form fits without internal scrolling
+(515px content/client height), hero remains 802px, warm switch leaves field/action
+document positions unchanged (317.69px / 774.67px), and mobile mixed settings retain
+750px left-column height without horizontal overflow. No console warnings/errors
+captured. Screenshots outside Git: `C:/Users/verma/Desktop/scalelab-ux-review/advanced-composed-desktop.png`
+and `advanced-composed-mobile.png`. Existing live telemetry was read only; no start,
+reset, restore, order, or warm-up operation was triggered. No deployment/commit/push.
+
+## 2026-10-31 - Show loaders while metric history changes range
+
+Added a shared accessible ChartLoader using the existing rust/warm palette. The
+history hook now distinguishes the requested window's pending state from a completed
+empty response and scopes failures to their window. Hero and all eleven dashboard
+charts receive that loading state. Switching 5/10 minutes shows spinners rather than
+empty-sample text; genuine empty results still show the existing empty state, and
+ordinary background refreshes retain their data. Reduced-motion users see a static
+loading indicator. No polling frequency, query, backend or dependency changes.
+
+Verified 25 frontend tests, workspace typecheck, production build and diff validation.
+New tests distinguish loading from empty data and assert propagation to every graph.
+Local browser observed 12 loaders immediately after a range switch, with no empty
+sample copy. No workload or mutation started. Changes remain local, not deployed.
+
+## 2026-10-31 - Add the third-section architecture experience
+
+Created ArchitectureSection.tsx and placed it after monitoring, before Run Details.
+It replaces the old collapsed How It Works/vertical topology with a visible request
+diagram, purpose-led technology panel and three short design principles. The reference
+inspired its lanes and parallel tooling panel; editorial typography, warm borders and
+colored code-native monogram badges match ScaleLab's current local design. No external
+logos/fonts, new packages, fabricated topology metrics or image assets were added.
+
+The actual path is external k6 VM → Civo load balancer → NGINX Ingress/Kubernetes
+Service → Node.js API pods → Redis/PostgreSQL. Data storage is labeled two shards,
+not primary/replica; Redis is cache/shared quota storage, not a session store. Separate
+control/monitoring strips describe lab controller/private generator and Prometheus/
+Grafana/dashboard. The pod illustration is decorative; explicitly labeled Ready/desired
+snapshots use existing summary data, with missing values shown as unavailable.
+Read/order/observe selectors explain cache-aside, atomic orders/cache invalidation and
+measurement/control paths, highlighting relevant diagram elements. These buttons only
+change local explanatory state and do not call any API mutation.
+
+All prior architecture concepts (HPA delay, Store APIs, isolated test inventory,
+monitoring and caching) remain in the diagram, principles and explanations. Run Details
+and existing controls/results remain intact. CSS includes five desktop lanes and a
+responsive numbered sequence, with the tooling list below on smaller screens.
+
+Verified 25 frontend tests, workspace typecheck, production build and diff validation.
+Local browser verified read/order/observe explanations, five lanes, twelve stack entries,
+live summary counts, no console errors/warnings, and no overflow at 1600px/390px.
+Screenshots outside Git: `C:/Users/verma/Desktop/scalelab-ux-review/architecture-desktop.png`
+and `architecture-mobile.png`. No load, order, reset or warm-up action was started.
+No backend/infrastructure change, deployment, commit or push; review at localhost:4175/#architecture.
+
+## 2026-10-31 - Refine the previous-experiment strip
+
+ExperimentOutcome now uses a thin single-row desktop composition with a small SVG
+status icon, short status/workload identity, compact timestamp, and grouped throughput,
+total requests, latency and failure values. Serif values and warm green/amber/rust
+tones match the application; stopped and failed results retain distinct states.
+Result context is a native disclosure; request-target/window caveats remain inside.
+Failure/cleanup/error alerts stay visible and may expand the strip when necessary.
+Measured summaries still require matching run IDs; no result or scaling data is invented.
+
+Changed ExperimentOutcome, scoped CSS and a presentation regression test. Verified
+26 frontend tests plus workspace typecheck, web production build and diff validation.
+Local browser confirmed an approximately 81px desktop strip, working context toggle,
+no mobile overflow at 390px, and no console errors/warnings. Screenshots outside Git:
+`C:/Users/verma/Desktop/scalelab-ux-review/result-strip-desktop.png` and
+`result-strip-mobile.png`. Only read-only real telemetry/results were inspected; no
+test or control operation started. Changes remain local, not deployed/committed/pushed.
+
+## Hero outcome state for completed and stopped experiments
+
+The hero now has a third state for terminal runs. After a run observed in progress finishes, its setup/running controls become a compact outcome with measured k6 throughput, request count, failures, p95/p99 and dropped iterations. Status styling distinguishes completed, stopped and failed runs. The headline shrinks and the existing column height stays fixed; long output scrolls internally instead of extending the hero. Detailed k6 output stays collapsed and remains copyable. Mixed-workload counts and benchmark cleanup details are retained.
+
+`HeroRunResult.tsx` reuses `K6ResultPanel.tsx` rather than duplicating result handling. `ScaleLabPage.tsx` switches only after active states (including cleanup and restoration) end. Initial visits still show setup, with a View previous result action when applicable. New experiment returns to setup without clearing stored results. Mismatched run summaries are ignored, unavailable summaries are explicit, and cleanup failure reasons remain visible. No controller lifecycle, deployment or environment configuration changed.
+
+Verification: 29 frontend tests passed, including new cases for cleanup/restoration, stopped output, stale results and cleanup failure. Workspace typecheck, frontend production build and git diff --check passed. An isolated localhost fixture verified start → stop → hero outcome, New experiment → setup, and cleanup → completed outcome without generating real load. Desktop column height remained 730px; at 390px viewport width it remained 750px with no document horizontal overflow. This is local-only; no deployment or real benchmark was run.
+
+## Architecture section: full-width request story and real technology marks
+
+Reworked the third dashboard section to replace the cramped diagram/sidebar combination with a full-width, numbered request journey. Larger serif headings, readable descriptions, more space between stages and a highlighted compute card match the warm editorial style of the hero. Redis and both PostgreSQL shards remain visible. Read, order and observation selectors now pair a short headline with the existing factual explanation and selected-path highlighting. Control and monitoring sit in distinct supporting panels; the twelve-tool stack is a separate strip below the diagram. Existing source/Store links, live Ready/desired counts and the three system principles remain available.
+
+Important files: `ArchitectureSection.tsx`, the architecture rules in `styles.css`, and `public/icons/tech/`. Recognizable SVG technology marks are bundled from Simple Icons 16.0.0 with source and upstream license notices; there is no third-party runtime icon request or added application dependency. Responsive rules reorganize the stages and tool strip for narrower screens. No backend, infrastructure, test controls or deployment settings changed.
+
+Verification: 29 frontend tests passed; workspace typecheck and frontend production build passed. Local browser checks confirmed product-read, order and observation interactions and the responsive architecture layout. No load test or deployment was performed. The small pod-stack illustration represents the compute concept; the separately labeled Ready/desired snapshot remains the source for actual pod counts.
+
+## Previous-experiment results: one compact disclosure
+
+Removed the separate View previous result link from the hero. The previous-experiment strip now serves as the single compact entry point for the stored result, using a larger serif heading, a status-specific icon/badge and a Results disclosure. The dropdown is collapsed initially and contains throughput, request count, p95, p99, failures and dropped iterations, plus brief target/replica context. Mixed-read/write counts and cleanup status remain available when applicable; failure alerts stay visible even when the result is collapsed. Raw k6 output remains in Run Details, and the automatic terminal hero state is unchanged.
+
+Changed `ExperimentOutcome.tsx`, `ScaleLabPage.tsx`, `styles.css` and the frontend presentation tests. No configuration, deployment or backend changes. Verification: 30 frontend tests, workspace typecheck, frontend production build and git diff --check passed. Isolated localhost UI verification used synthetic completed-run data, confirmed collapsed/expanded interaction and mobile layout without horizontal overflow. No real test or deployment was started.
+
+## Reference-led compact architecture flowchart
+
+Recomposed the architecture section around the supplied flowchart reference: a single-line editorial heading, connected request stages, stacked API cards, and a branching Redis/PostgreSQL data layer. An SVG connector layer follows the HTML stage grid; dashed lines identify the supporting control/telemetry plane. Prometheus, Grafana and lab-controller cards sit directly beneath the flow. The twelve locally bundled technology icons remain in a compact side panel on desktop. Read/write/observe buttons retain concise accurate explanations and path highlighting. Live Ready/desired counts remain explicitly labeled snapshots, and decorative stacked cards are identified as illustrations rather than live counts.
+
+Changed `ArchitectureSection.tsx` and its existing rules in `styles.css`. Condensed the former large support/principle sections into the diagram and a short footer; source and Store links remain. No configuration or application behavior changed. On small screens the diagram is a labeled, keyboard-focusable horizontal scrolling region, while the tech stack reflows below it.
+
+Verification: all 30 frontend tests, workspace typecheck, frontend production build and git diff --check passed. Local browser checks verified read/write/observation selectors, local icon rendering, mobile diagram scrolling and no document horizontal overflow at 390px. At the same desktop viewport the section measures approximately 687px tall versus approximately 1542px in the previous larger composition. No benchmark, deployment or infrastructure change was performed.
+
+## Closing section: meet the builder and compact test activity
+
+Replaced the final duplicate results panel with an always-visible two-column closing section. The left introduces Chandan Verma and links to the supplied portfolio, GitHub profile and LinkedIn using three editorial link cards, with focus/hover treatments and reduced-motion support. The right retains every recorded event in a bounded, newest-first timeline with timestamps and expandable details. Empty state and event count reflect actual run data. On narrow screens the panels stack and personal-link labels remain on one line. Navigation now includes Meet the builder; the existing run-details anchor remains valid.
+
+Extracted the existing raw-output/copy drawer into `K6Output.tsx` so the hero and activity panel can share it without duplicating final metric panels. The activity panel filters output by run ID. The previous-results disclosure remains at the top; errors remain visible, and raw stdout/stderr are still available and copyable in the collapsed activity drawer. Removed the now-unused `DetailSection.tsx`, its import and associated disclosure/layout CSS. Updated result-panel guidance to refer to Test activity. Main files: `AboutBuilder.tsx`, `LabActivityFeed.tsx`, `K6Output.tsx`, `K6ResultPanel.tsx`, `ScaleLabPage.tsx`, `AppShell.tsx`, `styles.css`, and `final-section.test.ts`.
+
+No environment variables, backend, run lifecycle, telemetry, infrastructure or deployment settings changed. Verification: 33 frontend tests passed, including personal link destinations, latest-first event order, retained details/raw output, stale-run output rejection and empty state. Workspace typecheck, frontend production build and git diff --check passed. Local browser verification confirmed the about navigation, exact personal URLs, raw-output disclosure, 218px scrollable activity timeline, desktop/mobile layouts and no document horizontal overflow at 390px. No real load test or deployment was started.
+
+## Final page polish: identity, live signals and consistent hierarchy
+
+Added an original local SVG favicon: cream ascending server bars on forest green with a rust signal dot. The same palette now carries through the terminal hero action and raw-output surface. Refined the top bar with concise links, a scroll-aware current-section indicator and a pulsing status dot. Status reuses the existing summary poll through a small callback; it reports fresh Ready-pod telemetry as Cluster reporting and changes to Connecting/Telemetry delayed when appropriate. There is no existing frontend health-check flow, so no new health polling or unverified full-cluster health claim was introduced.
+
+Hero metrics now use heavy system sans-serif numerals with tabular digits. Each includes relative direction and percentage against an actual sample 30–45 seconds earlier. Green up and red down indicate numeric direction, not whether the change is good; this distinction is visible in the caption and accessible descriptions. Zero-to-positive changes say From 0 instead of fabricating an infinite percentage. Missing/stale comparisons remain unavailable. Added LiveCommentary using actual controller events, recent observed Ready-count changes and CPU crossings of the 70% HPA target. Scrape gaps are excluded from transition claims, historical terminal events are labeled Last test, and delayed telemetry suppresses fresh observations. No AI service or backend event pipeline was added.
+
+Enlarged and aligned monitoring/architecture headings, increased architecture card height and label sizes, shortened technology descriptions and balanced diagram/support spacing. Adjusted chart height so the new hero details preserve the 730px desktop editorial column instead of stretching its layout. Added a restrained moving light on enabled start-test buttons and a pulsing reporting dot; both stop under reduced-motion preferences. Mobile navigation fits without horizontal scrolling, and metrics, commentary and diagrams remain responsive.
+
+Important files: `public/favicon.svg`, `index.html`, `App.tsx`, `AppShell.tsx`, `ScaleLabPage.tsx`, `ExperimentHero.tsx`, `LiveCommentary.tsx`, `live-signals.ts`, `TrafficCapacityChart.tsx`, `ArchitectureSection.tsx`, `styles.css`, and `live-signals.test.ts`. No dependencies or environment variables added. Verification: 37 frontend tests passed, covering trend baselines, stale/missing samples, reporting freshness, CPU/Ready observations, scrape gaps and tied lifecycle timestamps. Workspace typecheck, frontend production build and git diff --check passed. Local browser checks confirmed the favicon reference, reporting indicator, active navigation, bold metrics, trend rendering, actual historical event text, start-button animation and 390px layout without horizontal overflow. No load test or deployment was performed.
+
+## Approved frontend polish deployed to Civo and prepared for GitHub
+
+Built and published the frontend-only immutable image `verma17/scalelab-web:visitor-polish-v1-20261101-d39fbfa2` for linux/amd64. Registry digest is `sha256:5bc62ba75bbc9d2a352fee14db2a4c1a70cb4ec4dfb335438de291ab9bfccdc6`. Updated only the Civo web image reference; the frontend Service was unchanged, and `scalelab-web` rolled out successfully to revision 12. Previous revision 11/image `ux-redesign-v1-20261030-a7e94c12` remains the rollback baseline.
+
+Verified production HTTPS dashboard/Store/legacy routes, new assets, read-only product/health/config APIs, 5/10-minute telemetry, preset/advanced/result interactions, desktop/mobile layout and browser console. Web pod `scalelab-web-7745464dc6-86rwb` is Ready with zero restarts and no warning events. HPA spec and all non-web deployment generations/images are unchanged. Final local verification: 37 frontend tests, workspace typecheck, frontend/Docker production builds and git diff checks passed. No load test, warm-up, reset or order was started. Idle Redis hit ratio remains honestly unavailable when no applicable traffic exists.
+
+Important release files are `infrastructure/kubernetes/civo/web.yaml`, the approved `apps/web` changes/tests/assets and `docs/scalelab-live-deployment-report.md`, which records the exact image, digest, verification and rollback command. No new environment configuration was introduced. Private rollback snapshots were kept outside Git; staged paths and credential patterns were reviewed before the authorized commit/push.

@@ -1,27 +1,19 @@
-import type { RunState } from "../lab-types";
+import type { RunResult, RunState } from "../lab-types";
+import { K6Output } from "./K6Output";
 
-export function LabActivityFeed({ run }: { run: RunState | null }) {
+export function LabActivityFeed({ run, result = null, error = null }: { run: RunState | null; result?: RunResult | null; error?: string | null }) {
   const events = run?.events.slice().reverse() ?? [];
-  return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" aria-labelledby="lab-activity-title">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 id="lab-activity-title" className="text-base font-semibold text-slate-950">Test activity</h2>
-          <p className="mt-1 text-sm text-slate-600">Recorded controller and load-generator events</p>
-        </div>
-      </div>
-      {events.length === 0 ? (
-        <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">No test events yet</div>
-      ) : (
-        <ol className="mt-4 max-h-72 space-y-1 overflow-auto">
-          {events.map((event, index) => (
-            <li key={`${event.timestamp}-${index}`} className="grid grid-cols-[68px_1fr] gap-3 border-b border-slate-100 py-2.5 last:border-0">
-              <time className="font-mono text-xs text-slate-600">{new Date(event.timestamp).toLocaleTimeString([], { hour12: false })}</time>
-              <div><p className="text-sm font-medium text-slate-800">{event.message}</p>{event.detail && <p className="mt-0.5 text-xs text-slate-500">{event.detail}</p>}</div>
-            </li>
-          ))}
-        </ol>
-      )}
-    </section>
-  );
+  const matching = result?.runId === run?.id ? result : null;
+  return <section className="activity-panel" aria-labelledby="lab-activity-title">
+    <header><div><p className="hero-kicker">The experiment log</p><h2 id="lab-activity-title">Test activity<span>.</span></h2></div><span className="activity-count">{events.length} events</span></header>
+    <p className="activity-caption">Recorded by the controller · latest first</p>
+    {events.length === 0 ? <div className="activity-empty"><span aria-hidden="true">↳</span><p>No test events yet.<small>The timeline fills as an experiment runs.</small></p></div> : <ol className="activity-timeline" tabIndex={0} aria-label="Recorded test events">
+      {events.map((event, index) => <li key={`${event.timestamp}-${index}`}>
+        <time dateTime={event.timestamp} title={new Date(event.timestamp).toLocaleString()}>{new Date(event.timestamp).toLocaleTimeString([], { hour12: false })}</time>
+        <div><p>{event.message}</p>{event.detail && <details className="activity-event-detail"><summary>Details</summary><p>{event.detail}</p></details>}</div>
+      </li>)}
+    </ol>}
+    {error && <p className="activity-error" role="alert">{error}</p>}
+    <K6Output run={run} result={matching} />
+  </section>;
 }

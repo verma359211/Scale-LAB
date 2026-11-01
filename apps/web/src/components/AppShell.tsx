@@ -1,8 +1,10 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import type { ClusterSignal } from "../lib/live-signals";
 
 type Props = {
   currentPage: "store" | "lab";
   children: ReactNode;
+  clusterStatus?: ClusterSignal;
 };
 
 const links = [
@@ -10,7 +12,29 @@ const links = [
   { page: "store", label: "Demo Store", href: "/store" },
 ] as const;
 
-export function AppShell({ currentPage, children }: Props) {
+export function AppShell({ currentPage, children, clusterStatus = "connecting" }: Props) {
+  const [activeSection, setActiveSection] = useState("experiment");
+  useEffect(() => {
+    if (currentPage !== "lab") return;
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible[0]) setActiveSection(visible[0].target.id);
+    }, { rootMargin: "-10% 0px -55% 0px" });
+    ["experiment", "detailed-metrics", "architecture", "about-builder"].forEach(id => {
+      const section = document.getElementById(id);
+      if (section) observer.observe(section);
+    });
+    return () => observer.disconnect();
+  }, [currentPage]);
+  if (currentPage === "lab") return <div className="direction-shell">
+    <a href="#main-content" className="skip-link">Skip to content</a>
+    <header className="direction-nav">
+      <a className="direction-wordmark" href="/">ScaleLab<span>.</span></a>
+      <nav aria-label="Primary navigation">{[["experiment", "Experiment"], ["detailed-metrics", "Monitoring"], ["architecture", "Architecture"], ["about-builder", "Builder"]].map(([id, label]) => <a key={id} href={`#${id}`} aria-current={activeSection === id ? "location" : undefined} onClick={() => setActiveSection(id!)}>{label}</a>)}<a href="/store">Store ↗</a></nav>
+      <span className={`direction-nav-note cluster-${clusterStatus}`} title="Based on fresh Ready-pod telemetry, not a full cluster health check."><i aria-hidden="true" />{clusterStatus === "reporting" ? "Cluster reporting" : clusterStatus === "delayed" ? "Telemetry delayed" : "Connecting"}</span>
+    </header>
+    <div id="main-content" tabIndex={-1}>{children}</div>
+  </div>;
   return (
     <div className="min-h-screen text-slate-950">
       <a href="#main-content" className="skip-link">Skip to content</a>

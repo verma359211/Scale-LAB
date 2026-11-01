@@ -1,29 +1,43 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { HeroRunResult } from "../components/HeroRunResult";
+import { isRunActive } from "../lib/experiment-presentation";
 import { LabActivityFeed } from "../components/LabActivityFeed";
-import { K6ResultPanel } from "../components/K6ResultPanel";
+import { AboutBuilder } from "../components/AboutBuilder";
 import { LoadTestPanel } from "../components/LoadTestPanel";
-import { MetricCard } from "../components/MetricCard";
-import { DetailSection } from "../components/DetailSection";
-import { LiveScalingPanel } from "../components/LiveScalingPanel";
 import { ExperimentOutcome } from "../components/ExperimentOutcome";
+import { ExperimentHero } from "../components/ExperimentHero";
 import { useTelemetryHistory } from "../hooks/useTelemetryHistory";
-import { SystemTopology } from "../components/SystemTopology";
+import { ArchitectureSection } from "../components/ArchitectureSection";
 import { TelemetryPanels } from "../components/TelemetryPanels";
 import type { MetricsSummary, StartRunRequest, RunResult, RunState, WarmupState, LabConfiguration } from "../lab-types";
 import { labApi } from "../lib/lab-api";
+import { clusterSignal, type ClusterSignal } from "../lib/live-signals";
 
-const integer = (value: number) => Math.round(value).toLocaleString();
-const percent = (value: number) => `${value.toFixed(value >= 10 ? 1 : 2)}%`;
-const milliseconds = (value: number) => `${value.toFixed(value >= 100 ? 0 : 1)}ms`;
 
-export function ScaleLabPage() {
+export function ScaleLabPage({ onClusterStatusChange }: { onClusterStatusChange?: (status: ClusterSignal) => void } = {}) {
   const history = useTelemetryHistory();
   const [statusKnown, setStatusKnown] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [summary, setSummary] = useState<MetricsSummary | null>(null);
   const [run, setRun] = useState<RunState | null>(null);
+  const observedActiveRun = useRef<string | null>(null);
+  const [resultViewId, setResultViewId] = useState<string | null>(null);
+  const showHeroResult = !!run && resultViewId === run.id && !isRunActive(run);
+
+  useEffect(() => {
+    if (run && isRunActive(run)) {
+      observedActiveRun.current = run.id;
+      setResultViewId(null);
+    } else if (run && observedActiveRun.current === run.id) {
+      setResultViewId(run.id);
+      observedActiveRun.current = null;
+    }
+  }, [run?.id, run?.status]);
   const [metricsLoading, setMetricsLoading] = useState(true);
   const [metricsError, setMetricsError] = useState<string | null>(null);
+  useEffect(() => {
+    onClusterStatusChange?.(clusterSignal(summary, metricsError));
+  }, [summary, metricsError, onClusterStatusChange]);
   const [controlError, setControlError] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
   const [runResult, setRunResult] = useState<RunResult | null>(null);
@@ -155,71 +169,42 @@ export function ScaleLabPage() {
     }
   }, []);
 
-  const metrics = summary?.metrics;
   const noTelemetry = summary && summary.unavailable.length === Object.keys(summary.metrics).length;
   const telemetryMessage = metricsError ?? (noTelemetry ? "Prometheus returned no samples for the dashboard metrics" : null);
 
   return (
-    <main className="lab-page">
-      <header className="lab-intro">
-        <div>
-          <p className="eyebrow">Real infrastructure. Observable engineering.</p>
-          <h1>Watch Kubernetes<br className="hidden sm:block" /> <span>adapt to traffic.</span></h1>
-        </div>
-        <div className="intro-context">
-          <p>Send requests to a real ecommerce app. Watch its API servers scale as demand changes.</p>
-          <a href="https://github.com/verma359211/Scale-LAB" target="_blank" rel="noreferrer">Explore the source <span aria-hidden="true">↗</span></a>
-          <span>Node.js · Redis · PostgreSQL · k6</span>
-        </div>
-      </header>
-
-      <div className="experiment-workspace">
+    <main className="lab-page direction-page">
+      <ExperimentHero run={run} summary={summary} data={history.data} error={telemetryMessage} historyError={history.error} historyLoading={history.loading}
+        windowMinutes={history.windowMinutes} onWindowChange={history.setWindowMinutes}>
+        {showHeroResult && run ? <HeroRunResult run={run} result={runResult} error={resultError} onNewExperiment={() => setResultViewId(null)} /> : <>
         <LoadTestPanel
+          editorial
+          metrics={summary?.metrics}
           run={run} configuration={configuration} warmup={warmup} warmupError={warmupError}
           statusKnown={statusKnown} actionPending={actionPending} actionError={controlError ?? statusError}
           onStart={startRun} onStop={stopRun} onReset={resetBenchmark} onRestore={restoreWarmup} resetNotice={resetNotice}
         />
-        <div className="min-w-0">
-          <LiveScalingPanel summary={summary} data={history.data} loading={metricsLoading} error={telemetryMessage}
-            historyError={history.error} windowMinutes={history.windowMinutes} onWindowChange={history.setWindowMinutes} />
-          <div className="live-quality" aria-label="Current response quality">
-            <span><strong>{metrics?.p95LatencyMs == null ? "—" : milliseconds(metrics.p95LatencyMs)}</strong> p95 latency</span>
-            <span><strong>{metrics?.httpErrorRate == null ? "—" : percent(metrics.httpErrorRate)}</strong> server errors</span>
-            <span>Rolling 30s · p95: 95% of API responses are faster</span>
-          </div>
-        </div>
-      </div>
+        </>}
+      </ExperimentHero>
 
       <ExperimentOutcome run={run} result={runResult} data={history.data} error={resultError} />
 
-      <div className="explore-heading"><h2>Follow the evidence.</h2><p>Go deeper when you’re curious.</p></div>
-      <DetailSection id="detailed-metrics" title="Detailed Metrics" description="Per-pod traffic, CPU, latency, errors, database & cache">
-        <section aria-label="Current metrics" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <MetricCard label="Current RPS" value={metrics?.requestRps} format={integer} loading={metricsLoading} detail="30s rolling · API requests" />
-          <MetricCard label="Ingress RPS" value={metrics?.ingressRps} format={integer} loading={metricsLoading} detail="30s rolling · public /api" />
-          <MetricCard label="p95 latency" value={metrics?.p95LatencyMs} format={milliseconds} loading={metricsLoading} detail="30s rolling" emptyText="No recent traffic" />
-          <MetricCard label="p99 latency" value={metrics?.p99LatencyMs} format={milliseconds} loading={metricsLoading} detail="30s rolling" emptyText="No recent traffic" />
-          <MetricCard label="HTTP errors" value={metrics?.httpErrorRate} format={percent} loading={metricsLoading} detail="30s rolling · 5xx rate" emptyText="No recent traffic" />
-          <MetricCard label="API Pods" value={metrics?.apiPodCount} format={integer} loading={metricsLoading} detail={`Desired: ${metrics?.desiredPodCount == null ? "—" : integer(metrics.desiredPodCount)}`} />
-          <MetricCard label="API CPU" value={metrics?.apiCpuPercent} format={percent} loading={metricsLoading}
-            detail={`${metrics?.apiCpuMillicores == null ? "—" : Math.round(metrics.apiCpuMillicores) + "m"} avg / pod · 250m request`}
-            help="Average API CPU relative to the Kubernetes CPU request. 100% is the request, not the CPU limit." />
-          <MetricCard label="Redis hit ratio" value={metrics?.redisHitRatio} format={percent} loading={metricsLoading} detail="30s rolling · product cache" emptyText="No recent cache traffic" />
-        </section>
-        <TelemetryPanels data={history.data} windowMinutes={history.windowMinutes} />
-      </DetailSection>
-      <DetailSection id="run-details" title="Run Details" description="k6 results, cleanup status, event timeline & raw output">
-        <K6ResultPanel run={run} result={runResult} error={resultError} />
-        <LabActivityFeed run={run} />
-      </DetailSection>
-      <DetailSection id="architecture" title="How It Works" description="The real request path, autoscaling & the companion Store">
-        <div className="grid gap-5 text-sm leading-6 text-slate-600 md:grid-cols-3">
-          <div><h3 className="font-semibold text-slate-950">Why scale?</h3><p>Extra API servers share growing demand. Kubernetes watches CPU and requests capacity; new pods must become Ready before receiving traffic. Adding servers is not instant.</p></div>
-          <div><h3 className="font-semibold text-slate-950">A real application</h3><p>The <a className="text-teal-800 underline" href="/store">Demo Store</a> uses the same product and order APIs. Redis caches reads, while two PostgreSQL shards persist products and orders. Mixed tests use separate benchmark inventory.</p></div>
-          <div><h3 className="font-semibold text-slate-950">Evidence, not animation</h3><p>k6 runs on a separate VM. Prometheus measures the cluster; this dashboard reads its metrics. Grafana provides deeper monitoring. Shared traffic and scrape timing can affect what you observe.</p></div>
-        </div>
-        <SystemTopology summary={summary} />
-      </DetailSection>
+      <section id="detailed-metrics" className="monitor-dashboard" aria-labelledby="monitor-title">
+        <header className="monitor-header">
+          <div><p className="hero-kicker">02 / Inside the system</p><h2 id="monitor-title">The control room<span>.</span></h2></div>
+          <div className="monitor-toolbar"><span className={`monitor-status${telemetryMessage ? " is-stale" : ""}`}>{metricsLoading ? "Connecting" : telemetryMessage ? "Last snapshot · retrying" : "Live telemetry"}</span><div role="group" aria-label="Dashboard history window">{([5, 10] as const).map(m => <button type="button" key={m} aria-pressed={history.windowMinutes === m} onClick={() => history.setWindowMinutes(m)}>Last {m} min</button>)}</div></div>
+        </header>
+        <div className="monitor-context"><span>API / compute / database / cache</span><span>{summary ? `Snapshot ${new Date(summary.generatedAt).toLocaleTimeString([], {hour12: false})}` : "Awaiting metrics"} · rates over 30s · history every 6s</span></div>
+        {telemetryMessage && <p role="alert" className="lab-notice">{telemetryMessage}. Values are the last received snapshot.</p>}
+        {history.error && <p role="alert" className="lab-notice">History unavailable. Retained samples keep their original timestamps.</p>}
+        <TelemetryPanels data={history.data} summary={summary} loading={metricsLoading} historyLoading={history.loading} windowMinutes={history.windowMinutes} />
+        <footer className="monitor-footer"><span>Prometheus / real measurements</span><span>CPU 100% = requested CPU, not the limit. Gaps indicate missing samples.</span></footer>
+      </section>
+      <ArchitectureSection summary={summary} />
+      <div id="run-details" className="lab-finisher">
+        <AboutBuilder />
+        <LabActivityFeed run={run} result={runResult} error={resultError} />
+      </div>
       <footer className="lab-footer"><span>Built to make system behavior visible.</span><a href="/store">Try the Store →</a><a href="https://github.com/verma359211/Scale-LAB" target="_blank" rel="noreferrer">Read the code ↗</a></footer>
     </main>
   );

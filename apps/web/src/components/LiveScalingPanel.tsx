@@ -52,6 +52,7 @@ export function LiveScalingPanel({ summary, data, loading, error, historyError, 
     <div className="scaling-charts">
       <TimeSeriesChart compact title="Incoming traffic" description="Requests/sec · rolling 30s" series={[{ label: "Ingress", color: "#2563eb", points: data?.series.ingressRps ?? [] }]} formatValue={(value) => value.toLocaleString(undefined, { maximumFractionDigits: 1 })} timeRange={range} />
       <TimeSeriesChart compact stepped title="API capacity" description="Replica counts · same time window" series={[{ label: "Ready", color: "#0f766e", points: data?.series.apiPodCount ?? [] }, { label: "Desired", color: "#b45309", points: data?.series.desiredPodCount ?? [] }]} formatValue={(value) => value.toLocaleString(undefined, { maximumFractionDigits: 1 })} timeRange={range} />
+      <TimeSeriesChart compact title="How fast is the app?" description="p95 response time · 95% of API responses are faster" series={[{ label: "p95", color: "#7c3aed", points: data?.series.p95LatencyMs ?? [] }]} formatValue={(value) => `${value.toFixed(1)}ms`} timeRange={range} />
     </div>
     <p className="mt-3 text-xs text-slate-600">{updated ? `Snapshot ${updated} · ` : ""}CPU is relative to each pod’s requested CPU. Scaling takes time; it is not guaranteed by a preset.</p>
   </section>;

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { K6Output } from "./K6Output";
 import type { RunResult, RunState } from "../lab-types";
 
 type Props = {
+  hero?: boolean;
   run: RunState | null;
   result: RunResult | null;
   error: string | null;
@@ -11,37 +12,14 @@ const active = (status: RunState["status"] | undefined) => (
   status === "preparing" || status === "starting" || status === "running" || status === "stopping" || status === "resetting" || status === "restoring"
 );
 
-export function K6ResultPanel({ run, result, error }: Props) {
-  const [copied, setCopied] = useState(false);
+export function K6ResultPanel({ hero = false, run, result, error }: Props) {
   const summary = result?.summary;
-  const output = [
-    result?.stdout?.trim(),
-    result?.stderr?.trim() ? `STDERR\n${result.stderr.trim()}` : "",
-  ].filter(Boolean).join("\n\n");
   const cleanupShards = run?.cleanup?.shards ?? [];
   const ordersDeleted = cleanupShards.reduce((total, shard) => total + (shard.ordersDeleted ?? 0), 0);
   const productsRestored = cleanupShards.reduce((total, shard) => total + (shard.productsRestored ?? 0), 0);
 
-  async function copyOutput() {
-    if (!output) return;
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(output);
-    } else {
-      const textarea = document.createElement("textarea");
-      textarea.value = output;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.append(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      textarea.remove();
-    }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1_500);
-  }
-
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" aria-labelledby="load-result-title">
+    <section className={hero ? "hero-k6-result" : "rounded-xl border border-slate-200 bg-white p-5 shadow-sm"} aria-labelledby="load-result-title">
       <div>
         <h2 id="load-result-title" className="text-base font-semibold text-slate-950">Load Test Result</h2>
         <p className="mt-1 text-sm text-slate-500">Final metrics appear after k6 exits. Detailed output is available during the run.</p>
@@ -51,17 +29,18 @@ export function K6ResultPanel({ run, result, error }: Props) {
       {run && active(run.status) && <p className="mt-5 rounded-lg bg-blue-50 px-4 py-5 text-sm text-blue-700">Result available when the test completes.</p>}
       {error && <p role="alert" className="mt-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
       {run?.failureReason && <p role="alert" className="mt-4 text-sm text-rose-700">{run.failureReason}</p>}
+      {hero && !result?.available && !error && <p className="hero-result-pending" role="status">Waiting for the final k6 summary. Live system metrics remain visible alongside this result.</p>}
 
       {result?.available && (
         <>
-          <div className="mt-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[minmax(0,1fr)_minmax(260px,0.7fr)]">
+          <div className="k6-run-overview mt-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[minmax(0,1fr)_minmax(260px,0.7fr)]">
             <div>
               <p className="text-sm font-semibold text-slate-900">{testName(run?.type)} result</p>
               <p className="mt-1 text-sm text-slate-600">
                 Target {run?.configuration.targetRps.toLocaleString()} RPS · {run?.configuration.duration}
                 {run?.type === "mixed" && ` · ${run.configuration.readPercent ?? 70}% read / ${run.configuration.writePercent ?? 30}% write`}
               </p>
-              <p className="mt-2 text-sm text-slate-700">
+              <p className="k6-run-totals mt-2 text-sm text-slate-700">
                 {summary?.achievedRps?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? "--"} RPS · {summary?.failureRate == null ? "--" : `${summary.failureRate}%`} failures · {summary?.completedRequests?.toLocaleString() ?? "--"} requests
               </p>
             </div>
@@ -75,7 +54,7 @@ export function K6ResultPanel({ run, result, error }: Props) {
             )}
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="k6-final-metrics mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <ResultValue label="Achieved RPS" value={summary?.achievedRps?.toLocaleString(undefined, { maximumFractionDigits: 1 })} />
             <ResultValue label="Requests" value={summary?.completedRequests?.toLocaleString()} />
             <ResultValue label="Failure rate" value={summary?.failureRate == null ? undefined : `${summary.failureRate}%`} />
@@ -94,22 +73,14 @@ export function K6ResultPanel({ run, result, error }: Props) {
 
         </>
       )}
-          <details className="mt-5 overflow-hidden rounded-lg border border-slate-300">
-            <summary className="cursor-pointer bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800">Detailed k6 Output</summary>
-            <div className="flex justify-end border-y border-slate-700 bg-slate-900 px-3 py-2">
-              <button type="button" onClick={() => void copyOutput()} disabled={!output} className="rounded border border-slate-600 px-2.5 py-1 text-xs font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-40">
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
-            <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap bg-slate-950 p-4 font-mono text-xs leading-5 text-slate-100">{output || (run && active(run.status) ? "Waiting for k6 output. Quiet runs may only produce a final summary." : "No k6 output available.")}</pre>
-          </details>
+      <K6Output run={run} result={result} />
     </section>
   );
 }
 
 function ResultValue({ label, value }: { label: string; value: string | undefined }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+    <div className="k6-value rounded-lg border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs font-medium text-slate-500">{label}</p>
       <p className="mt-1 font-mono text-lg font-semibold text-slate-950">{value ?? "--"}</p>
     </div>

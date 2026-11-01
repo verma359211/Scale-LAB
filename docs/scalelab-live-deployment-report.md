@@ -395,3 +395,32 @@ successful production compilation. `git diff --check` passed with existing
 LF/CRLF warnings. No application code was changed during this rollout; only
 release image references and execution documentation were updated. The existing
 dirty/untracked implementation is preserved and no Git commit was created.
+
+## Visitor experience release — 1 November 2026
+
+Released the approved editorial dashboard, bento monitoring grid, compact connected architecture, builder/activity closing section, hero outcome states, favicon and measured live commentary. Frontend-only rollout; no tests were started and no warm-up/reset/order action was executed.
+
+- Branch/remote: `main`, `https://github.com/verma359211/Scale-LAB.git`. Pre-release HEAD and origin/main both `0a38934c01d970ed25bd22f78efa9ccc2f5e2c24`.
+- Image: `verma17/scalelab-web:visitor-polish-v1-20261101-d39fbfa2` (verified unused before the linux/amd64 build).
+- Published registry digest: `sha256:5bc62ba75bbc9d2a352fee14db2a4c1a70cb4ec4dfb335438de291ab9bfccdc6`.
+- amd64 platform manifest: `sha256:4adf36aef00daea78cf62ae268fc776943224d5a55e3a2e8fa356323e40d308b`.
+- Civo context/namespace: `scalelab`, using the explicit Downloads kubeconfig. Frontend rollout revision **12**, Deployment `scalelab-web`, pod `scalelab-web-7745464dc6-86rwb`, **1/1 Ready**, **0 restarts**, **0 warning events** at verification.
+- Rollback baseline: `verma17/scalelab-web:ux-redesign-v1-20261030-a7e94c12`, revision **11**. Deployment/HPA snapshots and registry verification output were saved outside the repository in the local private deployment-backup directory.
+
+Final checks: **37 frontend tests passed**, workspace typecheck passed, frontend production build passed, Docker production build passed, staged/unstaged diff checks passed. Reviewed staged paths and recognized credential patterns; no environment files, kubeconfigs, private keys or backup files are included.
+
+Production verification at https://scalelab.chandanverma.space: `/`, `/store`, `/scalelab`, favicon and representative technology SVG return HTTP 200 over HTTPS. Live HTML references the built `/assets/index-CRdW6xN-.js` bundle. Browser checks confirmed the actual redesign, preset selection, collapsed advanced controls and warm-start settings, previous-results disclosure, 5/10-minute history selection, architecture navigation, Ready-pod indicator, trend values and live commentary. Store and legacy-dashboard route refreshes work; no browser console errors were captured. A 390px mobile viewport had no horizontal document overflow. Recorded raw output remains accessible without starting a test.
+
+API `/health` reports healthy PostgreSQL (two shards) and Redis; the existing product detail endpoint responds successfully. Controller config reports three presets and enabled controls. Both history windows returned samples (101 points for five minutes and 201 for ten at inspection). Redis hit ratio can remain unavailable at idle, and the UI retains its unavailable state. A transient warm-up status read retried successfully; the final status is idle with normal autoscaling enabled.
+
+HPA spec matches the pre-release snapshot: min **2**, max **6**, CPU target **70%**. All non-web Deployment generations and images match their pre-release values. API, lab-controller, load-generator VM, Redis, both database shards, monitoring, ingress, TLS and recovery configuration were not changed. Full start/stop, warm-up, write-cleanup and load behavior were deliberately not exercised during this UI-only release.
+
+Frontend-only rollback, if required (not executed):
+
+```powershell
+$ReleaseKube = Join-Path $HOME 'Downloads/civo-scalelab-kubeconfig'
+kubectl --kubeconfig $ReleaseKube --context scalelab -n scalelab set image deployment/scalelab-web web=verma17/scalelab-web:ux-redesign-v1-20261030-a7e94c12
+kubectl --kubeconfig $ReleaseKube --context scalelab -n scalelab rollout status deployment/scalelab-web --timeout=180s
+```
+
+Also restore the old frontend image reference in `infrastructure/kubernetes/civo/web.yaml` if retaining a rollback. No rollback was needed. The frontend source, tests, bundled icons and deployment manifest are released together with this report.
