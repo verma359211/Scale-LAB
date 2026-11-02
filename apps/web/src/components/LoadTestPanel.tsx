@@ -75,7 +75,7 @@ export function LoadTestPanel({ editorial = false, metrics, run, configuration, 
   const metric = (value: number | null | undefined, suffix = "") => value == null ? "—" : `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })}${suffix}`;
 
   return <section data-active={isActive} className={`experiment-launcher${editorial ? " editorial-launcher" : ""}`} aria-labelledby="load-test-title">
-    <h2 id="load-test-title" className={editorial ? `editorial-section-label${advanced ? " advanced-panel-title" : ""}` : "eyebrow"}>{editorial && advanced ? "Make it your experiment." : isActive ? "Experiment in progress" : "Choose your experiment"}</h2>
+    {!isActive && <h2 id="load-test-title" className={editorial ? `editorial-section-label${advanced ? " advanced-panel-title" : ""}` : "eyebrow"}>{editorial && advanced ? "Make it your experiment." : "Choose your experiment"}</h2>}
     {!configuration && <p className="lab-notice mt-3">Connecting to scenario configuration…</p>}
     {configuration && !configuration.controlsEnabled && <p className="lab-notice mt-3">Tests are paused by the operator. Live telemetry remains available.</p>}
     {!statusKnown && <p role="status" className="mt-3 text-sm text-slate-600">Checking for an active experiment…</p>}
@@ -90,7 +90,7 @@ export function LoadTestPanel({ editorial = false, metrics, run, configuration, 
       <div className="scenario-facts"><span>{custom ? readableDuration(duration) : preset ? readableDuration(preset.configuration.duration) : "Duration unavailable"}</span><span>{custom ? targetRps.toLocaleString() : preset?.configuration.targetRps.toLocaleString() ?? "—"} target req/s{["ramp", "spike"].includes(custom ? type : preset?.configuration.type ?? "ramp") ? " peak" : ""}</span></div>
     </div>}
     {isActive && run && <div className="run-progress">
-      <p role="status" className="font-semibold">{runLabel(run)}</p>
+      <p id="load-test-title" role="status" className="font-semibold">{runLabel(run)}</p>
       <p className="mt-1 text-xs text-slate-600">{names[run.type]}</p>
       <p className="mt-2 text-sm text-slate-600">{run.status === "preparing" ? `Ready pods: ${warmup?.readyReplicas ?? "—"} / ${warmup?.targetReplicas ?? "—"}. Traffic has not started.` : run.status === "resetting" ? "Restoring benchmark inventory before completion." : run.status === "restoring" ? "Restoring normal autoscaling." : run.status === "stopping" ? "Stopping traffic. Required cleanup follows." : run.status === "starting" ? "Starting k6 on the load-generator VM." : "A shared experiment is in progress."}</p>
       <dl className="mt-4 flex flex-wrap gap-5"><div><dt className="text-xs text-slate-600">Elapsed workflow</dt><dd className="font-mono text-2xl">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</dd></div><div><dt className="text-xs text-slate-600">Requested {["ramp", "spike"].includes(run.type) ? "peak" : "rate"}</dt><dd className="font-mono text-2xl">{run.configuration.targetRps.toLocaleString()} <small className="text-xs">req/s</small></dd></div></dl>

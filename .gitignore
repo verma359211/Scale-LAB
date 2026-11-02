@@ -14,3 +14,41 @@ Thumbs.db
 .idea/
 .vscode/
 docs/experiments/results
+# Private deployment material and local credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.kubeconfig
+*kubeconfig*
+/secrets/
+**/secrets.local.*
+**/secret-values.*
+# Diagnostics and temporary authoring artifacts
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+*.trace
+*.ndjson
+*.bak
+*.orig
+*.rej
+*.tmp
+*.temp
+*.tar
+*.tar.gz
+*.zip
+*.sql.gz
+/.scalelab-deployment-backups/
+/scalelab-ux-review/
+# Local tool/account state (AGENTS.md remains versioned project documentation)
+/.codex/
+/.agents/
+/.aws/
+/.ssh/
+/.kube/
+/.docker/
+*.secret.yaml
+*.secrets.yaml
+*.secret.json
+*.secrets.json

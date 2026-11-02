@@ -1,18 +1,5 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: postgres
-  namespace: scalelab
-type: Opaque
-stringData:
-  POSTGRES_DB: scalelab
-  POSTGRES_USER: scalelab
-  POSTGRES_PASSWORD: scalelab
-  DATABASE_URL: postgresql://scalelab:scalelab@postgres:5432/scalelab
-  DATABASE_SHARD_URLS: postgresql://scalelab:scalelab@postgres:5432/scalelab,postgresql://scalelab:scalelab@postgres-shard-1:5432/scalelab
-  POSTGRES_EXPORTER_URL: postgresql://scalelab:scalelab@postgres:5432/scalelab?sslmode=disable
-  POSTGRES_SHARD_1_EXPORTER_URL: postgresql://scalelab:scalelab@postgres-shard-1:5432/scalelab?sslmode=disable
----
+# Create the postgres Secret privately before applying this manifest.
+# See docs/REPOSITORY_HYGIENE.md; existing live Secrets are not changed here.
 apiVersion: v1
 kind: Service
 metadata:

@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: verma17/scalelab-web:visitor-polish-v1-20261101-d39fbfa2
+          image: verma17/scalelab-web:cleanup-v1-20261102-b935d812
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { isRunActive, readableDuration, replicaObservation, runLabel } from "../src/lib/experiment-presentation.ts";
 import { LoadTestPanel } from "../src/components/LoadTestPanel.tsx";
-import { LiveScalingPanel } from "../src/components/LiveScalingPanel.tsx";
+import { ExperimentHero } from "../src/components/ExperimentHero.tsx";
 import { ExperimentOutcome } from "../src/components/ExperimentOutcome.tsx";
 import { HeroRunResult } from "../src/components/HeroRunResult.tsx";
 import type { RunState } from "../src/lab-types.ts";
@@ -73,6 +73,8 @@ it("makes advanced fields directly editable without a custom-mode checkbox", () 
 it("hides advanced controls during a run and keeps live details distinct from requested load", () => {
   const html = renderToStaticMarkup(createElement(LoadTestPanel, { ...controls, editorial: true, run: run("running") }));
   assert.doesNotMatch(html, /Advanced Options|advanced-options/);
+  assert.doesNotMatch(html, /Experiment in progress/);
+  assert.match(html, /id="load-test-title" role="status"[^>]*>Experiment running/);
   assert.match(html, /Live response/);
   assert.match(html, /includes shared traffic/);
   assert.match(html, /Incoming requests/);
@@ -112,12 +114,12 @@ it("only observes replica changes inside the workload, excluding warmup and clea
 });
 
 it("shows missing telemetry honestly and keeps accessible chart labels", () => {
-  const html = renderToStaticMarkup(createElement(LiveScalingPanel, { summary: null, data: null, loading: true, error: null, historyError: null, windowMinutes: 5, onWindowChange: () => {} }));
+  const html = renderToStaticMarkup(createElement(ExperimentHero, { children: null, summary: null, data: null, historyLoading: true, error: null, historyError: null, windowMinutes: 5, onWindowChange: () => {} }));
   assert.match(html, /Connecting/);
-  assert.match(html, /Waiting for replica metrics/);
-  assert.match(html, /No metric samples yet/);
+  assert.match(html, /Awaiting comparison/);
+  assert.match(html, /Loading metric history/);
   assert.doesNotMatch(html, /2 API pods are Ready/);
-  assert.match(html, /Telemetry history window/);
+  assert.match(html, /Hero history window/);
 });
 
 it("separates past results from live values and ignores another run's summary", () => {

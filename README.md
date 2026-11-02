@@ -1,220 +1,207 @@
 # ScaleLab
 
-ScaleLab is a small flash-sale system used to observe how an application behaves under load.
+**Send real traffic. Watch a real system respond.**
 
-Major completed, next and deferred milestones are tracked in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+ScaleLab is a small ecommerce app and an interactive system-design lab. Run a controlled experiment and watch traffic, latency, CPU and Kubernetes replica counts change together.
 
-The current milestone runs the application in local Kubernetes:
+[Live demo](https://scalelab.chandanverma.space) · [Store](https://scalelab.chandanverma.space/store) · [Architecture and experiments](docs/ROADMAP.md)
 
-```text
-Browser / k6
-     |
-     v
-ingress-nginx (Layer 7)
-     |
-     v
-Kubernetes Service
-     |
-     +----> API pod 1 ----+
-     +----> API pod 2 ----+----> Redis
-     +----> API pod 3...   |        |
-              ^            |        +----> PostgreSQL shard 0
-              +--- HPA ----+        +----> PostgreSQL shard 1
-              ^            |
-              +--- HPA ----+
+## What you can explore
 
-Prometheus :9090 ---> API pods, Kubernetes and HPA metrics
-Grafana    :3002 ---> Prometheus
+- Kubernetes autoscaling from 2 to 6 API pods.
+- Redis product caching and distributed rate limiting.
+- PostgreSQL transactions, stock contention and two-shard routing.
+- Read-only and mixed read/write k6 workloads, with real Prometheus measurements.
+- A dashboard that coordinates experiments through a private load-generator controller.
+
+The live site uses a separate Civo load-generator VM. Local performance depends on your laptop and Docker allocation; it is not a cloud capacity benchmark.
+
+## Run the app on your own machine
+
+### Requirements
+
+- Git and Docker Desktop running with Linux containers.
+- Node.js 22.12+ and pnpm 10.15.1 for workspace commands/checks. Container builds use the versions in the Dockerfiles.
+- PowerShell for the provided experiment/Kubernetes runner scripts. Basic Docker Compose commands also work on Linux/macOS.
+
+Install pnpm if needed:
+
+```sh
+npm install --global pnpm@10.15.1
 ```
 
-The HPA starts with two API pods and can scale to six based on average CPU utilization. The earlier fixed three-instance Docker Compose topology remains in `compose.yaml` as the pre-Kubernetes baseline.
+### Quick start: local Store and monitoring
 
-## Requirements
+```sh
+git clone --depth 1 https://github.com/verma359211/Scale-LAB.git system-design-lab
+cd system-design-lab
+pnpm install
+pnpm stack:up
+```
 
-- Docker Desktop with Kubernetes enabled
-- `kubectl` using the `docker-desktop` context
-- Internet access on the first `k8s:up` so the pinned ingress-nginx controller can be installed
-- Node.js 20+ and pnpm 10+ for repository checks
+The shallow clone skips old raw-capture history; omit `--depth 1` if you need the full history.
 
-## Run the Kubernetes system
+This builds the web/API images and starts **three fixed API containers**, Nginx, Redis, one PostgreSQL database, Prometheus and Grafana. Migrations and product seeds run automatically. No cloud credentials or `.env` file are required for this local development setup.
+
+| Open | Address |
+| --- | --- |
+| Store | http://localhost:5174/store |
+| Products API | http://localhost:3001/api/products |
+| API/database health | http://localhost:3001/health |
+| Grafana | http://localhost:3002 |
+| Prometheus | http://localhost:9090 |
+
+Grafana's **local-only** login is `admin` / `admin`; PostgreSQL's **local-only** database/user/password are `scalelab`, published on localhost port `5433`. These are public demo defaults, not deployment secrets. Published Compose ports bind to loopback. Never reuse these credentials for an exposed deployment.
+
+**The full live experiment dashboard is not a turnkey part of this Compose stack.** The web image contains it at `/`, but its `/lab-api` controller and external generator are not started by Compose. Use `/store` for this quick start and Grafana for local monitoring. Missing dashboard telemetry/control services are not a failed Store installation. Do not point a local controller at the public load generator.
+
+```sh
+pnpm stack:logs
+pnpm stack:down
+```
+
+Stopping Compose preserves named database/monitoring volumes. `docker compose down -v` deletes them; use it only when intentionally resetting local data.
+
+### Optional: local Kubernetes and HPA
+
+Enable Kubernetes in Docker Desktop, install `kubectl`, and run from PowerShell:
 
 ```powershell
-pnpm install
-pnpm stack:down
 kubectl config use-context docker-desktop
+kubectl config current-context  # Must be docker-desktop, not Civo
+pnpm stack:down                # Avoid competing ports/resources
 pnpm k8s:build
 pnpm k8s:up
 kubectl wait --for=condition=Ready pods --all -n scalelab --timeout=5m
-```
-
-`stack:down` prevents the earlier Compose services from competing for ports 3001, 3002, 5174, and 9090. The first Kubernetes start downloads the container images and may take several minutes.
-
-Open:
-
-- Application through ingress-nginx: http://localhost
-- API through ingress-nginx: http://localhost/api/products
-- Health through ingress-nginx: http://localhost/health
-- Direct web Service for debugging: http://localhost:5174
-- Direct API Service for debugging: http://localhost:3001
-- Database viewer: http://localhost:8081
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3002 (`admin` / `admin`)
-
-Docker Desktop exposes `LoadBalancer` services on localhost. The API pods apply pending migrations and seed products during startup. PostgreSQL uses a Kubernetes persistent volume, and its migration advisory lock makes simultaneous pod startup safe.
-
-Adminer is a local development tool and is deliberately kept outside the public application Ingress. Sign in with PostgreSQL server `postgres` for shard 0 or `postgres-shard-1` for shard 1, username `scalelab`, password `scalelab`, and database `scalelab`. Do not expose this development configuration publicly.
-
-Confirm that resource metrics and the HPA are working:
-
-```powershell
-kubectl top pods -n scalelab
-kubectl get hpa -n scalelab
 pnpm k8s:status
+kubectl top pods -n scalelab
 ```
 
-## Commands
+Open http://localhost/store (ingress), http://localhost:3002 (Grafana) and http://localhost:9090 (Prometheus). The first start downloads ingress-nginx and supporting images. Kubernetes has **two PostgreSQL shards**, Redis and a 2–6 replica CPU-based HPA. Local Adminer is at http://localhost:8081; use server `postgres` or `postgres-shard-1` with the local database credentials above.
 
-```powershell
-pnpm k8s:build      # Build the local API and web images
-pnpm k8s:up         # Apply the complete local Kubernetes stack
-pnpm k8s:status     # Show pods, services and the HPA
-pnpm k8s:watch      # Watch pods appear/disappear and HPA decisions
-pnpm k8s:load       # Run the staged autoscaling workload
-pnpm k8s:load:stop  # Stop the in-cluster k6 Job
-pnpm k8s:write:hot          # Write test: every order locks one product
-pnpm k8s:write:distributed  # Write test: orders spread across 100 products
-pnpm k8s:write:reset        # Remove benchmark orders and restore their stock
-pnpm k8s:write:stop         # Stop the write-test Job
-pnpm k8s:down       # Remove the namespace and its local Kubernetes data
+The local Kubernetes manifests deploy the Store/API/monitoring stack and Kubernetes k6 Jobs. The cloud dashboard controllers/private VM require the separate configuration described below. CPU requests/limits and HPA targets are experimental inputs, not recommended production defaults.
+
+`pnpm k8s:down` removes local Kubernetes namespaces and can delete database volumes. Confirm the context first and back up any data you need.
+
+## Tests and development
+
+```sh
 pnpm typecheck
-pnpm test
 pnpm build
+pnpm --filter @system-design/web test
+pnpm --filter @system-design/lab-controller test
+pnpm --filter @system-design/loadgen-controller test
 ```
 
-Run `pnpm k8s:watch` in one terminal and `pnpm k8s:load` in another. The read-only workload enters through ingress-nginx with normal HTTP keep-alive, then gradually moves through 300, 1,200, 2,200 and 3,000 RPS before cooling down. Its k6 summary and Kubernetes event list are saved under `docs/experiments/results/`. Grafana retains API, HPA, PostgreSQL, Redis and ingress time series.
+The API integration tests need a reachable local PostgreSQL database. With the Compose database running, its default localhost connection works:
 
-`Ctrl+C` only detaches the local log stream because k6 runs as a Kubernetes Job. Use `pnpm k8s:load:stop` to terminate the Job and stop its traffic early.
+```sh
+pnpm --filter @system-design/api test
+# Or run every workspace test:
+pnpm test
+```
 
-## Write-load experiments
+Tests create isolated schemas. Do not set their `DATABASE_URL` to a production database.
 
-The write tests call the real `POST /api/orders` transaction. They use 100 reserved products (IDs 10001–10100) that are hidden from the customer product list, so experiments do not consume normal storefront stock.
+For frontend editing, run `pnpm --filter @system-design/web dev`. Vite proxies `/api` to localhost:3001 and `/lab-api` to localhost:4000. The latter needs a separately configured lab controller. The API uses `tsx watch` during development; benchmark compiled JavaScript/container images instead.
+
+## Run a small local workload
+
+With Compose running, from PowerShell:
 
 ```powershell
-# Every request competes for product 10001's row lock.
-pnpm k8s:write:hot -- -TargetRps 200 -Duration 4m
-
-# The same work is spread over 100 product rows.
-pnpm k8s:write:distributed -- -TargetRps 200 -Duration 4m
+pnpm load:test -- -TargetRps 20 -Duration 30s -PreAllocatedVUs 20 -MaxVUs 100
 ```
 
-Both commands reset benchmark orders, stock and Redis before starting, then save the k6 summary and Kubernetes events under `docs/experiments/results/`. Parameters also include `-PreAllocatedVUs` and `-MaxVUs`. Start conservatively because one write creates an order row, updates stock, and commits a PostgreSQL transaction. Use `pnpm k8s:write:reset` after manual experiments if needed.
+This read-only test targets Nginx inside Docker. Rate limiting is enabled by default in Compose, so high single-client traffic may intentionally receive 429 responses. `pnpm load:rate-limit` tests that policy separately. `pnpm load:suite` is a heavier repeatability experiment; inspect its configured rates before using it.
 
-The Grafana dashboard includes order throughput/latency, individual order SQL operations, pool waiting/acquisition, database transactions, connections, locks, changed rows, and PostgreSQL container resources. `postgres-exporter` supplies database-internal metrics; the existing API instrumentation supplies transaction-path timing.
-
-The Kubernetes profile uses `DATABASE_POOL_MAX=10`, so six API pods can create at most 60 application connections. It starts with 250m CPU requested, 500m limited, 256 MiB memory requested, 512 MiB limited, and a 70% HPA CPU target. These are experiment inputs, not production recommendations.
-
-## Mixed read/write workload
-
-`load-tests/mixed-load.js` sends a configurable blend of product reads and
-order writes. It defaults to 70% `GET /api/products/:id` and 30%
-`POST /api/orders`. Writes rotate across benchmark products 10001–10100, so
-the three customer-facing products are not consumed by a load test.
-
-Reset benchmark data before a Kubernetes/Civo run with:
+For the local Kubernetes topology:
 
 ```powershell
-pnpm k8s:write:reset
+pnpm k8s:watch
+# In another terminal:
+pnpm k8s:load
+# Stop its traffic explicitly; Ctrl+C only detaches the log stream:
+pnpm k8s:load:stop
 ```
 
-The reset deletes only orders for benchmark products, restores their stock to
-10,000,000 on both shards, and clears the disposable Redis cache. The command
-uses the active `kubectl` context, so confirm that context before running it.
+Read the workload before running it: the default Kubernetes experiment is substantially larger than the small Compose smoke test. Never run tests against someone else's system.
 
-For the single-database Compose stack, reset the same isolated data with:
+Other scripts in `load-tests/` cover static capacity, autoscaling ramps, spikes, mixed traffic and rate limiting. `BASE_URL`, RPS/duration and VU settings are configurable; inspect each script for its exact inputs. Writes use benchmark products **10001–10100**. Kubernetes write runners reset those products before a run; `pnpm k8s:write:reset` resets benchmark data afterwards. That command acts on the current Kubernetes context and also clears disposable Redis cache state.
 
-```powershell
-Get-Content -Raw load-tests\reset-write-test.sql | docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U scalelab -d scalelab
-docker compose exec -T redis redis-cli FLUSHDB
-```
+Generated results go to `docs/experiments/results/`, which is intentionally ignored. Historical reports remain in [docs/experiments](docs/experiments); old raw captures remain only on the original operator's disk or in Git history.
 
-Rate limiting is deliberately disabled in the Kubernetes capacity profile so one k6 pod can drive enough accepted traffic to exercise the HPA. Redis caching remains enabled. Distributed rate limiting should be tested separately with multiple client pods; otherwise one source IP receives only one shared quota.
-
-## Previous fixed-instance baseline
-
-The Compose stack is preserved for reproducing the earlier three-instance/Nginx experiments:
-
-```powershell
-pnpm stack:up
-pnpm stack:down
-```
-
-Do not run Compose and Kubernetes simultaneously because both publish the same local ports.
-
-`pnpm k8s:down` is a full local teardown: deleting the `scalelab` namespace also deletes its Kubernetes PostgreSQL volume. Ordinary pod restarts and HPA scaling preserve database data.
-
-## Important files
+## How it works
 
 ```text
-compose.yaml                         previous fixed-instance baseline
-infrastructure/kubernetes/           local Kubernetes topology and HPA
-infrastructure/kubernetes/ingress.yaml HTTP routes into the web and API Services
-infrastructure/kubernetes/adminer.yaml local PostgreSQL browser on port 8081
-infrastructure/nginx/nginx.conf      only Nginx configuration
-infrastructure/prometheus/           only Prometheus configuration
-infrastructure/grafana/              one provisioned dashboard
-scripts/run-kubernetes-load-test.ps1 Kubernetes k6 runner and result copy
-load-tests/capacity.js               unthrottled capacity workload
-load-tests/rate-limit.js             distributed limiter verification workload
-scripts/run-load-test.ps1            small load-test command wrapper
-apps/api/                             Express application
-apps/web/                             React application
-docs/experiments/                     historical experiment reports
+Browser / k6 → ingress / Nginx → Node.js + Express API
+                                      ├── Redis: product cache and shared quotas
+                                      └── PostgreSQL: products, orders and stock
+
+Prometheus → API/Kubernetes/exporter measurements → Grafana + ScaleLab dashboard
+Dashboard → lab-controller → private loadgen-controller → isolated k6 container
 ```
 
-Historical reports remain because they explain how the current topology was selected. Their alternative runtime configurations and helper scripts are intentionally not retained as supported paths.
+- **Reads:** cache-aside product lookup; a miss queries PostgreSQL and fills Redis.
+- **Writes:** stock reservation and order creation commit in one database transaction. A committed order invalidates product/list caches.
+- **Sharding:** Kubernetes routes a product by `productId % 2`; lists and UUID-only order lookups scatter across shards. Compose deliberately uses one database as an earlier baseline.
+- **Scaling:** HPA watches CPU relative to a 250m request, with a 70% target and 2–6 replicas. A pod must become Ready before receiving traffic. Each Kubernetes API pool allows 10 connections.
+- **Observability:** bounded-label request/latency metrics, process/event-loop metrics, pool acquisition/waiting and query diagnostics. Request IDs remain in headers/logs, not metric labels.
+- **Experiment controls:** fixed target, a script allowlist, one active run, resource/duration validation, private generator authentication and benchmark cleanup. Public controls are intentionally shared; disable them with `PUBLIC_CONTROLS_ENABLED=false` when unattended.
 
-## API
+The cloud dashboard's status light indicates fresh Ready-pod telemetry, not a complete cluster health check. History gaps and unavailable metrics are shown explicitly.
 
-The cloud portfolio dashboard is the root page; `/store` is the companion
-ecommerce app and `/scalelab` remains a dashboard alias. For the finalized
-scenario controls, 5/10-minute telemetry, explicit generator budgets and safe
-temporary pod preparation, see [the finalization deployment guide](docs/scalelab-finalization-deployment.md)
-and [verification plan](docs/scalelab-finalization-plan.md).
-
-Public test controls can spend cloud resources. Disable new test/warm-up/reset
-operations with `PUBLIC_CONTROLS_ENABLED=false` when unattended. Stop and restore
-remain available. The private generator and API reset tokens are still required.
+### API
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `GET` | `/health` | Verify API, database, and instance identity |
-| `GET` | `/live` | Kubernetes process liveness |
-| `GET` | `/ready` | Kubernetes traffic readiness |
-| `GET` | `/metrics` | Prometheus application, process, and pool metrics |
-| `GET` | `/api/products` | List products and current stock |
-| `GET` | `/api/products/:id` | Get one product |
-| `POST` | `/api/orders` | Create an order and atomically reduce stock |
-| `GET` | `/api/orders/:id` | Get one order |
+| GET | `/api/products` | Customer product list |
+| GET | `/api/products/:id` | Product detail |
+| POST | `/api/orders` | `{ "userId": "demo-user", "productId": 1, "quantity": 1 }` |
+| GET | `/api/orders/:id` | Order detail |
+| GET | `/health` | API, database/shard and Redis health |
+| GET | `/live`, `/ready` | Process liveness / traffic readiness |
+| GET | `/metrics` | Prometheus exposition (internal in cloud) |
 
-Every response includes `x-request-id` and `x-instance-id`. Successful `/metrics` and ordinary 2xx requests are not written to the terminal during load tests. Errors and important lifecycle events remain logged.
+Responses include `x-request-id` and `x-instance-id`. Routine successful request logs are suppressed to avoid terminal overhead during benchmarks; errors and lifecycle events remain.
 
-## Configuration decisions
+### Repository map
 
-- ingress-nginx is the Layer 7 entry point. It keeps client connections independent from its changing set of Ready API backends.
-- The ScaleLab `Ingress` sends `/api` and `/health` to the API Service and `/` to the web Service.
-- Prometheus discovers and scrapes every API pod instead of relying on fixed instance names.
-- The k6 Job calls the ingress-nginx controller Service entirely inside the cluster and keeps HTTP connections open.
-- PostgreSQL and Redis are cluster-internal Services and expose no Windows ports.
-- Products and their orders are colocated by `productId % 2`: even IDs use shard 0 and odd IDs use shard 1.
-- Product lists scatter to both shards and merge by ID. Product reads and order writes route directly; UUID-only order reads scatter to both shards.
-- PostgreSQL exporter is cluster-internal and exposes database metrics only to Prometheus.
-- Every pod receives its own pod name as `INSTANCE_ID` through the Downward API.
-- The API Deployment starts at two replicas and the CPU HPA may select two through six.
-- Each API requests 250m CPU; the 70% target therefore represents 175m average CPU per pod.
-- Kubernetes API pools are limited to 10 connections per pod.
-- Product reads use a 30-second cache-aside Redis entry.
-- A committed order invalidates the affected product and product-list cache keys.
-- Order stock is reserved with one conditional atomic PostgreSQL `UPDATE`; a failed reservation performs a fallback read only to distinguish missing products from insufficient stock.
-- Redis is disposable cache state and deliberately has no persistent volume.
-- Rate limiting is off only for this single-client capacity experiment; the Compose baseline retains the reviewed distributed policy.
-- Metrics Server uses insecure kubelet TLS only because this is a local Docker Desktop cluster.
+```text
+apps/api/                  Express API, migrations, caching, sharding, metrics
+apps/web/                  React/Vite Store and experiment dashboard
+apps/lab-controller/       Public dashboard API, metrics queries and run lifecycle
+apps/loadgen-controller/   Private VM controller that launches k6 containers
+infrastructure/kubernetes/ Local manifests; civo/ contains cloud-specific resources
+infrastructure/load-generator/ Private VM Compose setup and environment template
+infrastructure/{nginx,prometheus,grafana}/ Fixed-instance local monitoring
+load-tests/                k6 workloads and benchmark reset SQL
+scripts/                   Current local/experiment PowerShell runners
+docs/                      Design decisions, release reports and experiments
+```
+
+Local Kubernetes and Civo manifests are intentionally separate: localhost exposure/development credentials differ from cloud ClusterIP, TLS and storage. They are not interchangeable profiles.
+
+## Deploying your own cloud dashboard
+
+Start with [the deployment guide](docs/scalelab-finalization-deployment.md), [load-generator setup](infrastructure/load-generator/README.md) and [release report](docs/scalelab-live-deployment-report.md). Use your own registry tags, domain, cluster, private VM and credentials. Those guides describe ScaleLab's deployment, not a one-command installer for a new provider.
+
+The Civo database manifest now **references an existing private `postgres` Secret** instead of creating credentials in Git. Required keys and the pre-push checklist are in [Repository hygiene](docs/REPOSITORY_HYGIENE.md). Never copy a Civo kubeconfig, production environment file or token into this repository. Do not apply Civo manifests to Docker Desktop or local manifests to Civo.
+
+## Common pitfalls
+
+| Symptom | Check / fix |
+| --- | --- |
+| Docker pipe/daemon error | Start Docker Desktop, wait for its Linux engine, then retry. |
+| Port already allocated | Check 3001, 3002, 5174, 5433 and 9090. Stop the competing local stack; don't change PostgreSQL's internal port. |
+| Missing `esbuild` / `rollup` | Run `pnpm install --frozen-lockfile`; if the install is damaged, `pnpm install --force`. Keep the lockfile and use a supported Node version. |
+| Dashboard cannot reach `/lab-api` locally | Compose/local Kubernetes do not install the cloud controller workflow. Use `/store` and Grafana, or configure your own controllers. |
+| Some local metrics are unavailable | Kubernetes-specific queries require Kubernetes/exporters. Idle cache ratios/quantiles may have no samples; missing is not zero. |
+| HPA shows `<unknown>` | Confirm `kubectl top pods` works and Metrics Server is Ready. Scaling waits for metrics and pod readiness. |
+| New local image doesn't appear | Rebuild with `pnpm k8s:build`, then restart the local web/API Deployment using the docker-desktop context. |
+| 429s during load | Check rate-limit policy before treating intentional rejection as a server failure. |
+| k6 still runs after Ctrl+C | Delete the relevant Job with `pnpm k8s:load:stop` or `pnpm k8s:write:stop`. |
+| Cloud Postgres mount has `lost+found` | The Civo manifest sets `PGDATA` to a subdirectory. Preserve PVCs and inspect logs before deleting anything. |
+| `git status` reports dubious ownership | Verify the directory owner; trust only this exact checkout if appropriate, never every repository globally. |
+
+Before pushing, use the [cleanup/security checklist](docs/REPOSITORY_HYGIENE.md). Removing a file in a new commit does not remove it from old Git history or revoke credentials.

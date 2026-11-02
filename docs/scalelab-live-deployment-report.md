@@ -424,3 +424,23 @@ kubectl --kubeconfig $ReleaseKube --context scalelab -n scalelab rollout status 
 ```
 
 Also restore the old frontend image reference in `infrastructure/kubernetes/civo/web.yaml` if retaining a rollback. No rollback was needed. The frontend source, tests, bundled icons and deployment manifest are released together with this report.
+
+## Repository cleanup release — 2 November 2026
+
+Published frontend `verma17/scalelab-web:cleanup-v1-20261102-b935d812` (linux/amd64), registry digest `sha256:7d0fa6d1149c9b33cbbff17f34bdcf761f710ed7775aa596e22a7319414261a5`. Updated only the Civo web image and applied only `civo/web.yaml`; its Service was unchanged. Rollout revision **13** succeeded. Pod `scalelab-web-75b49d77d4-pxfpj` is **1/1 Ready**, with **0 restarts** and **0 warning events** at verification. Rollback baseline is revision **12**, image `verma17/scalelab-web:visitor-polish-v1-20261101-d39fbfa2`; private snapshots are outside tracked source.
+
+The image includes the requested active-panel heading removal/spacing fix and removal of orphaned UI modules/CSS. The remaining cleanup is repository-only: README/onboarding rewrite, pre-push checklist/checker, stronger ignores, 278 raw captures removed from the current Git tree but preserved locally, and inline cloud sample-credential Secret removed from the source manifest. No cloud database manifest, Secret, local Compose port change or other infrastructure cleanup was applied to Civo. Existing PostgreSQL credentials were not rotated. See `REPOSITORY_HYGIENE.md` for history and credential-rotation limitations and the rejected external scanner/local-check alternative.
+
+Verification: **104 workspace tests** passed (18 API, 38 lab-controller, 15 load-generator, 33 frontend), plus workspace typecheck/build, frontend Docker build, repository hygiene/ignore checks, Compose validation, local Kustomize render and diff checks. API tests used explicit localhost PostgreSQL connection settings and isolated schemas. No load test was initiated by this release process.
+
+Production `/`, `/store`, `/scalelab` and favicon return HTTP 200 over HTTPS. The live HTML references the newly built `/assets/index-BFEncGmp.js`. API health reports healthy two-shard PostgreSQL and Redis. Browser verification confirms the dashboard, real telemetry, current controls and no console errors. The redundant running heading's absence and non-scrolling active panel were verified locally with synthetic UI data; no production test was started to exercise that state. HPA spec and all non-web Deployment generations/images match the pre-release snapshots; ingress host, TLS Secret and ClusterIssuer references remain unchanged.
+
+Rollback if required (not performed):
+
+```powershell
+$ReleaseKube = Join-Path $HOME 'Downloads/civo-scalelab-kubeconfig'
+kubectl --kubeconfig $ReleaseKube --context scalelab -n scalelab set image deployment/scalelab-web web=verma17/scalelab-web:visitor-polish-v1-20261101-d39fbfa2
+kubectl --kubeconfig $ReleaseKube --context scalelab -n scalelab rollout status deployment/scalelab-web --timeout=180s
+```
+
+Restore the corresponding web image reference in Git if retaining a rollback. Do not reapply the old inline database Secret as part of any frontend rollback.

@@ -11,3 +11,24 @@ coverage
 .pnpm-store
 docs/experiments/results
 
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*kubeconfig*
+**/*.cpuprofile
+**/*.heapsnapshot
+**/*.ndjson
+**/*.bak
+**/*.zip
+**/secrets
+**/.codex
+**/.agents
+**/.aws
+**/.ssh
+**/.kube
+**/.docker
+**/*.secret.yaml
+**/*.secrets.yaml
+**/*.secret.json
+**/*.secrets.json
