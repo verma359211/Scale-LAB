@@ -145,7 +145,7 @@ Dashboard → lab-controller → private loadgen-controller → isolated k6 cont
 - **Reads:** cache-aside product lookup; a miss queries PostgreSQL and fills Redis.
 - **Writes:** stock reservation and order creation commit in one database transaction. A committed order invalidates product/list caches.
 - **Sharding:** Kubernetes routes a product by `productId % 2`; lists and UUID-only order lookups scatter across shards. Compose deliberately uses one database as an earlier baseline.
-- **Scaling:** HPA watches CPU relative to a 250m request, with a 70% target and 2–6 replicas. A pod must become Ready before receiving traffic. Each Kubernetes API pool allows 10 connections.
+- **Scaling:** HPA watches CPU relative to a 250m request, with a 70% target and 2–6 replicas. A pod must become Ready before receiving traffic. For the demo, scale-down uses a 30-second stabilization window and removes at most one pod per 15 seconds; actual timing depends on CPU recommendations and metric updates. Each Kubernetes API pool allows 10 connections.
 - **Observability:** bounded-label request/latency metrics, process/event-loop metrics, pool acquisition/waiting and query diagnostics. Request IDs remain in headers/logs, not metric labels.
 - **Experiment controls:** fixed target, a script allowlist, one active run, resource/duration validation, private generator authentication and benchmark cleanup. Public controls are intentionally shared; disable them with `PUBLIC_CONTROLS_ENABLED=false` when unattended.
 

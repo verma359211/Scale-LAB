@@ -29,10 +29,10 @@ spec:
           periodSeconds: 60
       selectPolicy: Max
     scaleDown:
-      # A short local-demo window prevents immediate flapping without making
-      # every scale-down experiment wait for the five-minute default.
-      stabilizationWindowSeconds: 120
+      # Demo-only: keep a brief buffer against flapping while making recovery
+      # visible quickly. Revisit this policy for production workloads.
+      stabilizationWindowSeconds: 30
       policies:
         - type: Pods
           value: 1
-          periodSeconds: 60
+          periodSeconds: 15
